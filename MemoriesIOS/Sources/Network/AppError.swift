@@ -1,6 +1,6 @@
 import Foundation
 
-/// Errors shown to the user (messages in French).
+/// Errors shown to the user. Messages are localized (`Resources/Localizable.xcstrings`).
 enum AppError: LocalizedError, Equatable {
     case invalidURL
     case serverUnreachable(String)
@@ -16,25 +16,25 @@ enum AppError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "Adresse de serveur invalide."
+            return String(localized: "Invalid server address.")
         case .serverUnreachable(let detail):
-            return "Serveur injoignable. Vérifiez l'adresse et votre connexion.\n(\(detail))"
+            return String(localized: "Server unreachable. Check the address and your connection.\n(\(detail))")
         case .memoriesNotInstalled:
-            return "L'app Memories n'est pas installée ou pas activée sur ce serveur Nextcloud."
+            return String(localized: "The Memories app is not installed or not enabled on this Nextcloud server.")
         case .serverTooOld(let version):
-            return "Memories \(version) est trop ancien. Version \(AppConstants.minServerVersion) ou plus récente requise."
+            return String(localized: "Memories \(version) is too old. Version \(AppConstants.minServerVersion) or later is required.")
         case .unexpectedStatus(let code):
-            return "Réponse inattendue du serveur (HTTP \(code))."
+            return String(localized: "Unexpected server response (HTTP \(code)).")
         case .invalidResponse:
-            return "Réponse du serveur illisible."
+            return String(localized: "Unreadable server response.")
         case .loginFlowUnavailable(let code):
-            return "Le Login Flow Nextcloud a répondu HTTP \(code). Vérifiez la configuration du reverse proxy (overwriteprotocol)."
+            return String(localized: "Nextcloud Login Flow returned HTTP \(code). Check your reverse proxy configuration (overwriteprotocol).")
         case .loginTimeout:
-            return "Délai de connexion dépassé. Veuillez réessayer."
+            return String(localized: "Login timed out. Please try again.")
         case .notAuthenticated:
-            return "Session expirée ou révoquée. Veuillez vous reconnecter."
+            return String(localized: "Session expired or revoked. Please sign in again.")
         case .keychain(let status):
-            return "Erreur du trousseau iOS (\(status))."
+            return String(localized: "iOS Keychain error (\(status)).")
         }
     }
 

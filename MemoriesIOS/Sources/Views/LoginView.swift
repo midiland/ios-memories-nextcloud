@@ -41,15 +41,15 @@ struct LoginView: View {
             Image(systemName: "photo.on.rectangle.angled")
                 .font(.system(size: 56))
                 .foregroundStyle(.tint)
-            Text("Memories")
+            Text(verbatim: "Memories")
                 .font(.largeTitle.bold())
-            Text("Connectez-vous à votre serveur Nextcloud")
+            Text("Sign in to your Nextcloud server")
                 .foregroundStyle(.secondary)
         }
     }
 
     private var serverField: some View {
-        TextField("cloud.exemple.fr", text: $serverInput)
+        TextField("cloud.example.com", text: $serverInput)
             .textContentType(.URL)
             .keyboardType(.URL)
             .textInputAutocapitalization(.never)
@@ -75,11 +75,12 @@ struct LoginView: View {
         .disabled(isBusy || ServerURL(userInput: serverInput) == nil)
     }
 
-    private var buttonTitle: String {
+    /// `LocalizedStringKey` (not `String`) so that SwiftUI looks the title up in the catalog.
+    private var buttonTitle: LocalizedStringKey {
         switch session.loginState {
-        case .idle: return "Se connecter"
-        case .connecting: return "Connexion…"
-        case .waitingForApproval: return "En attente de validation…"
+        case .idle: return "Sign in"
+        case .connecting: return "Connecting…"
+        case .waitingForApproval: return "Waiting for approval…"
         }
     }
 

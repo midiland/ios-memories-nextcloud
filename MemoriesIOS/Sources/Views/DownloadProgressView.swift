@@ -10,9 +10,13 @@ struct DownloadProgressView: View {
         VStack(spacing: 16) {
             ProgressView(value: Double(done), total: Double(max(total, 1)))
                 .frame(maxWidth: 240)
-            Text("Préparation de Memories…")
+            Text("Preparing Memories…")
                 .font(.headline)
-            Text(total > 0 ? "\(done) / \(total) fichiers" : "Connexion au serveur")
+            // Two literals rather than a ternary: only literals are looked up in the catalog.
+            // Runtime key is "%lld / %lld files" (Xcode's static extractor may guess "%@").
+            Group {
+                if total > 0 { Text("\(done) / \(total) files") } else { Text("Connecting to the server") }
+            }
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()

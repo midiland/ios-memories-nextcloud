@@ -1,0 +1,300 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ / %@ files" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ / %2$@ files"
+          }
+        }
+      }
+    },
+    "%lld / %lld files" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld / %2$lld fichiers"
+          }
+        }
+      }
+    },
+    "Back" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retour"
+          }
+        }
+      }
+    },
+    "cloud.example.com" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "cloud.exemple.fr"
+          }
+        }
+      }
+    },
+    "Connecting to the server" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion au serveur"
+          }
+        }
+      }
+    },
+    "Connecting…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion…"
+          }
+        }
+      }
+    },
+    "Download failed: %@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Échec du téléchargement : %@"
+          }
+        }
+      }
+    },
+    "Downloading %@…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Téléchargement de « %@ »…"
+          }
+        }
+      }
+    },
+    "Downloading…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Téléchargement…"
+          }
+        }
+      }
+    },
+    "file" : {
+      "comment" : "Fallback name of a downloaded file",
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fichier"
+          }
+        }
+      }
+    },
+    "Invalid server address." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adresse de serveur invalide."
+          }
+        }
+      }
+    },
+    "iOS Keychain error (%d)." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erreur du trousseau iOS (%d)."
+          }
+        }
+      }
+    },
+    "Log out" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se déconnecter"
+          }
+        }
+      }
+    },
+    "Login timed out. Please try again." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Délai de connexion dépassé. Veuillez réessayer."
+          }
+        }
+      }
+    },
+    "Memories %@ is too old. Version %@ or later is required." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memories %1$@ est trop ancien. Version %2$@ ou plus récente requise."
+          }
+        }
+      }
+    },
+    "Memories has been updated" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memories a été mis à jour"
+          }
+        }
+      }
+    },
+    "Nextcloud Login Flow returned HTTP %lld. Check your reverse proxy configuration (overwriteprotocol)." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Login Flow Nextcloud a répondu HTTP %lld. Vérifiez la configuration du reverse proxy (overwriteprotocol)."
+          }
+        }
+      }
+    },
+    "Preparing Memories…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préparation de Memories…"
+          }
+        }
+      }
+    },
+    "Retry" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        }
+      }
+    },
+    "Server unreachable. Check the address and your connection.\n(%@)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serveur injoignable. Vérifiez l'adresse et votre connexion.\n(%@)"
+          }
+        }
+      }
+    },
+    "Session expired or revoked. Please sign in again." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session expirée ou révoquée. Veuillez vous reconnecter."
+          }
+        }
+      }
+    },
+    "Sign in" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se connecter"
+          }
+        }
+      }
+    },
+    "Sign in to your Nextcloud server" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connectez-vous à votre serveur Nextcloud"
+          }
+        }
+      }
+    },
+    "The Memories app is not installed or not enabled on this Nextcloud server." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'app Memories n'est pas installée ou pas activée sur ce serveur Nextcloud."
+          }
+        }
+      }
+    },
+    "Unexpected server response (HTTP %lld)." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réponse inattendue du serveur (HTTP %lld)."
+          }
+        }
+      }
+    },
+    "Unreadable server response." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réponse du serveur illisible."
+          }
+        }
+      }
+    },
+    "Waiting for approval…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente de validation…"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

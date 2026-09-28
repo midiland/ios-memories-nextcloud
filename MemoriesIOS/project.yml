@@ -6,6 +6,8 @@ options:
   deploymentTarget:
     iOS: "16.0"
   createIntermediateGroups: true
+  # English is the source language; French comes from the String Catalogs in Resources/.
+  developmentLanguage: en
 settings:
   base:
     SWIFT_VERSION: "5.0"
@@ -30,6 +32,10 @@ targets:
       path: Sources/Info.plist
       properties:
         CFBundleDisplayName: Memories
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations:
+          - en
+          - fr
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
@@ -47,7 +53,8 @@ targets:
           # Allows http:// to local names (.local, domainless hostnames)
           # and, later, to the NativeX bridge loopback server.
           NSAllowsLocalNetworking: true
-        NSLocalNetworkUsageDescription: Memories se connecte à votre serveur Nextcloud sur le réseau local.
+        # Localized in Resources/InfoPlist.xcstrings
+        NSLocalNetworkUsageDescription: Memories connects to your Nextcloud server on the local network.
 schemes:
   MemoriesIOS:
     build:

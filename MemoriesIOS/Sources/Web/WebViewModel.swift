@@ -135,7 +135,7 @@ final class WebViewModel: ObservableObject {
         do {
             if try await offline.refreshInBackground() {
                 webView.load(URLRequest(url: offline.entryURL))
-                nativeXToast("Memories a été mis à jour", long: false)
+                nativeXToast(String(localized: "Memories has been updated"), long: false)
             }
         } catch AppError.notAuthenticated {
             onSessionRevoked()

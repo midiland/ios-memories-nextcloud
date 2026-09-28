@@ -29,7 +29,7 @@ struct AuthenticatedDownloader {
         // One folder per download, to keep the real file name.
         let name = [preferredName, response.suggestedFilename, url.lastPathComponent]
             .compactMap { $0 }
-            .first { !$0.isEmpty } ?? "fichier"
+            .first { !$0.isEmpty } ?? String(localized: "file", comment: "Fallback name of a downloaded file")
         let folder = FileManager.default.temporaryDirectory
             .appendingPathComponent("downloads", isDirectory: true)
             .appendingPathComponent(UUID().uuidString, isDirectory: true)

@@ -13,9 +13,9 @@ struct ErrorView: View {
                 .foregroundStyle(.secondary)
             Text(error.localizedDescription)
                 .multilineTextAlignment(.center)
-            Button("Réessayer", action: retry)
+            Button("Retry", action: retry)
                 .buttonStyle(.borderedProminent)
-            Button("Se déconnecter", role: .destructive, action: logout)
+            Button("Log out", role: .destructive, action: logout)
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

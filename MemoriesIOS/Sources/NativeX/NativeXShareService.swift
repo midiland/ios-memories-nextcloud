@@ -51,8 +51,11 @@ final class NativeXShareService {
     /// then share sheet; toast on failure.
     func download(urlString: String?, filename: String?, title: String?) {
         guard let urlString, let url = URL(string: urlString), let host else { return }
-        let label = (title?.isEmpty == false ? title : nil) ?? "le fichier"
-        host.nativeXToast("Téléchargement de \(label)…", long: false)
+        if let title, !title.isEmpty {
+            host.nativeXToast(String(localized: "Downloading \(title)…"), long: false)
+        } else {
+            host.nativeXToast(String(localized: "Downloading…"), long: false)
+        }
 
         let downloader = AuthenticatedDownloader(credentials: host.credentials)
         let name = filename?.isEmpty == false ? filename : nil
@@ -61,7 +64,7 @@ final class NativeXShareService {
                 let file = try await downloader.download(url, preferredName: name)
                 SharePresenter.present([file])
             } catch {
-                self.host?.nativeXToast("Échec du téléchargement : \(error.localizedDescription)", long: true)
+                self.host?.nativeXToast(String(localized: "Download failed: \(error.localizedDescription)"), long: true)
             }
         }
     }

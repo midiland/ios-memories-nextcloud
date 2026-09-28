@@ -1,6 +1,23 @@
+# Upstream Memories clone used as reference (recreate with git clone, see CLAUDE.md)
 reference/
-.DS_Store
-xcuserdata/
+
+# Xcode / xcodebuild outputs (any -derivedDataPath build folder at the repo root)
+/build*/
 DerivedData/
-build/
+*.xcresult
+*.xcarchive
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# Xcode per-user state
+xcuserdata/
 *.xcuserstate
+*.xcscmblueprint
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# macOS
+.DS_Store

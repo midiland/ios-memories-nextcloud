@@ -17,6 +17,6 @@ struct BackButton: View {
         .foregroundStyle(.primary)
         .padding(.leading, 16)
         .padding(.bottom, 16)
-        .accessibilityLabel("Retour")
+        .accessibilityLabel("Back")
     }
 }
