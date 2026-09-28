@@ -7,6 +7,8 @@ import Foundation
 ///     xcrun simctl launch "iPhone 17 Pro" gallery.memories.ios -MXRoute /thisday -MXBackAfter 4
 ///
 /// - `-MXRoute <route>`: 4 s after first display, navigates via the Vue router (`_m.router.push`);
+/// - `-MXClick <css selector>`: then clicks the first matching element 3 s later
+///   (e.g. `.cluster` to open the first person of `/recognize`);
 /// - `-MXBackAfter <s>`: then taps the native back button after `<s>` seconds.
 @MainActor
 enum DebugAutomation {
@@ -18,12 +20,18 @@ enum DebugAutomation {
         guard let route = defaults.string(forKey: "MXRoute") else { return }
         didRun = true
         let backAfter = defaults.double(forKey: "MXBackAfter")
+        let click = defaults.string(forKey: "MXClick")
 
         Task {
             try? await Task.sleep(nanoseconds: 4_000_000_000)
             let js = "window._m && _m.router.push(\(jsonString(route)))"
             _ = try? await model.webView.evaluateJavaScript(js)
             Log.offline.debug("Debug: navigating to \(route, privacy: .public)")
+            if let click {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                _ = try? await model.webView.evaluateJavaScript("document.querySelector(\(jsonString(click)))?.click()")
+                Log.offline.debug("Debug: clicked \(click, privacy: .public)")
+            }
             guard backAfter > 0 else { return }
             try? await Task.sleep(nanoseconds: UInt64(backAfter * 1_000_000_000))
             Log.offline.debug("Debug: back button visible = \(model.showsBackButton), tapping")

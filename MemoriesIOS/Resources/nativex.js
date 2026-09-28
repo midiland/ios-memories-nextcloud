@@ -44,6 +44,19 @@
     // then plays videos with its web player (WebKit handles HLS natively).
   };
 
+  // The iOS app shows a single native back button on every page that needs one
+  // (BackNavigationRule.swift), so hide the web back arrows of the cluster headers
+  // (*TopMatter.vue: person, place, tag, album). Matched by icon, not by the
+  // translated "Back" label.
+  const hideWebBackArrows = () => {
+    const style = document.createElement('style');
+    style.textContent =
+      ':is(.face-top-matter, .places-top-matter, .top-matter) > :has(.arrow-left-icon) { display: none !important; }';
+    document.head.appendChild(style);
+  };
+  if (document.head) hideWebBackArrows();
+  else document.addEventListener('DOMContentLoaded', hideWebBackArrows, { once: true });
+
   /** Cache update from the native side (evaluateJavaScript). */
   Object.defineProperty(window, '__nativexSetState', {
     value: (patch) => Object.assign(state, patch),

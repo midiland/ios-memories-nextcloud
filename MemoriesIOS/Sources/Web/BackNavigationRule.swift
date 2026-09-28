@@ -10,9 +10,6 @@ enum BackNavigationRule {
     /// App routes (after `…/apps/memories`) where the navigation bar is visible.
     private static let mainRoutes: Set<String> = ["", "/explore", "/albums"]
 
-    /// Routes whose web header already has its own back arrow (`*TopMatter.vue`).
-    private static let routesWithOwnBack = ["/albums/", "/places", "/tags", "/recognize", "/facerecognition"]
-
     static func showsBackButton(url: URL?, canGoBack: Bool, webRoot: String) -> Bool {
         guard canGoBack, let url else { return false }
         // Fragment = viewer, sidebar or open modal: they have their own close button.
@@ -25,8 +22,8 @@ enum BackNavigationRule {
         }
         while route.hasSuffix("/") { route.removeLast() }
 
-        if mainRoutes.contains(route) { return false }
-        if routesWithOwnBack.contains(where: { route == $0 || route.hasPrefix($0) }) { return false }
-        return true
+        // Everywhere else, including person/place/tag/album details: the web back arrows of
+        // those headers are hidden by nativex.js so the app has one consistent back button.
+        return !mainRoutes.contains(route)
     }
 }
