@@ -3,6 +3,7 @@ import WebKit
 
 /// Possède la `WKWebView` et pilote son cycle de vie : amorçage de la session,
 /// chargement de Memories, erreurs, reconnexion automatique.
+/// C'est aussi l'hôte du pont NativeX (thème, toasts, déconnexion, rechargement).
 @MainActor
 final class WebViewModel: ObservableObject {
     enum State: Equatable {
@@ -11,24 +12,36 @@ final class WebViewModel: ObservableObject {
         case failed(AppError)
     }
 
+    /// Message temporaire affiché par-dessus la WebView (`nativex.toast`).
+    struct Toast: Equatable {
+        let id = UUID()
+        let message: String
+        let long: Bool
+    }
+
     @Published private(set) var state: State = .loading
+    /// Couleur de fond de l'UI web, peinte derrière la WebView (qui est transparente
+    /// en mode natif) et dans les zones de sécurité. `nil` = fond système.
+    @Published private(set) var themeColor: UIColor?
+    @Published var toast: Toast?
 
     let credentials: Credentials
     let webView: WKWebView
 
     /// Appelé quand le serveur refuse définitivement les identifiants.
     var onSessionRevoked: () -> Void = {}
+    /// Appelé quand l'utilisateur se déconnecte depuis l'UI web.
+    var onLogout: () -> Void = {}
 
-    private let bridge: NativeXBridge
+    private let nativeX = NativeXController()
     private let navigationHandler = WebNavigationHandler()
     private var lastBootstrap: Date?
     private var hasStarted = false
 
-    init(credentials: Credentials, bridge: NativeXBridge? = nil) {
+    init(credentials: Credentials) {
         self.credentials = credentials
-        let bridge = bridge ?? DisabledNativeXBridge()
-        self.bridge = bridge
-        webView = WebViewFactory.make(bridge: bridge)
+        webView = WebViewFactory.make(bridge: nativeX)
+        nativeX.host = self
         navigationHandler.model = self
         webView.navigationDelegate = navigationHandler
         webView.uiDelegate = navigationHandler
@@ -64,11 +77,6 @@ final class WebViewModel: ObservableObject {
         }
     }
 
-    /// Recharge la page courante (ou relance tout si on est en erreur).
-    func reload() {
-        if case .failed = state { start() } else { webView.reload() }
-    }
-
     // MARK: - Événements de navigation (appelés par WebNavigationHandler)
 
     func pageDidFinish() {
@@ -92,5 +100,25 @@ final class WebViewModel: ObservableObject {
     /// Ouvre un lien externe dans l'app par défaut (Safari…).
     func openExternally(_ url: URL) {
         UIApplication.shared.open(url)
+    }
+}
+
+// MARK: - NativeXHost
+
+extension WebViewModel: NativeXHost {
+    func nativeXSetTheme(color: UIColor?, isDark: Bool) {
+        themeColor = color
+    }
+
+    func nativeXToast(_ message: String, long: Bool) {
+        toast = Toast(message: message, long: long)
+    }
+
+    func nativeXLogout() {
+        onLogout()
+    }
+
+    func nativeXReload() {
+        start()
     }
 }

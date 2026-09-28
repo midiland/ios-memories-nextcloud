@@ -27,9 +27,9 @@ enum WebViewFactory {
         return webView
     }
 
-    /// Suffixe du User-Agent. Il doit ressembler à Safari mobile, sinon Nextcloud affiche
-    /// sa page « navigateur non supporté » (sur Android, c'est `nativex.initialize()` qui la
-    /// désactive, ce qu'on ne peut pas encore faire sans pont NativeX).
+    /// Suffixe du User-Agent. Il doit ressembler à Safari mobile, sinon Nextcloud peut
+    /// afficher sa page « navigateur non supporté » avant que `nativex.initialize()`
+    /// (frontend) n'ait désactivé cette vérification.
     private static var userAgentApplicationName: String {
         let parts = UIDevice.current.systemVersion.split(separator: ".").prefix(2)
         let version = parts.count == 2 ? parts.joined(separator: ".") : "\(parts.first ?? "16").0"

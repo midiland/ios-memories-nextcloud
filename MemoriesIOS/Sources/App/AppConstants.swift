@@ -10,12 +10,15 @@ enum AppConstants {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
     }
 
+    /// Version du protocole NativeX annoncée au serveur (`MemoriesNative/<v>`).
+    /// Alignée sur l'app Android (versionName 1.15) ; le serveur exige ≥ `BinExt::NX_VER_MIN`
+    /// (1.1), sinon il renvoie la page « app trop ancienne ».
+    static let nativeXVersion = "1.15"
+
     /// Suffixe ajouté au User-Agent de la WebView et des requêtes natives.
-    ///
-    /// ⚠️ Volontairement PAS `MemoriesNative/<v>` : ce marqueur fait basculer le serveur en
-    /// mode « app native » (template sans sidebar, pas de préchargement des jours…), ce qui
-    /// suppose que `window.nativex` existe. À remplacer quand le pont NativeX sera en place.
-    static var userAgentSuffix: String { "MemoriesIOS/\(appVersion)" }
+    /// `MemoriesNative/…` fait passer le serveur en mode app native (`Util::callerIsNative`) :
+    /// template transparent sans sidebar, pas de préchargement, cookie `nx_auth` accepté.
+    static var userAgentSuffix: String { "MemoriesNative/\(nativeXVersion) MemoriesIOS/\(appVersion)" }
 
     /// Intervalle et durée max du polling Login Flow v2 (identiques à Android : 3 s / 10 min).
     static let loginPollInterval: UInt64 = 3_000_000_000

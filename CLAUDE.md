@@ -30,19 +30,27 @@ Info.plist est généré par XcodeGen depuis la section `info:` de `project.yml`
 | `Auth/` | `Credentials`, `CredentialStore` (Keychain), `LoginFlowV2`, `SessionStore` (état global, ObservableObject) |
 | `Network/` | `ServerURL` (normalisation de la saisie → `…/index.php/apps/memories/`), `NextcloudClient` (describe, Login Flow v2, révocation), modèles, `AppError` |
 | `Web/` | `WebViewModel` (possède la WKWebView), `WebViewFactory` (config), `WebNavigationHandler` (délégués), `WebSessionBootstrapper` (cookies), `MemoriesWebView` (UIViewRepresentable) |
-| `Views/` | `LoginView`, `SafariView`, `WebContainerView`, `ErrorView` |
-| `NativeX/` | protocole `NativeXBridge` + `DisabledNativeXBridge` (MVP), `NativeXMethod` (liste des 16 méthodes Android) |
+| `Views/` | `LoginView`, `SafariView`, `WebContainerView` (fond thémé + toasts), `ErrorView`, `ToastView`, `SharePresenter` |
+| `NativeX/` | `NativeXController` (pont), `NativeXHost` (implémenté par `WebViewModel`), `NativeXLoopbackRouter` (routes `127.0.0.1`), `NativeXShareService`, `NativeXMethod`, `WeakScriptMessageProxy` |
+| `Resources/` (hors `Sources/`) | `nativex.js`, injecté au document-start ; `__NATIVEX_STATE__` y est remplacé par l'état JSON |
 
 ### Flux
 1. **Login** : saisie URL → `GET api/describe` (Memories installé ? version ≥ 9.0.0-rc.1 ?) →
    `POST /index.php/login/v2` → page de login dans `SFSafariViewController` → polling 3 s / 10 min →
    `loginName` + `appPassword` → Keychain.
 2. **WebView** : `api/describe` en Basic auth via une `URLSession` éphémère → cookies de session
-   Nextcloud copiés dans `WKHTTPCookieStore` → chargement de `…/index.php/apps/memories/`
-   (header `Authorization` en secours sur ce premier chargement).
-3. **Session expirée** (redirection vers `/login` ou 401) : réamorçage automatique, abandon si ça reboucle en < 30 s.
+   Nextcloud copiés dans `WKHTTPCookieStore` + cookie `nx_auth` (= header Basic, encodé %, HttpOnly)
+   → chargement de `…/index.php/apps/memories/`. En mode natif le serveur convertit `nx_auth`
+   en `Authorization` sur chaque requête (`Application::handleNativeHeaders`).
+3. **Mode app (NativeX, étape 2a)** : `nativex.js` définit `window.nativex` ⇒ le frontend masque le
+   bandeau Nextcloud, affiche en-tête + barre de navigation mobiles, rend la page transparente et
+   envoie sa couleur (`setThemeColor`) peinte derrière la WebView et dans les safe areas.
+   Les appels `http://127.0.0.1/…` (fetch et XHR) sont détournés en JS vers le handler
+   `nativexAsync` (`WKScriptMessageHandlerWithReply`) : jours/photos locales vides,
+   partage (`/api/share/url`, `/api/share/blobs`) réel via la feuille de partage iOS.
+4. **Session expirée** (redirection vers `/login` ou 401) : réamorçage automatique, abandon si ça reboucle en < 30 s.
    `describe` authentifié renvoyant 401 ou `uid == null` ⇒ identifiants effacés, retour au login.
-4. **Déconnexion** : bouton flottant « … » → révocation du mot de passe d'application
+5. **Déconnexion** : Paramètres > Compte dans l'UI web (`nativex.logout`) ou écran d'erreur → révocation du mot de passe d'application
    (`DELETE /ocs/v2.php/core/apppassword`), suppression Keychain + données WebView.
 
 ## Décisions prises
@@ -53,22 +61,35 @@ Info.plist est généré par XcodeGen depuis la section `info:` de `project.yml`
   Pour l'étape NativeX, prévu : **serveur HTTP local 127.0.0.1** (option B), car le frontend
   appelle le pont sur `http://127.0.0.1` en dur (`src/native/api.ts`) et `WKURLSchemeHandler`
   ne peut pas intercepter http/https.
-- **User-Agent** : suffixe `Version/x.y Mobile/15E148 Safari/604.1 MemoriesIOS/<v>`.
+- **User-Agent** : suffixe `Version/x.y Mobile/15E148 Safari/604.1 MemoriesNative/1.15 MemoriesIOS/<v>`.
   - `Safari/…` évite la page Nextcloud « navigateur non supporté ».
-  - **Ne pas** mettre `MemoriesNative/<v>` tant que `window.nativex` n'existe pas : le serveur
-    (`Util::callerIsNative`) change alors de template et de comportement.
-- **Ne pas définir `window.nativex`** tant que le pont n'est pas complet (le frontend passerait en mode natif).
+  - `MemoriesNative/<v>` active le mode natif côté serveur (`Util::callerIsNative`) ; `<v>` doit
+    rester ≥ `BinExt::NX_VER_MIN` (1.1), sinon page « app trop ancienne ». Aligné sur Android (1.15).
+  - `MemoriesNative` et `window.nativex` vont ensemble : ne jamais activer l'un sans l'autre.
+- **Pont 127.0.0.1 sans serveur local (2a)** : interception JS de `fetch`/`XMLHttpRequest`, réponses texte
+  uniquement. Ne couvre pas les `<img src="http://127.0.0.1/image/…">` : il faudra un vrai serveur local
+  (ou un patch frontend) pour les miniatures de photos locales en 2b.
+- `playVideo`/`playVideo2`/`destroyVideo` **non exposés** : le frontend garde son lecteur web.
+- `playTouchSound` = retour haptique ; `downloadFromUrl` = téléchargement puis feuille de partage
+  (les identifiants ne partent que vers l'hôte du compte).
+- Barre d'état : son style suit le thème système, pas `isDark` (limite connue si le thème
+  Nextcloud forcé diffère du thème iOS).
 - `SFSafariViewController` plutôt qu'`ASWebAuthenticationSession` (Login Flow v2 n'a pas de schéma de retour).
 - Keychain : `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, un seul compte.
 - ATS : `NSAllowsLocalNetworking` seulement (serveurs `.local` en http ; les IP sont exemptées d'ATS).
   Pas de « trust all certificates » pour l'instant (option Android non portée).
 
-## Prochaines étapes (étape 2 : NativeX)
+## Tester le JS du pont
 
-Voir `docs/ANALYSE.md` §6–7 : `WKUserScript` au document-start définissant `window.nativex`,
-`WKScriptMessageHandler` (proxy faible), cache JS pour les méthodes synchrones
-(`configGetLocalFolders`, `configHasMediaPermission`, `getSyncStatus`, `isNative`),
-serveur local 127.0.0.1 pour `/api/*`, `/image/*`, `/video/*`, puis PhotoKit (AUID/BUID identiques au serveur).
+`nativex.js` peut être testé hors simulateur avec Node en simulant `window.webkit.messageHandlers`,
+`XMLHttpRequest` et `ProgressEvent`. Inspection réelle : Safari > Développement > Simulateur.
+
+## Prochaines étapes (étape 2b : photos locales)
+
+PhotoKit (`/api/days`, `/api/days/{id}`, `/api/image/info`, suppression, upload), AUID/BUID identiques
+au serveur (`docs/ANALYSE.md` §7.3), serveur local 127.0.0.1 pour `/image/*` et `/video/*`,
+`configHasMediaPermission`/`getSyncStatus` réels poussés via `window.__nativexSetState`,
+écran `nxsetup` (choix des albums), événement `nativex:db:updated` sur changement de la photothèque.
 
 ## Git
 

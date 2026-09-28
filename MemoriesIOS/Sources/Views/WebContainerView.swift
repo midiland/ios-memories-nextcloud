@@ -1,22 +1,22 @@
 import SwiftUI
 
-/// Écran principal une fois connecté : la WebView Memories, un indicateur de chargement,
-/// l'écran d'erreur, et un menu natif (recharger / se déconnecter).
+/// Écran principal une fois connecté : la WebView Memories en « mode app ».
 ///
-/// Le menu natif est provisoire : avec le pont NativeX, la déconnexion passera par
-/// Paramètres > Compte > « Se déconnecter » dans l'UI web (`nativex.logout()`).
+/// - En mode natif, la page web est transparente : le fond peint ici (couleur envoyée
+///   par `nativex.setThemeColor`) apparaît derrière elle et dans les zones de sécurité
+///   (encoche, barre d'accueil), comme la vue racine thémée d'Android.
+/// - La déconnexion se fait dans l'UI web (Paramètres > Compte), ou depuis l'écran d'erreur.
 struct WebContainerView: View {
     @EnvironmentObject private var session: SessionStore
     @StateObject private var model: WebViewModel
-    @State private var confirmLogout = false
 
     init(credentials: Credentials) {
         _model = StateObject(wrappedValue: WebViewModel(credentials: credentials))
     }
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            Color(.systemBackground).ignoresSafeArea()
+        ZStack(alignment: .bottom) {
+            background.ignoresSafeArea()
             MemoriesWebView(model: model)
 
             switch model.state {
@@ -25,39 +25,32 @@ struct WebContainerView: View {
                     .controlSize(.large)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .failed(let error):
-                ErrorView(error: error, retry: model.start, logout: { confirmLogout = true })
+                ErrorView(error: error, retry: model.start, logout: session.logout)
             case .ready:
                 EmptyView()
             }
 
-            menuButton
+            if let toast = model.toast {
+                ToastView(message: toast.message)
+                    .id(toast.id)
+                    .task(id: toast.id) { await dismiss(toast) }
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: model.toast)
         .onAppear {
             model.onSessionRevoked = { [weak session] in session?.sessionRevoked() }
+            model.onLogout = { [weak session] in session?.logout() }
             model.startIfNeeded()
-        }
-        .confirmationDialog("Se déconnecter de \(model.credentials.server.host) ?",
-                            isPresented: $confirmLogout, titleVisibility: .visible) {
-            Button("Se déconnecter", role: .destructive) { session.logout() }
         }
     }
 
-    /// Petit bouton flottant, placé au-dessus de la barre de navigation mobile de Memories.
-    private var menuButton: some View {
-        Menu {
-            Text("\(model.credentials.loginName) — \(model.credentials.server.host)")
-            Button { model.reload() } label: { Label("Recharger", systemImage: "arrow.clockwise") }
-            Button(role: .destructive) { confirmLogout = true } label: {
-                Label("Se déconnecter", systemImage: "rectangle.portrait.and.arrow.right")
-            }
-        } label: {
-            Image(systemName: "ellipsis")
-                .font(.body.weight(.semibold))
-                .frame(width: 36, height: 36)
-                .background(.ultraThinMaterial, in: Circle())
-        }
-        .padding(.trailing, 12)
-        .padding(.bottom, 72)
-        .accessibilityLabel("Menu du compte")
+    private var background: Color {
+        model.themeColor.map(Color.init(uiColor:)) ?? Color(.systemBackground)
+    }
+
+    /// Masque le toast après 2 s (ou 3,5 s pour un toast « long »), comme Android.
+    private func dismiss(_ toast: WebViewModel.Toast) async {
+        try? await Task.sleep(nanoseconds: toast.long ? 3_500_000_000 : 2_000_000_000)
+        if model.toast == toast { model.toast = nil }
     }
 }
