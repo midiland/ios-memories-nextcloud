@@ -118,9 +118,11 @@ for the conventions and design decisions.
 
 ## License
 
-To be defined. Parts of this app are ported from the Memories Android app, which is licensed under the
-[Apache License 2.0](https://github.com/pulsejet/memories/blob/master/android/LICENSE); Memories itself
-(server and web interface, downloaded at runtime and not included here) is licensed under AGPL-3.0.
+Licensed under the [Apache License, Version 2.0](LICENSE). See [`NOTICE`](NOTICE) for attributions.
+
+Parts of this app are ported from the Memories Android app, also licensed under the Apache License 2.0.
+Memories itself (server and web interface) is licensed under AGPL-3.0; its web interface is downloaded
+from your Nextcloud server at runtime and is not included in this repository.
 
 ## Acknowledgements
 

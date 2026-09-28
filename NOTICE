@@ -1,0 +1,13 @@
+Memories for iOS
+Copyright 2026 The Memories for iOS contributors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Parts of this product are ported from the Memories Android app
+(https://github.com/pulsejet/memories/tree/master/android),
+Copyright Varun Patil and the Memories contributors,
+licensed under the Apache License, Version 2.0.
+
+Memories itself (Nextcloud server app and web interface) is licensed under the
+GNU Affero General Public License v3.0. Its web interface is downloaded from the
+user's Nextcloud server at runtime and is not distributed with this product.
