@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Écran d'erreur générique avec « Réessayer » et « Se déconnecter ».
+/// Generic error screen with "Retry" and "Log out" buttons.
 struct ErrorView: View {
     let error: AppError
     let retry: () -> Void

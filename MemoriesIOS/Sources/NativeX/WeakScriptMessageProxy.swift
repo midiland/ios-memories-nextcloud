@@ -1,7 +1,7 @@
 import WebKit
 
-/// `WKUserContentController` retient fortement ses handlers : ce proxy à référence
-/// faible évite le cycle WebView → configuration → handler → modèle → WebView.
+/// `WKUserContentController` strongly retains its handlers: this weak-reference proxy
+/// avoids the WebView → configuration → handler → model → WebView retain cycle.
 final class WeakScriptMessageProxy: NSObject, WKScriptMessageHandler, WKScriptMessageHandlerWithReply {
     private weak var target: (WKScriptMessageHandler & WKScriptMessageHandlerWithReply)?
 
@@ -18,7 +18,7 @@ final class WeakScriptMessageProxy: NSObject, WKScriptMessageHandler, WKScriptMe
         didReceive message: WKScriptMessage,
         replyHandler: @escaping @MainActor @Sendable (Any?, String?) -> Void
     ) {
-        guard let target else { return replyHandler(nil, "NativeX indisponible") }
+        guard let target else { return replyHandler(nil, "NativeX unavailable") }
         target.userContentController(controller, didReceive: message, replyHandler: replyHandler)
     }
 }

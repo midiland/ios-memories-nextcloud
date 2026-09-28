@@ -1,11 +1,11 @@
 import Foundation
 
-/// Client HTTP minimal pour les endpoints Nextcloud dont l'app a besoin :
-/// `api/describe` de Memories et Login Flow v2.
+/// Minimal HTTP client for the Nextcloud endpoints the app needs:
+/// Memories' `api/describe` and Login Flow v2.
 ///
-/// Chaque instance a son propre stockage de cookies en mémoire (session éphémère) :
-/// une requête authentifiée en Basic y dépose les cookies de session Nextcloud,
-/// qu'on recopie ensuite dans la WebView (voir `WebSessionBootstrapper`).
+/// Each instance has its own in-memory cookie storage (ephemeral session):
+/// a Basic-authenticated request stores the Nextcloud session cookies there,
+/// which are then copied into the WebView (see `WebSessionBootstrapper`).
 final class NextcloudClient {
     private let session: URLSession
     private let cookieStorage: HTTPCookieStorage
@@ -21,17 +21,17 @@ final class NextcloudClient {
 
     // MARK: - api/describe
 
-    /// Interroge `api/describe`. Avec `credentials`, la requête est authentifiée en Basic
-    /// et ouvre une session côté serveur (cookies récupérables via `cookies(for:)`).
+    /// Queries `api/describe`. With `credentials`, the request is Basic-authenticated
+    /// and opens a server-side session (cookies available via `cookies(for:)`).
     ///
-    /// Erreurs : serveur injoignable, Memories absent (404 ou réponse non JSON),
-    /// identifiants refusés (401), version trop ancienne.
+    /// Errors: server unreachable, Memories missing (404 or non-JSON response),
+    /// credentials rejected (401), version too old.
     func describe(_ server: ServerURL, credentials: Credentials? = nil) async throws -> DescribeResponse {
         try await describeRaw(server, credentials: credentials, manifest: false).describe
     }
 
-    /// Comme `describe`, mais renvoie aussi le JSON brut. Avec `manifest`, la réponse contient
-    /// les manifestes JS (signé) et CSS nécessaires au snapshot hors ligne (`?manifest=1`).
+    /// Like `describe`, but also returns the raw JSON. With `manifest`, the response includes
+    /// the JS (signed) and CSS manifests needed for the offline snapshot (`?manifest=1`).
     func describeRaw(
         _ server: ServerURL, credentials: Credentials?, manifest: Bool
     ) async throws -> (describe: DescribeResponse, raw: Data) {
@@ -42,7 +42,7 @@ final class NextcloudClient {
         }
         var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
-        // Sans ce header, Nextcloud peut rediriger vers /login au lieu de répondre 401.
+        // Without this header, Nextcloud may redirect to /login instead of returning 401.
         request.setValue("true", forHTTPHeaderField: "OCS-APIREQUEST")
         request.setValue(AppConstants.userAgentSuffix, forHTTPHeaderField: "User-Agent")
         if let credentials {
@@ -57,7 +57,7 @@ final class NextcloudClient {
         default: throw AppError.unexpectedStatus(status)
         }
 
-        // Une app absente peut aussi se traduire par une redirection vers une page HTML.
+        // A missing app can also show up as a redirect to an HTML page.
         guard let describe = try? JSONDecoder().decode(DescribeResponse.self, from: data) else {
             throw AppError.memoriesNotInstalled
         }
@@ -69,7 +69,7 @@ final class NextcloudClient {
 
     // MARK: - Login Flow v2
 
-    /// Démarre le Login Flow v2 : renvoie l'URL de la page de login et le jeton de polling.
+    /// Starts Login Flow v2: returns the login page URL and the polling token.
     func startLoginFlow(_ loginFlowURL: URL) async throws -> LoginFlowInit {
         var request = URLRequest(url: loginFlowURL)
         request.httpMethod = "POST"
@@ -83,7 +83,7 @@ final class NextcloudClient {
         return flow
     }
 
-    /// Une tentative de polling. `nil` tant que l'utilisateur n'a pas validé (HTTP 404).
+    /// A single polling attempt. `nil` until the user has approved (HTTP 404).
     func pollLogin(_ poll: LoginFlowInit.Poll) async throws -> LoginFlowResult? {
         var request = URLRequest(url: poll.endpoint)
         request.httpMethod = "POST"
@@ -95,8 +95,8 @@ final class NextcloudClient {
         return try? JSONDecoder().decode(LoginFlowResult.self, from: data)
     }
 
-    /// Révoque le mot de passe d'application côté serveur (au mieux : les erreurs sont ignorées,
-    /// la déconnexion locale a lieu dans tous les cas).
+    /// Revokes the app password on the server (best effort: errors are ignored,
+    /// the local logout happens regardless).
     func revokeAppPassword(_ credentials: Credentials) async {
         let url = credentials.server.nextcloudRoot.appendingPathComponent("ocs/v2.php/core/apppassword")
         var request = URLRequest(url: url)
@@ -108,7 +108,7 @@ final class NextcloudClient {
 
     // MARK: - Cookies
 
-    /// Cookies reçus pour l'hôte du serveur (session Nextcloud après un `describe` authentifié).
+    /// Cookies received for the server host (Nextcloud session after an authenticated `describe`).
     func cookies(for server: ServerURL) -> [HTTPCookie] {
         (cookieStorage.cookies ?? []).filter { cookie in
             let domain = cookie.domain.hasPrefix(".") ? String(cookie.domain.dropFirst()) : cookie.domain
@@ -116,9 +116,9 @@ final class NextcloudClient {
         }
     }
 
-    // MARK: - Privé
+    // MARK: - Private
 
-    /// Envoie la requête ; toute erreur de transport devient `serverUnreachable`.
+    /// Sends the request; any transport error becomes `serverUnreachable`.
     private func send(_ request: URLRequest) async throws -> (Data, Int) {
         do {
             let (data, response) = try await session.data(for: request)

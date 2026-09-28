@@ -1,21 +1,21 @@
 import UIKit
 
-/// Ce que le pont NativeX demande à l'app hôte (implémenté par `WebViewModel`).
-/// Le pont décode les messages JS, l'hôte agit sur l'UI et la session.
+/// What the NativeX bridge asks of the host app (implemented by `WebViewModel`).
+/// The bridge decodes JS messages; the host acts on the UI and the session.
 @MainActor
 protocol NativeXHost: AnyObject {
-    /// Compte courant (pour télécharger avec les bons identifiants).
+    /// Current account (to download with the right credentials).
     var credentials: Credentials { get }
 
-    /// Couleur de thème de l'UI web (`nil` = couleur système), et si elle est sombre.
+    /// Web UI theme color (`nil` = system color), and whether it is dark.
     func nativeXSetTheme(color: UIColor?, isDark: Bool)
 
-    /// Message court affiché par-dessus la WebView.
+    /// Short message shown over the WebView.
     func nativeXToast(_ message: String, long: Bool)
 
-    /// Déconnexion demandée depuis Paramètres > Compte dans l'UI web.
+    /// Logout requested from Settings > Account in the web UI.
     func nativeXLogout()
 
-    /// Recharge complète (réamorçage de la session + page Memories).
+    /// Full reload (session re-bootstrap + Memories page).
     func nativeXReload()
 }

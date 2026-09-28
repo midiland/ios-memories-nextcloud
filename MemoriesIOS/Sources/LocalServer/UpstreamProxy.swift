@@ -1,20 +1,20 @@
 import Foundation
 
-/// Relais des requêtes non locales vers Nextcloud (port de `ProxyController.kt`).
+/// Proxies non-local requests to Nextcloud (port of `ProxyController.kt`).
 ///
-/// - ajoute `Authorization: Basic` et `OCS-APIREQUEST: true` (exempte de la vérification CSRF,
-///   donc pas besoin de jeton de requête dans la page locale) ;
-/// - garde les cookies de session Nextcloud dans `HTTPCookieStorage.shared` : les requêtes
-///   suivantes évitent un login complet côté serveur (~17× plus rapide d'après Android) ;
-/// - diffuse la réponse en continu (vidéos, gros fichiers) avec contre-pression ;
-/// - réseau indisponible → 504, que le frontend interprète comme « hors ligne ».
+/// - adds `Authorization: Basic` and `OCS-APIREQUEST: true` (exempt from the CSRF check,
+///   so no request token is needed in the local page);
+/// - keeps Nextcloud session cookies in `HTTPCookieStorage.shared`: subsequent requests
+///   skip a full server-side login (~17× faster according to Android);
+/// - streams the response (videos, large files) with backpressure;
+/// - network unavailable → 504, which the frontend interprets as "offline".
 final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable {
-    /// En-têtes du client à ne pas transmettre (connexion, cookies locaux, compression).
+    /// Client headers not to forward (connection, local cookies, compression).
     private static let skippedRequestHeaders: Set<String> = [
         "host", "content-length", "transfer-encoding", "connection", "cookie",
         "accept-encoding", "expect", "authorization", "origin", "referer",
     ]
-    /// En-têtes amont régénérés localement (URLSession décompresse déjà le corps).
+    /// Upstream headers regenerated locally (URLSession already decompresses the body).
     private static let skippedResponseHeaders: Set<String> = [
         "content-encoding", "transfer-encoding", "content-length", "connection", "keep-alive", "set-cookie",
     ]
@@ -25,7 +25,7 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
         config.httpShouldSetCookies = true
         config.timeoutIntervalForRequest = 60
         config.timeoutIntervalForResource = 7 * 24 * 3600
-        config.requestCachePolicy = .reloadIgnoringLocalCacheData // WebKit gère son propre cache
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData // WebKit manages its own cache
         config.urlCache = nil
         let queue = OperationQueue()
         queue.maxConcurrentOperationCount = 1
@@ -35,7 +35,7 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
     private let lock = NSLock()
     private var streams: [Int: ResponseStream] = [:]
 
-    // MARK: - Relais
+    // MARK: - Proxying
 
     func forward(_ request: HTTPRequest, config: LocalAppConfig, localOrigin: String) async -> HTTPResponse {
         guard let url = URL(string: config.server.origin.absoluteString + request.target) else {
@@ -67,7 +67,7 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
         return response(for: head, stream: stream, config: config, localOrigin: localOrigin)
     }
 
-    /// Construit la réponse locale : en-têtes filtrés, `Location` réécrite, corps en flux.
+    /// Builds the local response: filtered headers, rewritten `Location`, streamed body.
     private func response(
         for head: HTTPURLResponse, stream: ResponseStream, config: LocalAppConfig, localOrigin: String
     ) -> HTTPResponse {
@@ -83,7 +83,7 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
             }
         }
 
-        // Longueur connue seulement si le corps n'a pas été décompressé en route.
+        // Length is known only if the body was not decompressed along the way.
         let compressed = head.value(forHTTPHeaderField: "Content-Encoding").map { !$0.isEmpty && $0 != "identity" } ?? false
         let length = !compressed && head.expectedContentLength >= 0 ? Int(head.expectedContentLength) : nil
 
@@ -100,7 +100,7 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
         })
     }
 
-    // MARK: - URLSessionDataDelegate (file série)
+    // MARK: - URLSessionDataDelegate (serial queue)
 
     func urlSession(
         _ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse,
@@ -124,8 +124,8 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
     }
 }
 
-/// Pont entre les callbacks URLSession et le flux asynchrone consommé par la connexion locale.
-/// Suspend la tâche amont quand trop de données attendent (le client lit moins vite).
+/// Bridge between URLSession callbacks and the async stream consumed by the local connection.
+/// Suspends the upstream task when too much data is pending (the client reads more slowly).
 private final class ResponseStream: @unchecked Sendable {
     private static let highWater = 8 * 1024 * 1024
     private static let lowWater = 2 * 1024 * 1024
@@ -145,7 +145,7 @@ private final class ResponseStream: @unchecked Sendable {
         self.continuation = continuation
     }
 
-    /// Attend les en-têtes de la réponse amont.
+    /// Waits for the upstream response headers.
     func response() async throws -> HTTPURLResponse {
         try await withCheckedThrowingContinuation { continuation in
             lock.lock()
@@ -188,7 +188,7 @@ private final class ResponseStream: @unchecked Sendable {
         if let error { continuation.finish(throwing: error) } else { continuation.finish() }
     }
 
-    /// Délivre les en-têtes (ou l'erreur) une seule fois.
+    /// Delivers the headers (or the error) exactly once.
     private func resolveHead(_ result: Result<HTTPURLResponse, Error>) {
         lock.lock()
         guard head == nil else { return lock.unlock() }

@@ -1,5 +1,5 @@
-# Projet XcodeGen de l'app iOS Memories.
-# Régénérer le .xcodeproj après toute modification : `cd MemoriesIOS && xcodegen generate`
+# XcodeGen project for the Memories iOS app.
+# Regenerate the .xcodeproj after any change: `cd MemoriesIOS && xcodegen generate`
 name: MemoriesIOS
 options:
   bundleIdPrefix: gallery.memories
@@ -44,8 +44,8 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         NSAppTransportSecurity:
-          # Autorise http:// vers les noms locaux (.local, noms sans domaine)
-          # et, plus tard, vers le serveur loopback du pont NativeX.
+          # Allows http:// to local names (.local, domainless hostnames)
+          # and, later, to the NativeX bridge loopback server.
           NSAllowsLocalNetworking: true
         NSLocalNetworkUsageDescription: Memories se connecte à votre serveur Nextcloud sur le réseau local.
 schemes:

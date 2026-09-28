@@ -1,10 +1,10 @@
 import Foundation
 
-/// Page HTML locale qui remplace le template PHP de Nextcloud (port de `ShellPage.kt`) :
-/// feuilles de style du snapshot, l10n, variables globales attendues par le frontend
-/// (`_oc_webroot`, `_oc_appswebroots`, `_oc_capabilities`), puis `memories-main.js`.
+/// Local HTML page that replaces Nextcloud's PHP template (port of `ShellPage.kt`):
+/// snapshot stylesheets, l10n, globals expected by the frontend
+/// (`_oc_webroot`, `_oc_appswebroots`, `_oc_capabilities`), then `memories-main.js`.
 enum ShellPage {
-    /// Content-Security-Policy : scripts locaux + script inline à nonce, API partout.
+    /// Content-Security-Policy: local scripts + nonce-based inline script, API calls anywhere.
     static func csp(nonce: String) -> String {
         [
             "default-src 'self'",
@@ -23,10 +23,10 @@ enum ShellPage {
         ].joined(separator: "; ")
     }
 
-    /// Construit la page pour un snapshot.
+    /// Builds the page for a snapshot.
     /// - Parameters:
-    ///   - webRoot: préfixe Nextcloud (`""` à la racine du domaine, sinon `/nextcloud`).
-    ///   - user: identifiant affiché par le frontend (`<head data-user>`).
+    ///   - webRoot: Nextcloud prefix (`""` at the domain root, otherwise e.g. `/nextcloud`).
+    ///   - user: user ID shown by the frontend (`<head data-user>`).
     static func html(manifest: AssetManifest, webRoot: String, user: String?, nonce: String) -> String {
         let links = manifest.css.map { asset -> String in
             var attributes = asset.attributes
@@ -72,7 +72,7 @@ enum ShellPage {
         """
     }
 
-    /// Échappement pour un attribut HTML.
+    /// Escaping for an HTML attribute.
     private static func escape(_ text: String) -> String {
         text.replacingOccurrences(of: "&", with: "&amp;")
             .replacingOccurrences(of: "\"", with: "&quot;")
@@ -80,7 +80,7 @@ enum ShellPage {
             .replacingOccurrences(of: ">", with: "&gt;")
     }
 
-    /// Littéral de chaîne JS entre apostrophes (chemin de confiance, venant du serveur).
+    /// Single-quoted JS string literal (trusted path, coming from the server).
     private static func jsString(_ text: String) -> String {
         let escaped = text.replacingOccurrences(of: "\\", with: "\\\\")
             .replacingOccurrences(of: "'", with: "\\'")

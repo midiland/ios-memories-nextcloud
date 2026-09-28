@@ -1,14 +1,14 @@
 import UIKit
 
-/// Présente la feuille de partage iOS (`UIActivityViewController`) par-dessus l'écran courant.
-/// Elle couvre aussi « Enregistrer l'image » et « Enregistrer dans Fichiers ».
+/// Presents the iOS share sheet (`UIActivityViewController`) over the current screen.
+/// It also covers "Save Image" and "Save to Files".
 @MainActor
 enum SharePresenter {
     static func present(_ items: [Any]) {
         guard !items.isEmpty, let presenter = topViewController() else { return }
         let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
 
-        // iPad : la feuille est un popover, il lui faut une ancre.
+        // iPad: the sheet is a popover and needs an anchor.
         if let popover = controller.popoverPresentationController {
             popover.sourceView = presenter.view
             popover.sourceRect = CGRect(x: presenter.view.bounds.midX, y: presenter.view.bounds.midY, width: 0, height: 0)
@@ -17,7 +17,7 @@ enum SharePresenter {
         presenter.present(controller, animated: true)
     }
 
-    /// Contrôleur visible le plus haut dans la fenêtre active.
+    /// Topmost visible view controller in the key window.
     private static func topViewController() -> UIViewController? {
         let window = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }

@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// Écran principal une fois connecté : la WebView Memories en « mode app ».
+/// Main screen once logged in: the Memories WebView in "app mode".
 ///
-/// - En mode natif, la page web est transparente : le fond peint ici (couleur envoyée
-///   par `nativex.setThemeColor`) apparaît derrière elle et dans les zones de sécurité
-///   (encoche, barre d'accueil), comme la vue racine thémée d'Android.
-/// - La déconnexion se fait dans l'UI web (Paramètres > Compte), ou depuis l'écran d'erreur.
+/// - In native mode the web page is transparent: the background painted here (color sent
+///   by `nativex.setThemeColor`) shows behind it and in the safe areas
+///   (notch, home indicator), like Android's themed root view.
+/// - Logout happens in the web UI (Settings > Account), or from the error screen.
 struct WebContainerView: View {
     @EnvironmentObject private var session: SessionStore
     @Environment(\.scenePhase) private var scenePhase
@@ -61,7 +61,7 @@ struct WebContainerView: View {
         model.themeColor.map(Color.init(uiColor:)) ?? Color(.systemBackground)
     }
 
-    /// Masque le toast après 2 s (ou 3,5 s pour un toast « long »), comme Android.
+    /// Hides the toast after 2 s (or 3.5 s for a "long" toast), like Android.
     private func dismiss(_ toast: WebViewModel.Toast) async {
         try? await Task.sleep(nanoseconds: toast.long ? 3_500_000_000 : 2_000_000_000)
         if model.toast == toast { model.toast = nil }

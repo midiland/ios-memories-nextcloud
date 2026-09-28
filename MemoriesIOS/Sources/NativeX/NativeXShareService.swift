@@ -1,13 +1,13 @@
 import Foundation
 
-/// Téléchargement et partage demandés par l'UI web
+/// Downloads and sharing requested by the web UI
 /// (`downloadFromUrl`, `setShareBlobs` + `/api/share/blobs`, `/api/share/url`).
 ///
-/// Android enregistre dans « Téléchargements » avec une notification ; sur iOS on passe
-/// par la feuille de partage (qui propose « Enregistrer l'image » / « Enregistrer dans Fichiers »).
+/// Android saves to "Downloads" with a notification; on iOS we go through
+/// the share sheet (which offers "Save Image" / "Save to Files").
 @MainActor
 final class NativeXShareService {
-    /// Objet posé par `setShareBlobs` (JSON `[{ auid, href }]`).
+    /// Object staged by `setShareBlobs` (JSON `[{ auid, href }]`).
     private struct Blob: Decodable {
         let auid: String?
         let href: String
@@ -16,7 +16,7 @@ final class NativeXShareService {
     weak var host: NativeXHost?
     private var stagedBlobs: [Blob] = []
 
-    /// `nativex.setShareBlobs(json)` : mémorise les fichiers du prochain `/api/share/blobs`.
+    /// `nativex.setShareBlobs(json)`: remembers the files for the next `/api/share/blobs`.
     func stageBlobs(_ json: String?) {
         guard let data = json?.data(using: .utf8),
               let blobs = try? JSONDecoder().decode([Blob].self, from: data)
@@ -24,8 +24,8 @@ final class NativeXShareService {
         stagedBlobs = blobs
     }
 
-    /// `/api/share/blobs` : télécharge les fichiers préparés puis ouvre le partage.
-    /// Ne rend la main qu'une fois les téléchargements terminés (contrat du frontend).
+    /// `/api/share/blobs`: downloads the staged files, then opens the share sheet.
+    /// Returns only once the downloads are complete (frontend contract).
     func shareStagedBlobs() async -> Bool {
         let blobs = stagedBlobs
         stagedBlobs = []
@@ -42,13 +42,13 @@ final class NativeXShareService {
         return true
     }
 
-    /// `/api/share/url/…` : partage le lien tel quel, sans le télécharger.
+    /// `/api/share/url/…`: shares the link as is, without downloading it.
     func shareLink(_ url: URL) {
         SharePresenter.present([url])
     }
 
-    /// `nativex.downloadFromUrl(url, filename, title)` : téléchargement en arrière-plan,
-    /// puis feuille de partage ; toast en cas d'échec.
+    /// `nativex.downloadFromUrl(url, filename, title)`: background download,
+    /// then share sheet; toast on failure.
     func download(urlString: String?, filename: String?, title: String?) {
         guard let urlString, let url = URL(string: urlString), let host else { return }
         let label = (title?.isEmpty == false ? title : nil) ?? "le fichier"

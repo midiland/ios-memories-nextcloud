@@ -1,10 +1,10 @@
 import SwiftUI
 import WebKit
 
-/// Intègre la `WKWebView` possédée par `WebViewModel` dans SwiftUI.
+/// Embeds the `WKWebView` owned by `WebViewModel` in SwiftUI.
 ///
-/// La WebView vit dans le modèle (et non dans `makeUIView`) pour survivre aux
-/// recréations de vues SwiftUI sans recharger la page.
+/// The web view lives in the model (not in `makeUIView`) so it survives
+/// SwiftUI view re-creation without reloading the page.
 struct MemoriesWebView: UIViewRepresentable {
     let model: WebViewModel
 

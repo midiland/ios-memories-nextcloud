@@ -1,11 +1,11 @@
 import CryptoKit
 import Foundation
 
-/// Télécharge un snapshot complet (équivalent de `AssetSyncCoordinator.syncBlocking`) :
-/// - JS vérifiés par SHA-256 (le manifeste lui-même est signé) ;
-/// - fichiers inchangés recopiés depuis le snapshot précédent ;
-/// - 8 téléchargements en parallèle au plus ;
-/// - marqueur `.ready` écrit en dernier, puis nettoyage des anciens snapshots.
+/// Downloads a complete snapshot (equivalent of `AssetSyncCoordinator.syncBlocking`):
+/// - JS verified by SHA-256 (the manifest itself is signed);
+/// - unchanged files copied from the previous snapshot;
+/// - at most 8 parallel downloads;
+/// - `.ready` marker written last, then old snapshots are cleaned up.
 struct AssetSyncer {
     typealias Progress = @MainActor (_ done: Int, _ total: Int) -> Void
 
@@ -19,7 +19,7 @@ struct AssetSyncer {
         let sha256: String?
     }
 
-    /// Télécharge (si besoin) le snapshot décrit par `manifest` et le renvoie prêt à servir.
+    /// Downloads (if needed) the snapshot described by `manifest` and returns it ready to serve.
     func sync(_ manifest: AssetManifest, progress: @escaping Progress) async throws -> Snapshot {
         let server = credentials.server
         let directory = store.directory(for: server, key: manifest.key)
@@ -38,9 +38,9 @@ struct AssetSyncer {
         return target
     }
 
-    // MARK: - Planification
+    // MARK: - Planning
 
-    /// Liste les fichiers à télécharger ; recopie ceux qui n'ont pas changé.
+    /// Lists the files to download; copies over those that have not changed.
     private func planDownloads(
         _ manifest: AssetManifest, into target: Snapshot, reusing previous: Snapshot?
     ) throws -> [DownloadItem] {
@@ -48,7 +48,7 @@ struct AssetSyncer {
         let previousHashes = Dictionary(
             (previous?.manifest.js ?? []).map { ($0.name, $0.sha256) }, uniquingKeysWith: { first, _ in first }
         )
-        // Le CSS n'a pas d'empreinte : réutilisable seulement si la liste entière est identique.
+        // CSS has no hash: reusable only if the whole list is identical.
         let reuseCSS = previous.map { $0.manifest.css.map(\.href) == manifest.css.map(\.href) } ?? false
 
         var tasks: [DownloadItem] = []
@@ -71,7 +71,7 @@ struct AssetSyncer {
         return tasks
     }
 
-    /// `href` relatif → origine du serveur + `href` ; les URLs absolues passent telles quelles.
+    /// Relative `href` → server origin + `href`; absolute URLs pass through unchanged.
     private func absoluteURL(_ href: String) throws -> URL {
         let text = href.hasPrefix("http://") || href.hasPrefix("https://")
             ? href
@@ -80,7 +80,7 @@ struct AssetSyncer {
         return url
     }
 
-    // MARK: - Téléchargement
+    // MARK: - Download
 
     private func download(_ tasks: [DownloadItem], progress: @escaping Progress) async throws {
         var done = 0
@@ -97,7 +97,7 @@ struct AssetSyncer {
         }
     }
 
-    /// Télécharge un fichier, vérifie son SHA-256 éventuel et l'écrit atomiquement.
+    /// Downloads a file, checks its SHA-256 if any, and writes it atomically.
     private func fetch(_ task: DownloadItem) async throws {
         var request = URLRequest(url: task.url)
         request.setValue(AppConstants.userAgentSuffix, forHTTPHeaderField: "User-Agent")

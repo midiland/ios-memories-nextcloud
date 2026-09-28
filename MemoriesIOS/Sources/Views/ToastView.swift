@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Message temporaire façon toast Android, affiché en bas de l'écran.
+/// Temporary Android-style toast message, shown at the bottom of the screen.
 struct ToastView: View {
     let message: String
 

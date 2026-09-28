@@ -1,16 +1,16 @@
 import WebKit
 
-/// Pont NativeX : expose des fonctions natives au JavaScript de Memories.
+/// NativeX bridge: exposes native functions to the Memories JavaScript.
 ///
-/// Sur Android c'est l'objet `window.nativex` (`addJavascriptInterface`) plus un pont HTTP
-/// sur 127.0.0.1 (voir docs/ANALYSE.md §3). Implémentation iOS : `NativeXController`.
+/// On Android this is the `window.nativex` object (`addJavascriptInterface`) plus an HTTP bridge
+/// on 127.0.0.1 (see docs/ANALYSE.md §3). iOS implementation: `NativeXController`.
 @MainActor
 protocol NativeXBridge: AnyObject {
-    /// Installe scripts et handlers dans la configuration de la WebView.
+    /// Installs scripts and handlers into the WebView configuration.
     func install(into controller: WKUserContentController)
 
-    /// Retire scripts et handlers.
-    /// Note : `WKUserContentController` retient fortement ses message handlers ;
-    /// l'implémentation devra passer par un proxy à référence faible pour éviter un cycle.
+    /// Removes scripts and handlers.
+    /// Note: `WKUserContentController` strongly retains its message handlers;
+    /// the implementation must go through a weak-reference proxy to avoid a retain cycle.
     func uninstall(from controller: WKUserContentController)
 }

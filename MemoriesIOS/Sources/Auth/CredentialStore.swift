@@ -1,16 +1,16 @@
 import Foundation
 import Security
 
-/// Persistance des identifiants dans le Keychain (jamais dans UserDefaults).
+/// Persists credentials in the Keychain (never in UserDefaults).
 ///
-/// Un seul compte à la fois : l'élément est un JSON `Credentials` sous une clé fixe.
-/// Accessible après le premier déverrouillage, non synchronisé iCloud, non migré
-/// vers un autre appareil.
+/// One account at a time: the item is a `Credentials` JSON under a fixed key.
+/// Accessible after first unlock, not synced to iCloud, not migrated
+/// to another device.
 struct CredentialStore {
     private let service = "gallery.memories.ios.credentials"
     private let account = "default"
 
-    /// Requête de base identifiant l'élément du trousseau.
+    /// Base query identifying the Keychain item.
     private var baseQuery: [String: Any] {
         [
             kSecClass as String: kSecClassGenericPassword,
@@ -19,7 +19,7 @@ struct CredentialStore {
         ]
     }
 
-    /// Enregistre (ou remplace) les identifiants.
+    /// Saves (or replaces) the credentials.
     func save(_ credentials: Credentials) throws {
         let data = try JSONEncoder().encode(credentials)
         SecItemDelete(baseQuery as CFDictionary)
@@ -31,7 +31,7 @@ struct CredentialStore {
         guard status == errSecSuccess else { throw AppError.keychain(status) }
     }
 
-    /// Lit les identifiants, `nil` si absents ou illisibles.
+    /// Reads the credentials; `nil` if missing or unreadable.
     func load() -> Credentials? {
         var query = baseQuery
         query[kSecReturnData as String] = true
@@ -44,7 +44,7 @@ struct CredentialStore {
         return try? JSONDecoder().decode(Credentials.self, from: data)
     }
 
-    /// Supprime les identifiants (déconnexion).
+    /// Deletes the credentials (logout).
     func delete() {
         SecItemDelete(baseQuery as CFDictionary)
     }

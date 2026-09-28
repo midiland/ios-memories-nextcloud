@@ -1,21 +1,21 @@
 import Foundation
 import Network
 
-/// Serveur HTTP sur `127.0.0.1` (équivalent de `LocalHttpServer.kt`) : sert la page locale et
-/// le snapshot, et relaie le reste vers Nextcloud. Toute l'app web est ainsi *same-origin*.
+/// HTTP server on `127.0.0.1` (counterpart of `LocalHttpServer.kt`): serves the local page and
+/// the snapshot, and proxies everything else to Nextcloud. The whole web app is thus *same-origin*.
 ///
-/// - Port fixe (62079, comme Android) pour que l'origine — donc le localStorage et le
-///   cache du frontend — reste identique d'un lancement à l'autre ; port libre en secours.
-/// - Le port n'est pas un secret (toute app de l'appareil peut s'y connecter) : chaque
-///   requête doit porter le cookie HttpOnly `local-auth` (secret par processus).
-/// - iOS peut invalider le socket en arrière-plan : `ensureStarted()` le relance au retour.
+/// - Fixed port (62079, same as Android) so the origin — and therefore the frontend's
+///   localStorage and cache — stays the same across launches; falls back to a free port.
+/// - The port is not a secret (any app on the device can connect to it): every
+///   request must carry the HttpOnly `local-auth` cookie (a per-process secret).
+/// - iOS may invalidate the socket in the background: `ensureStarted()` restarts it on return.
 @MainActor
 final class LocalHTTPServer {
     static let shared = LocalHTTPServer()
     nonisolated static let host = "127.0.0.1"
     nonisolated static let preferredPort: UInt16 = 62079
 
-    /// Secret du cookie `local-auth`, régénéré à chaque lancement de l'app.
+    /// Secret for the `local-auth` cookie, regenerated on every app launch.
     nonisolated let secret = UUID().uuidString
     let router: LocalRouter
 
@@ -29,14 +29,14 @@ final class LocalHTTPServer {
 
     var origin: URL { URL(string: "http://\(Self.host):\(port)")! }
 
-    /// Démarre l'écoute si besoin et renvoie le port.
+    /// Starts listening if needed and returns the port.
     @discardableResult
     func ensureStarted() async throws -> UInt16 {
         if listener != nil { return port }
         do {
             port = try await listen(on: Self.preferredPort)
         } catch {
-            // Port occupé : port libre, l'origine change pour cette session seulement.
+            // Port in use: take a free port; the origin changes for this session only.
             port = try await listen(on: 0)
         }
         router.port = port
@@ -77,18 +77,18 @@ final class LocalHTTPServer {
         return bound
     }
 
-    /// Socket perdu (arrière-plan, erreur) : le prochain `ensureStarted()` relancera l'écoute.
+    /// Socket lost (background, error): the next `ensureStarted()` will restart listening.
     private func listenerDidStop(_ stopped: NWListener) {
         if listener === stopped { listener = nil }
     }
 }
 
-/// Garantit qu'une continuation n'est reprise qu'une fois (callbacks d'état multiples).
+/// Ensures a continuation is resumed only once (multiple state callbacks).
 private final class OnceFlag: @unchecked Sendable {
     private let lock = NSLock()
     private var claimed = false
 
-    /// `true` au premier appel seulement.
+    /// `true` on the first call only.
     func claim() -> Bool {
         lock.withLock {
             defer { claimed = true }

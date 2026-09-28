@@ -1,13 +1,13 @@
 #if DEBUG
 import Foundation
 
-/// Automatisation de test (builds Debug uniquement), pilotée par arguments de lancement,
-/// faute de pouvoir toucher l'écran du simulateur depuis la ligne de commande :
+/// Test automation (Debug builds only), driven by launch arguments, since the simulator
+/// screen cannot be tapped from the command line:
 ///
 ///     xcrun simctl launch "iPhone 17 Pro" gallery.memories.ios -MXRoute /thisday -MXBackAfter 4
 ///
-/// - `-MXRoute <route>` : 4 s après le premier affichage, navigue via le routeur Vue (`_m.router.push`) ;
-/// - `-MXBackAfter <s>` : puis appuie sur le bouton retour natif après `<s>` secondes.
+/// - `-MXRoute <route>`: 4 s after first display, navigates via the Vue router (`_m.router.push`);
+/// - `-MXBackAfter <s>`: then taps the native back button after `<s>` seconds.
 @MainActor
 enum DebugAutomation {
     private static var didRun = false
@@ -23,10 +23,10 @@ enum DebugAutomation {
             try? await Task.sleep(nanoseconds: 4_000_000_000)
             let js = "window._m && _m.router.push(\(jsonString(route)))"
             _ = try? await model.webView.evaluateJavaScript(js)
-            Log.offline.debug("Debug : navigation vers \(route, privacy: .public)")
+            Log.offline.debug("Debug: navigating to \(route, privacy: .public)")
             guard backAfter > 0 else { return }
             try? await Task.sleep(nanoseconds: UInt64(backAfter * 1_000_000_000))
-            Log.offline.debug("Debug : bouton retour visible = \(model.showsBackButton), appui")
+            Log.offline.debug("Debug: back button visible = \(model.showsBackButton), tapping")
             model.goBack()
         }
     }

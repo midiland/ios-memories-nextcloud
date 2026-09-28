@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Écran de connexion : saisie de l'URL du serveur puis Login Flow v2
-/// (équivalent natif de `welcome.html` sur Android).
+/// Login screen: server URL input, then Login Flow v2
+/// (native equivalent of `welcome.html` on Android).
 struct LoginView: View {
     @EnvironmentObject private var session: SessionStore
     @AppStorage("lastServerInput") private var serverInput = ""
@@ -34,7 +34,7 @@ struct LoginView: View {
         }
     }
 
-    // MARK: - Sous-vues
+    // MARK: - Subviews
 
     private var header: some View {
         VStack(spacing: 8) {
@@ -83,7 +83,7 @@ struct LoginView: View {
         }
     }
 
-    /// La feuille se ferme quand le polling aboutit ; fermée par l'utilisateur ⇒ annulation.
+    /// The sheet closes when polling succeeds; dismissed by the user ⇒ cancellation.
     private var loginSheetBinding: Binding<Bool> {
         Binding(
             get: { session.loginPage != nil },

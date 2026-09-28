@@ -1,17 +1,17 @@
 import Foundation
 
-/// Réponse de `GET …/apps/memories/api/describe` (voir `OtherController::describeApi`).
+/// Response of `GET …/apps/memories/api/describe` (see `OtherController::describeApi`).
 struct DescribeResponse: Decodable {
     let version: String
-    /// Racine absolue de l'app Memories, ex. `https://cloud/index.php/apps/memories/`.
+    /// Absolute root of the Memories app, e.g. `https://cloud/index.php/apps/memories/`.
     let baseUrl: String
-    /// Endpoint d'initialisation du Login Flow v2 (`/index.php/login/v2`).
+    /// Login Flow v2 initialization endpoint (`/index.php/login/v2`).
     let loginFlowUrl: String
-    /// Utilisateur authentifié, `nil` si la requête est anonyme ou les identifiants invalides.
+    /// Authenticated user; `nil` if the request is anonymous or the credentials are invalid.
     let uid: String?
 }
 
-/// Réponse de `POST /index.php/login/v2`.
+/// Response of `POST /index.php/login/v2`.
 struct LoginFlowInit: Decodable {
     struct Poll: Decodable {
         let token: String
@@ -19,18 +19,18 @@ struct LoginFlowInit: Decodable {
     }
 
     let poll: Poll
-    /// Page de connexion à ouvrir dans le navigateur.
+    /// Login page to open in the browser.
     let login: URL
 }
 
-/// Réponse du polling Login Flow v2 une fois la connexion approuvée.
+/// Login Flow v2 polling response once the login is approved.
 struct LoginFlowResult: Decodable {
     let server: String
     let loginName: String
     let appPassword: String
 }
 
-/// Comparaison de versions type `9.0.0-rc.1` (une pré-version est inférieure à la finale).
+/// Compares versions like `9.0.0-rc.1` (a pre-release is lower than the final release).
 struct SemanticVersion: Comparable {
     let numbers: [Int]
     let preRelease: String?

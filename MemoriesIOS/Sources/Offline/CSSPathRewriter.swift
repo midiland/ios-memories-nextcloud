@@ -1,13 +1,13 @@
 import Foundation
 
-/// Réécrit les chemins relatifs d'une feuille de style du snapshot.
+/// Rewrites relative paths in a snapshot stylesheet.
 ///
-/// Les CSS du serveur (ex. `/core/css/server.css`) référencent leurs ressources en relatif
-/// (`@import '../../dist/icons.css'`, `url(../img/x.svg)`). Servies depuis `/local/assets/css/`,
-/// ces références ne mènent plus nulle part : on les résout par rapport à l'emplacement
-/// d'origine (`href` du manifeste) pour obtenir un chemin absolu, relayé vers Nextcloud.
+/// Server stylesheets (e.g. `/core/css/server.css`) reference their resources with relative paths
+/// (`@import '../../dist/icons.css'`, `url(../img/x.svg)`). When served from `/local/assets/css/`,
+/// those references no longer resolve, so we resolve them against the original location
+/// (the manifest `href`) to get an absolute path, which is proxied to Nextcloud.
 enum CSSPathRewriter {
-    /// Version de la réécriture, ajoutée à l'ETag pour invalider le cache WebKit si elle change.
+    /// Rewrite version, appended to the ETag to invalidate the WebKit cache when it changes.
     static let version = "r1"
 
     private static let urlPattern = try! NSRegularExpression(pattern: #"url\(\s*(['"]?)([^'")]+)\1\s*\)"#)
@@ -23,7 +23,7 @@ enum CSSPathRewriter {
         return Data(css.utf8)
     }
 
-    /// Remplace le groupe 2 (la référence) de chaque correspondance, de la fin vers le début.
+    /// Replaces group 2 (the reference) of each match, from last to first.
     private static func replace(in css: String, pattern: NSRegularExpression, base: URL) -> String {
         var result = css
         let matches = pattern.matches(in: css, range: NSRange(css.startIndex..., in: css))
@@ -37,7 +37,7 @@ enum CSSPathRewriter {
         return result
     }
 
-    /// Chemin absolu pour une référence relative ; `nil` si elle est déjà absolue ou spéciale.
+    /// Absolute path for a relative reference; `nil` if it is already absolute or special.
     private static func resolve(_ reference: String, base: URL) -> String? {
         let ref = reference.trimmingCharacters(in: .whitespaces)
         let untouched = ["data:", "http:", "https:", "//", "/", "#", "blob:"]

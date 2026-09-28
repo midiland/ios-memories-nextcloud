@@ -1,15 +1,15 @@
 import Foundation
 
-/// Identifiants d'un compte Nextcloud, obtenus via Login Flow v2.
-/// Stockés uniquement dans le Keychain (voir `CredentialStore`).
+/// Nextcloud account credentials, obtained via Login Flow v2.
+/// Stored only in the Keychain (see `CredentialStore`).
 struct Credentials: Codable, Equatable {
-    /// Racine de l'app Memories sur le serveur.
+    /// Root of the Memories app on the server.
     let server: ServerURL
     let loginName: String
-    /// Mot de passe d'application (révocable depuis les paramètres Nextcloud).
+    /// App password (revocable from the Nextcloud settings).
     let appPassword: String
 
-    /// Valeur du header `Authorization: Basic …`.
+    /// Value of the `Authorization: Basic …` header.
     var basicAuthHeader: String {
         let raw = "\(loginName):\(appPassword)"
         return "Basic " + Data(raw.utf8).base64EncodedString()

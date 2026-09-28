@@ -1,8 +1,8 @@
 import UIKit
 
 extension UIColor {
-    /// Couleur CSS envoyée par `nativex.setThemeColor` : `#rgb`, `#rrggbb`, `#rrggbbaa`,
-    /// `rgb(r, g, b)` ou `rgba(r, g, b, a)`. `nil` si le format n'est pas reconnu.
+    /// CSS color sent by `nativex.setThemeColor`: `#rgb`, `#rrggbb`, `#rrggbbaa`,
+    /// `rgb(r, g, b)` or `rgba(r, g, b, a)`. `nil` if the format is not recognized.
     convenience init?(css: String) {
         let text = css.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
 

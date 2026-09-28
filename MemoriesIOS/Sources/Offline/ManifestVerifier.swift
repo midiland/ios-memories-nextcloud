@@ -1,13 +1,13 @@
 import CryptoKit
 import Foundation
 
-/// Vérifie la signature Ed25519 du manifeste JS avant d'exécuter le moindre fichier téléchargé
-/// (équivalent de `ManifestVerifier.kt`). CryptoKit implémente Ed25519 standard (RFC 8032).
+/// Verifies the JS manifest's Ed25519 signature before running any downloaded file
+/// (equivalent of `ManifestVerifier.kt`). CryptoKit implements standard Ed25519 (RFC 8032).
 enum ManifestVerifier {
-    /// Clé publique de production (base64, 32 octets), reprise de l'app Android.
+    /// Production public key (base64, 32 bytes), taken from the Android app.
     static let productionKey = "aA2fpqrrJHTiCkE9ecQNDR5V1qO7oHppjdJQ7Pj5nhQ="
-    /// Clé de développement (graine publique par défaut de `webpack.manifest-sign-plugin.ts`) :
-    /// acceptée uniquement en Debug, comme sur Android.
+    /// Development key (default public seed of `webpack.manifest-sign-plugin.ts`):
+    /// accepted in Debug builds only, as on Android.
     static let developmentKey = "MIJxGvOr0LMg9Isyfi5S4cHQsP+v4mFzrsmY2AYKOjs="
 
     static var trustedKeys: [String] {
@@ -18,7 +18,7 @@ enum ManifestVerifier {
         #endif
     }
 
-    /// `true` si la signature du manifeste est valide pour une des clés de confiance.
+    /// `true` if the manifest signature is valid for one of the trusted keys.
     static func verify(_ manifest: AssetManifest) -> Bool {
         guard let document = manifest.signatureDocument,
               let object = try? JSONSerialization.jsonObject(with: document) as? [String: Any],

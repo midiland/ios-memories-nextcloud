@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Premier lancement sur un serveur : téléchargement des fichiers web de Memories
-/// (équivalent natif de `waiting.html` sur Android).
+/// First launch on a server: downloading the Memories web files
+/// (native equivalent of `waiting.html` on Android).
 struct DownloadProgressView: View {
     let done: Int
     let total: Int

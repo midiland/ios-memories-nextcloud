@@ -1,14 +1,14 @@
 import Foundation
 
-/// Télécharge un fichier du serveur Nextcloud vers un dossier temporaire.
+/// Downloads a file from the Nextcloud server into a temporary folder.
 ///
-/// Les identifiants ne sont envoyés **que** si l'URL pointe vers le serveur du compte
-/// (jamais vers un hôte tiers).
+/// Credentials are sent **only** if the URL points to the account's server
+/// (never to a third-party host).
 struct AuthenticatedDownloader {
     let credentials: Credentials
 
-    /// Télécharge `url` et renvoie le fichier local, nommé d'après `Content-Disposition`
-    /// (ou `preferredName` s'il est fourni).
+    /// Downloads `url` and returns the local file, named after `Content-Disposition`
+    /// (or `preferredName` if provided).
     func download(_ url: URL, preferredName: String? = nil) async throws -> URL {
         var request = URLRequest(url: url)
         request.setValue(AppConstants.userAgentSuffix, forHTTPHeaderField: "User-Agent")
@@ -26,7 +26,7 @@ struct AuthenticatedDownloader {
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else { throw AppError.unexpectedStatus(status) }
 
-        // Dossier unique par téléchargement pour garder le vrai nom de fichier.
+        // One folder per download, to keep the real file name.
         let name = [preferredName, response.suggestedFilename, url.lastPathComponent]
             .compactMap { $0 }
             .first { !$0.isEmpty } ?? "fichier"

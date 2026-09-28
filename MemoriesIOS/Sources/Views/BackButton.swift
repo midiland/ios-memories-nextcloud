@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Bouton retour flottant, en bas à gauche : la place de la barre de navigation web,
-/// masquée sur les pages concernées (et loin des contrôles de zoom de la carte, en haut).
-/// Le glissement depuis le bord gauche de l'écran fait la même chose.
+/// Floating back button, bottom left: replaces the web navigation bar, which is
+/// hidden on the relevant pages (and stays away from the map zoom controls at the top).
+/// Swiping from the left edge of the screen does the same thing.
 struct BackButton: View {
     let action: () -> Void
 

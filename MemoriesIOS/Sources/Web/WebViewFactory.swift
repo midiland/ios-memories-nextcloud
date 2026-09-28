@@ -1,7 +1,7 @@
 import UIKit
 import WebKit
 
-/// Crée et configure la `WKWebView` (équivalent de `WebViewSetup.kt` sur Android).
+/// Creates and configures the `WKWebView` (equivalent of `WebViewSetup.kt` on Android).
 @MainActor
 enum WebViewFactory {
     static func make(bridge: NativeXBridge) -> WKWebView {
@@ -15,21 +15,21 @@ enum WebViewFactory {
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.allowsBackForwardNavigationGestures = true
         webView.allowsLinkPreview = false
-        // Fond transparent pendant le chargement (pas de flash blanc en mode sombre).
+        // Transparent background while loading (no white flash in dark mode).
         webView.isOpaque = false
         webView.backgroundColor = .clear
         webView.scrollView.backgroundColor = .clear
 
         #if DEBUG
-        // Inspection via Safari > Développement (iOS 16.4+).
+        // Inspect via Safari > Develop (iOS 16.4+).
         if #available(iOS 16.4, *) { webView.isInspectable = true }
         #endif
         return webView
     }
 
-    /// Suffixe du User-Agent. Il doit ressembler à Safari mobile, sinon Nextcloud peut
-    /// afficher sa page « navigateur non supporté » avant que `nativex.initialize()`
-    /// (frontend) n'ait désactivé cette vérification.
+    /// User-Agent suffix. It must look like mobile Safari, otherwise Nextcloud may
+    /// show its "unsupported browser" page before `nativex.initialize()`
+    /// (frontend) has disabled that check.
     private static var userAgentApplicationName: String {
         let parts = UIDevice.current.systemVersion.split(separator: ".").prefix(2)
         let version = parts.count == 2 ? parts.joined(separator: ".") : "\(parts.first ?? "16").0"

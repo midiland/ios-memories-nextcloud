@@ -1,12 +1,12 @@
 import Foundation
 
-/// Requête HTTP reçue par le serveur local.
+/// HTTP request received by the local server.
 struct HTTPRequest {
     let method: String
-    /// Cible brute (`/chemin?requête`), non décodée : le routage se fait par préfixe.
+    /// Raw target (`/path?query`), not decoded: routing is done by prefix.
     let target: String
     let version: String
-    /// En-têtes, noms en minuscules (valeurs multiples jointes par `, `).
+    /// Headers, with lowercased names (multiple values joined with `, `).
     let headers: [String: String]
     let body: Data
 
@@ -14,7 +14,7 @@ struct HTTPRequest {
 
     func header(_ name: String) -> String? { headers[name.lowercased()] }
 
-    /// Cookies envoyés par la WebView.
+    /// Cookies sent by the WebView.
     var cookies: [String: String] {
         var result: [String: String] = [:]
         for pair in (header("cookie") ?? "").split(separator: ";") {
@@ -24,29 +24,29 @@ struct HTTPRequest {
         return result
     }
 
-    /// Le client attend-il un document HTML (navigation de page) ?
+    /// Does the client expect an HTML document (page navigation)?
     var wantsDocument: Bool {
         header("accept")?.contains("text/html") == true || header("sec-fetch-dest") == "document"
     }
 
-    /// Connexion à garder ouverte après la réponse (HTTP/1.1 par défaut).
+    /// Whether to keep the connection open after the response (default for HTTP/1.1).
     var keepAlive: Bool {
         let connection = header("connection")?.lowercased() ?? ""
         return version == "HTTP/1.1" ? connection != "close" : connection == "keep-alive"
     }
 }
 
-/// Destination d'un corps de réponse envoyé par morceaux.
+/// Destination of a response body sent in pieces.
 protocol HTTPBodyWriter: AnyObject {
     func write(_ data: Data) async throws
 }
 
-/// Réponse HTTP du serveur local.
+/// HTTP response from the local server.
 struct HTTPResponse {
     enum Body {
         case empty
         case data(Data)
-        /// Corps diffusé en continu ; `length` nil ⇒ `Transfer-Encoding: chunked`.
+        /// Streamed body; nil `length` ⇒ `Transfer-Encoding: chunked`.
         case stream(length: Int?, (HTTPBodyWriter) async throws -> Void)
     }
 
@@ -65,7 +65,7 @@ struct HTTPResponse {
     static let notFound = text(404, "not found")
     static let forbidden = text(403, "forbidden")
 
-    /// Libellé du code de statut (purement informatif pour les clients HTTP/1.1).
+    /// Reason phrase for the status code (purely informational for HTTP/1.1 clients).
     static func reason(_ status: Int) -> String {
         let known: [Int: String] = [
             200: "OK", 201: "Created", 204: "No Content", 206: "Partial Content", 207: "Multi-Status",

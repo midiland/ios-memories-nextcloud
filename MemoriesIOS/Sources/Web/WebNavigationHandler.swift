@@ -1,12 +1,12 @@
 import WebKit
 
-/// Délégué de navigation et d'UI de la WebView (équivalent de `MemoriesWebViewClient`
-/// et `MemoriesWebChromeClient` sur Android).
+/// Navigation and UI delegate for the web view (equivalent of `MemoriesWebViewClient`
+/// and `MemoriesWebChromeClient` on Android).
 ///
-/// Règles (détaillées dans `WebViewModel.decideNavigation`) :
-/// - seules les pages de l'app restent dans la WebView, le reste part dans Safari ;
-/// - mode distant : une redirection vers la page de login Nextcloud = session expirée → réamorçage ;
-/// - erreurs réseau / HTTP du document principal → écran d'erreur.
+/// Rules (detailed in `WebViewModel.decideNavigation`):
+/// - only app pages stay in the web view; everything else opens in Safari;
+/// - remote mode: a redirect to the Nextcloud login page = expired session → re-bootstrap;
+/// - network / HTTP errors on the main document → error screen.
 @MainActor
 final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
     enum Decision {
@@ -17,7 +17,7 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     weak var model: WebViewModel?
 
-    // MARK: - Politique de navigation
+    // MARK: - Navigation policy
 
     func webView(
         _ webView: WKWebView,
@@ -26,7 +26,7 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
     ) {
         guard let url = action.request.url, let model else { return decisionHandler(.allow) }
 
-        // Les sous-frames (carte OpenStreetMap, aperçus…) ne sont pas filtrés.
+        // Subframes (OpenStreetMap map, previews…) are not filtered.
         let isMainFrame = action.targetFrame?.isMainFrame ?? true
         guard isMainFrame else { return decisionHandler(.allow) }
 
@@ -76,10 +76,10 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         }
     }
 
-    // MARK: - Cycle de chargement
+    // MARK: - Load lifecycle
 
-    /// Premier rendu du document : on retire le voile natif sans attendre la fin du chargement
-    /// (le frontend affiche ses propres indicateurs ; en mode local la page arrive en ~50 ms).
+    /// First render of the document: remove the native overlay without waiting for the load to finish
+    /// (the frontend shows its own indicators; in local mode the page arrives in ~50 ms).
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         model?.pageDidFinish()
     }
@@ -92,14 +92,14 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         handle(error)
     }
 
-    /// Le processus WebContent a été tué (mémoire) : on recharge.
+    /// The WebContent process was killed (memory pressure): reload.
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         webView.reload()
     }
 
     // MARK: - UI
 
-    /// `target=_blank` / `window.open` : même règle que la navigation principale.
+    /// `target=_blank` / `window.open`: same rule as main-frame navigation.
     func webView(
         _ webView: WKWebView,
         createWebViewWith configuration: WKWebViewConfiguration,
@@ -115,17 +115,17 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         return nil
     }
 
-    // MARK: - Privé
+    // MARK: - Private
 
     private func handle(_ error: Error) {
         let nsError = error as NSError
-        // Navigation annulée (par nous ou par un nouveau chargement) : pas une vraie erreur.
+        // Navigation cancelled (by us or by a new load): not a real error.
         if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled { return }
-        if nsError.domain == "WebKitErrorDomain" && nsError.code == 102 { return } // interrompu par la politique
+        if nsError.domain == "WebKitErrorDomain" && nsError.code == 102 { return } // interrupted by policy
         model?.pageDidFail(.serverUnreachable(error.localizedDescription))
     }
 
-    /// Page de login web de Nextcloud (`/login`, `/index.php/login`), hors Login Flow v2.
+    /// Nextcloud web login page (`/login`, `/index.php/login`), excluding Login Flow v2.
     static func isLoginPage(_ url: URL) -> Bool {
         let components = url.pathComponents
         guard let index = components.firstIndex(of: "login") else { return false }

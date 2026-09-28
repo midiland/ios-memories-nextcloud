@@ -1,6 +1,6 @@
 import Foundation
 
-/// Erreurs présentées à l'utilisateur (messages en français).
+/// Errors shown to the user (messages in French).
 enum AppError: LocalizedError, Equatable {
     case invalidURL
     case serverUnreachable(String)
@@ -38,7 +38,7 @@ enum AppError: LocalizedError, Equatable {
         }
     }
 
-    /// Convertit une erreur réseau `URLSession` en erreur applicative.
+    /// Converts a `URLSession` network error into an app error.
     static func from(_ error: Error) -> AppError {
         if let appError = error as? AppError { return appError }
         return .serverUnreachable(error.localizedDescription)

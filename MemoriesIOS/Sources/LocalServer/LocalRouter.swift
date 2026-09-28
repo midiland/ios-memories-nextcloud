@@ -1,24 +1,24 @@
 import Foundation
 
-/// Configuration de l'app servie localement : serveur amont + snapshot courant.
+/// Configuration of the locally served app: upstream server + current snapshot.
 struct LocalAppConfig {
     let credentials: Credentials
     let snapshot: Snapshot
-    /// Identifiant affiché par le frontend (`<head data-user>`).
+    /// User ID displayed by the frontend (`<head data-user>`).
     let user: String?
 
     var server: ServerURL { credentials.server }
     var webRoot: String { server.webRoot }
 }
 
-/// Aiguillage des requêtes du serveur local (port de `ServerRouter.kt`). L'ordre compte :
-/// 1. contrôle d'accès (hôte + cookie `local-auth`) ;
-/// 2. `/api`, `/image`, `/video` : pont NativeX (normalement intercepté en JS avant d'arriver ici) ;
-/// 3. `/local/static/*` (fichiers de l'app) et `/local/assets/{js,css}/*` (snapshot) ;
-/// 4. chunks JS de Memories demandés par webpack → snapshot ;
-/// 5. page d'entrée et routes de l'app (HTML) → page locale ;
-/// 6. toute autre navigation de document → 404 (jamais de HTML distant rendu en local) ;
-/// 7. le reste → relais vers Nextcloud avec les identifiants.
+/// Request routing for the local server (port of `ServerRouter.kt`). Order matters:
+/// 1. access control (host + `local-auth` cookie);
+/// 2. `/api`, `/image`, `/video`: NativeX bridge (normally intercepted in JS before reaching here);
+/// 3. `/local/static/*` (app files) and `/local/assets/{js,css}/*` (snapshot);
+/// 4. Memories JS chunks requested by webpack → snapshot;
+/// 5. entry page and app routes (HTML) → local page;
+/// 6. any other document navigation → 404 (remote HTML is never rendered locally);
+/// 7. everything else → proxied to Nextcloud with the credentials.
 final class LocalRouter: @unchecked Sendable {
     private let lock = NSLock()
     private var _config: LocalAppConfig?
@@ -30,7 +30,7 @@ final class LocalRouter: @unchecked Sendable {
         self.secret = secret
     }
 
-    /// App servie ; `nil` tant qu'aucun snapshot n'est prêt (ou après déconnexion).
+    /// Served app; `nil` until a snapshot is ready (or after logout).
     var config: LocalAppConfig? {
         get { lock.withLock { _config } }
         set { lock.withLock { _config = newValue } }
@@ -41,14 +41,14 @@ final class LocalRouter: @unchecked Sendable {
         set { lock.withLock { _port = newValue } }
     }
 
-    // MARK: - Routage
+    // MARK: - Routing
 
     func handle(_ request: HTTPRequest) async -> HTTPResponse {
         guard isAuthorized(request) else { return .forbidden }
         let path = request.path
 
         if hasPrefix(path, "/api") || hasPrefix(path, "/image") || hasPrefix(path, "/video") {
-            return .notFound // pont servi par nativex.js (interception fetch/XHR)
+            return .notFound // bridge served by nativex.js (fetch/XHR interception)
         }
         if path.hasPrefix("/local/static/") {
             return StaticFiles.bundled(request)
@@ -58,7 +58,7 @@ final class LocalRouter: @unchecked Sendable {
                 if path.hasPrefix("/local/assets/js/") { return StaticFiles.file(request, in: config.snapshot.jsDirectory) }
                 if path.hasPrefix("/local/assets/css/") { return stylesheet(request, config: config) }
             }
-            return .notFound // tout /local reste sur l'appareil
+            return .notFound // all of /local stays on the device
         }
         if path == "/favicon.ico" { return .notFound }
 
@@ -82,8 +82,8 @@ final class LocalRouter: @unchecked Sendable {
         return await proxy.forward(request, config: config, localOrigin: "http://\(LocalHTTPServer.host):\(port)")
     }
 
-    /// URL réelle du serveur pour une navigation de page vers un chemin relayé
-    /// (lien externe à ouvrir dans Safari) ; `nil` pour les documents locaux.
+    /// Real server URL for a page navigation to a proxied path
+    /// (external link to open in Safari); `nil` for local documents.
     func browserURL(forPath path: String, query: String?) -> URL? {
         guard let config else { return nil }
         let webRoot = config.webRoot
@@ -94,9 +94,9 @@ final class LocalRouter: @unchecked Sendable {
         return URL(string: config.server.origin.absoluteString + path + suffix)
     }
 
-    // MARK: - Privé
+    // MARK: - Private
 
-    /// Cookie secret + en-tête `Host` loopback (protection contre le DNS rebinding).
+    /// Secret cookie + loopback `Host` header (protection against DNS rebinding).
     private func isAuthorized(_ request: HTTPRequest) -> Bool {
         let host = request.header("host") ?? ""
         let port = self.port
@@ -104,12 +104,12 @@ final class LocalRouter: @unchecked Sendable {
         return request.cookies["local-auth"] == secret
     }
 
-    /// `path` vaut `prefix` ou commence par `prefix/`.
+    /// `path` equals `prefix` or starts with `prefix/`.
     private func hasPrefix(_ path: String, _ prefix: String) -> Bool {
         path == prefix || path.hasPrefix(prefix + "/")
     }
 
-    /// Feuille de style du snapshot, chemins relatifs réécrits d'après son `href` d'origine.
+    /// Snapshot stylesheet, with relative paths rewritten based on its original `href`.
     private func stylesheet(_ request: HTTPRequest, config: LocalAppConfig) -> HTTPResponse {
         let name = request.path.split(separator: "/").last.map(String.init) ?? ""
         guard let asset = config.snapshot.manifest.css.first(where: { $0.name == name }) else { return .notFound }

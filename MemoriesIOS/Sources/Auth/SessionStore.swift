@@ -1,15 +1,15 @@
 import Foundation
 
-/// État global d'authentification, observé par `RootView`.
+/// Global authentication state, observed by `RootView`.
 @MainActor
 final class SessionStore: ObservableObject {
-    /// Écran principal à afficher.
+    /// Main screen to display.
     enum Phase: Equatable {
         case loggedOut
         case loggedIn(Credentials)
     }
 
-    /// Progression de l'écran de connexion.
+    /// Login screen progress.
     enum LoginState: Equatable {
         case idle
         case connecting
@@ -19,22 +19,22 @@ final class SessionStore: ObservableObject {
     @Published private(set) var phase: Phase = .loggedOut
     @Published private(set) var loginState: LoginState = .idle
     @Published var loginError: AppError?
-    /// Page de login Nextcloud à présenter (non nil ⇒ feuille SFSafariViewController affichée).
+    /// Nextcloud login page to present (non-nil ⇒ SFSafariViewController sheet shown).
     @Published var loginPage: URL?
 
     private let store = CredentialStore()
     private var loginTask: Task<Void, Never>?
 
     init() {
-        // Restaure la session précédente ; sa validité est vérifiée au chargement de la WebView.
+        // Restores the previous session; its validity is checked when the WebView loads.
         if let saved = store.load() {
             phase = .loggedIn(saved)
         }
     }
 
-    // MARK: - Connexion
+    // MARK: - Login
 
-    /// Lance la connexion au serveur saisi (validation, Login Flow v2, polling).
+    /// Starts logging in to the entered server (validation, Login Flow v2, polling).
     func login(serverInput: String) {
         loginTask?.cancel()
         loginError = nil
@@ -54,7 +54,7 @@ final class SessionStore: ObservableObject {
                 self.loginState = .idle
                 self.phase = .loggedIn(credentials)
             } catch is CancellationError {
-                // Annulation volontaire : `cancelLogin` a déjà remis l'état à zéro.
+                // Deliberate cancellation: `cancelLogin` has already reset the state.
             } catch {
                 guard let self else { return }
                 self.loginPage = nil
@@ -64,7 +64,7 @@ final class SessionStore: ObservableObject {
         }
     }
 
-    /// Annule une connexion en cours (fermeture du navigateur par l'utilisateur).
+    /// Cancels an ongoing login (user closed the browser).
     func cancelLogin() {
         loginTask?.cancel()
         loginTask = nil
@@ -72,10 +72,10 @@ final class SessionStore: ObservableObject {
         loginState = .idle
     }
 
-    // MARK: - Déconnexion
+    // MARK: - Logout
 
-    /// Déconnexion volontaire : révoque le mot de passe d'application, efface le Keychain
-    /// et les données de la WebView.
+    /// User-initiated logout: revokes the app password, clears the Keychain
+    /// and the WebView data.
     func logout() {
         if case .loggedIn(let credentials) = phase {
             Task { await NextcloudClient().revokeAppPassword(credentials) }
@@ -83,7 +83,7 @@ final class SessionStore: ObservableObject {
         endSession(error: nil)
     }
 
-    /// Session refusée par le serveur (mot de passe d'application révoqué, compte supprimé…).
+    /// Session rejected by the server (app password revoked, account deleted…).
     func sessionRevoked() {
         endSession(error: .notAuthenticated)
     }
@@ -91,7 +91,7 @@ final class SessionStore: ObservableObject {
     private func endSession(error: AppError?) {
         store.delete()
         WebSessionBootstrapper.clearWebsiteData()
-        // Mode local : plus rien à servir ni relayer, et on oublie la session Nextcloud du relais.
+        // Local mode: nothing left to serve or relay, and forget the relay's Nextcloud session.
         LocalHTTPServer.shared.router.config = nil
         HTTPCookieStorage.shared.removeCookies(since: .distantPast)
         loginError = error

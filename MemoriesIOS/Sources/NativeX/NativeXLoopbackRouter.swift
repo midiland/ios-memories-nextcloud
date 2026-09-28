@@ -1,12 +1,12 @@
 import Foundation
 
-/// Réponse renvoyée au JS pour une requête `http://127.0.0.1/...`.
+/// Response returned to the JS for an `http://127.0.0.1/...` request.
 struct NativeXResponse {
     var status = 200
     var contentType = "application/json"
     var body = "{}"
 
-    /// Format attendu par `nativex.js` (`{ status, contentType, body }`).
+    /// Format expected by `nativex.js` (`{ status, contentType, body }`).
     var dictionary: [String: Any] {
         ["status": status, "contentType": contentType, "body": body]
     }
@@ -16,10 +16,10 @@ struct NativeXResponse {
     static let error = NativeXResponse(status: 500)
 }
 
-/// Routes du pont asynchrone (`NAPI` dans `src/native/api.ts`, `ApiRouter.kt` sur Android).
+/// Async bridge routes (`NAPI` in `src/native/api.ts`, `ApiRouter.kt` on Android).
 ///
-/// Étape 2a : pas encore de photos locales (PhotoKit = étape 2b), donc les routes
-/// « médias locaux » répondent vide ; le partage est réellement implémenté.
+/// Step 2a: no local photos yet (PhotoKit = step 2b), so the "local media" routes
+/// return empty results; sharing is fully implemented.
 @MainActor
 struct NativeXLoopbackRouter {
     let share: NativeXShareService
@@ -31,17 +31,17 @@ struct NativeXLoopbackRouter {
         let parts = rawPath.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
 
         switch parts.first == "api" ? Array(parts.dropFirst()) : parts {
-        // Timeline locale : aucun jour / aucune photo sur l'appareil pour l'instant.
+        // Local timeline: no days / no photos on the device for now.
         case ["days"]:
             return .json("[]")
         case let p where p.count == 2 && p[0] == "days":
             return .json("[]")
 
-        // Suppression locale : rien à supprimer, le frontend affiche sa propre confirmation.
+        // Local deletion: nothing to delete; the frontend shows its own confirmation.
         case let p where p.count == 3 && p[0] == "image" && p[1] == "delete":
             return .json(#"{"confirms":false,"count":0}"#)
 
-        // Partage d'un lien : l'URL est doublement encodée par le frontend.
+        // Link sharing: the URL is double-encoded by the frontend.
         case let p where p.count == 3 && p[0] == "share" && p[1] == "url":
             guard let text = p[2].removingPercentEncoding?.removingPercentEncoding,
                   let target = URL(string: text)
@@ -49,11 +49,11 @@ struct NativeXLoopbackRouter {
             share.shareLink(target)
             return .json("{}")
 
-        // Partage de fichiers préparés par `setShareBlobs`.
+        // Sharing files staged by `setShareBlobs`.
         case ["share", "blobs"]:
             return await share.shareStagedBlobs() ? .json("{}") : .error
 
-        // Autorisation des médias locaux : sans effet tant que PhotoKit n'est pas branché.
+        // Local media permission: no effect until PhotoKit is wired up.
         case let p where p.count == 3 && p[0] == "config" && p[1] == "allow_media":
             return .json(#""done""#)
 
@@ -61,7 +61,7 @@ struct NativeXLoopbackRouter {
             return .json(#"{"status":"ready","done":0,"total":0,"error":null}"#)
 
         default:
-            // image/info, image/preview, image/full, upload/local, login… : pas encore gérés.
+            // image/info, image/preview, image/full, upload/local, login…: not handled yet.
             return .notFound
         }
     }

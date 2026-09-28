@@ -1,16 +1,16 @@
-// Pont NativeX côté page — injecté par l'app iOS au début du document (WKUserScript).
+// Page-side NativeX bridge — injected by the iOS app at document start (WKUserScript).
 //
-// Définit `window.nativex`, que le frontend Memories lit au chargement de ses modules
-// (src/native/api.ts) pour activer le mode « app native ». Équivalent de
-// `addJavascriptInterface(NativeX, "nativex")` sur Android.
+// Defines `window.nativex`, which the Memories frontend reads when its modules load
+// (src/native/api.ts) to enable "native app" mode. Equivalent of
+// `addJavascriptInterface(NativeX, "nativex")` on Android.
 //
-// - Méthodes « fire-and-forget » → `webkit.messageHandlers.nativex.postMessage`.
-// - Méthodes synchrones (le JS lit la valeur immédiatement) → valeurs en cache dans
-//   `state`, initialisées par le natif à l'injection et mises à jour via
+// - Fire-and-forget methods → `webkit.messageHandlers.nativex.postMessage`.
+// - Synchronous methods (the JS reads the value immediately) → values cached in
+//   `state`, initialized by the native side at injection and updated via
 //   `window.__nativexSetState(...)`.
-// - Pont asynchrone : le frontend appelle `http://127.0.0.1/api/...` (codé en dur).
-//   WKWebView ne sait pas intercepter http, donc on détourne `fetch` et `XMLHttpRequest`
-//   pour ces URLs et on les route vers le handler natif `nativexAsync` (avec réponse).
+// - Async bridge: the frontend calls `http://127.0.0.1/api/...` (hard-coded).
+//   WKWebView cannot intercept http, so we hijack `fetch` and `XMLHttpRequest`
+//   for these URLs and route them to the native `nativexAsync` handler (with reply).
 (() => {
   'use strict';
   if (window.nativex) return;
@@ -18,7 +18,7 @@
   const handlers = window.webkit && window.webkit.messageHandlers;
   if (!handlers || !handlers.nativex || !handlers.nativexAsync) return;
 
-  /** Cache des valeurs lues de façon synchrone (remplacé par le natif à l'injection). */
+  /** Cache of synchronously read values (replaced by the native side at injection). */
   const state = __NATIVEX_STATE__;
 
   const post = (method, ...args) => handlers.nativex.postMessage({ method, args });
@@ -40,22 +40,22 @@
     configHasMediaPermission: () => state.hasMediaPermission,
     getSyncStatus: () => state.syncStatus,
     setHasRemote: (auids, buids, value) => post('setHasRemote', String(auids), String(buids), !!value),
-    // playVideo / playVideo2 / destroyVideo volontairement absents : le frontend
-    // lit alors les vidéos avec son lecteur web (WebKit gère HLS nativement).
+    // playVideo / playVideo2 / destroyVideo intentionally omitted: the frontend
+    // then plays videos with its web player (WebKit handles HLS natively).
   };
 
-  /** Mise à jour du cache par le natif (evaluateJavaScript). */
+  /** Cache update from the native side (evaluateJavaScript). */
   Object.defineProperty(window, '__nativexSetState', {
     value: (patch) => Object.assign(state, patch),
   });
 
   // ---------------------------------------------------------------------------
-  // Pont asynchrone http://127.0.0.1 → handler natif `nativexAsync`
+  // Async bridge http://127.0.0.1 → native `nativexAsync` handler
   // ---------------------------------------------------------------------------
 
   const LOOPBACK = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//i;
 
-  /** Envoie la requête au natif. Résout `{ status, contentType, body }`. */
+  /** Sends the request to the native side. Resolves to `{ status, contentType, body }`. */
   const loopback = (method, url) =>
     handlers.nativexAsync.postMessage({ method: String(method || 'GET').toUpperCase(), url });
 
@@ -68,17 +68,17 @@
     const method = (init && init.method) || (input instanceof Request ? input.method : 'GET');
     return loopback(method, url).then(
       (r) => new Response(r.body, { status: r.status, headers: { 'Content-Type': r.contentType } }),
-      () => Promise.reject(new TypeError('NativeX: requête locale échouée')),
+      () => Promise.reject(new TypeError('NativeX: local request failed')),
     );
   };
 
-  // --- XMLHttpRequest (utilisé par axios) ---
+  // --- XMLHttpRequest (used by axios) ---
   const XHR = XMLHttpRequest.prototype;
   const originalOpen = XHR.open;
   const originalSend = XHR.send;
   const originalSetRequestHeader = XHR.setRequestHeader;
 
-  /** Remplace une propriété en lecture seule de l'instance XHR. */
+  /** Overrides read-only properties of the XHR instance. */
   const define = (xhr, props) => {
     for (const [key, value] of Object.entries(props)) {
       Object.defineProperty(xhr, key, { value, configurable: true });
@@ -89,7 +89,7 @@
   XHR.open = function (method, url, ...rest) {
     const href = String(url);
     this.__nx = LOOPBACK.test(href) ? { method, url: href } : null;
-    if (this.__nx) return; // pas de vraie connexion
+    if (this.__nx) return; // no real connection
     return originalOpen.call(this, method, url, ...rest);
   };
 

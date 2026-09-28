@@ -1,9 +1,9 @@
 import Foundation
 
-/// Fichiers servis localement (port de `StaticController.kt`). Recherche par nom de fichier
-/// seul (dernier segment du chemin) : aucune traversée de dossier possible.
+/// Locally served files (port of `StaticController.kt`). Lookup by file name only
+/// (last path segment): no directory traversal possible.
 enum StaticFiles {
-    /// Fichier embarqué dans l'app (`Resources/`), ex. `shell-overrides.css`.
+    /// File bundled in the app (`Resources/`), e.g. `shell-overrides.css`.
     static func bundled(_ request: HTTPRequest) -> HTTPResponse {
         guard let name = fileName(request) else { return .notFound }
         let base = (name as NSString).deletingPathExtension
@@ -18,8 +18,8 @@ enum StaticFiles {
         )
     }
 
-    /// Fichier du snapshot, validé par ETag pour que WebKit réutilise son cache.
-    /// `transform` éventuel appliqué au contenu (son `version` entre dans l'ETag).
+    /// Snapshot file, validated by ETag so WebKit reuses its cache.
+    /// Optional `transform` applied to the content (its `version` is part of the ETag).
     static func file(
         _ request: HTTPRequest, in directory: URL,
         transform: (version: String, apply: (Data) -> Data)? = nil
@@ -44,7 +44,7 @@ enum StaticFiles {
         return HTTPResponse(status: 200, headers: headers, body: .data(transform?.apply(data) ?? data))
     }
 
-    /// Nom de fichier demandé ; `nil` (→ 404) si vide, suspect ou méthode autre que GET/HEAD.
+    /// Requested file name; `nil` (→ 404) if empty, suspicious, or the method is not GET/HEAD.
     private static func fileName(_ request: HTTPRequest) -> String? {
         guard request.method == "GET" || request.method == "HEAD" else { return nil }
         guard let name = request.path.split(separator: "/").last.map(String.init),

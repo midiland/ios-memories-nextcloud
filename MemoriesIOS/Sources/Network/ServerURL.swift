@@ -1,19 +1,19 @@
 import Foundation
 
-/// URL d'un serveur Nextcloud, normalisée vers la racine de l'app Memories.
+/// URL of a Nextcloud server, normalized to the root of the Memories app.
 ///
-/// Reproduit `getMemoriesUrl()` de `welcome.html` (app Android) :
+/// Mirrors `getMemoriesUrl()` from `welcome.html` (Android app):
 /// `cloud.exemple.fr` → `https://cloud.exemple.fr/index.php/apps/memories/`.
 struct ServerURL: Equatable, Codable {
-    /// Racine de l'app Memories, toujours terminée par `/`.
+    /// Root of the Memories app, always ending with `/`.
     let memoriesURL: URL
 
-    /// Construit l'URL à partir de la saisie utilisateur. `nil` si la saisie est invalide.
+    /// Builds the URL from user input. `nil` if the input is invalid.
     init?(userInput: String) {
         var text = userInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return nil }
 
-        // Schéma par défaut : https (comme Android).
+        // Default scheme: https (like Android).
         if !text.lowercased().hasPrefix("http://") && !text.lowercased().hasPrefix("https://") {
             text = "https://" + text
         }
@@ -21,7 +21,7 @@ struct ServerURL: Equatable, Codable {
               let host = components.host, !host.isEmpty
         else { return nil }
 
-        // On ignore requête et fragment éventuellement collés par l'utilisateur.
+        // Ignore any query and fragment pasted by the user.
         components.query = nil
         components.fragment = nil
 
@@ -35,7 +35,7 @@ struct ServerURL: Equatable, Codable {
         memoriesURL = url
     }
 
-    /// Construit l'URL directement depuis un `baseUrl` renvoyé par le serveur.
+    /// Builds the URL directly from a `baseUrl` returned by the server.
     init?(memoriesBaseURL: String) {
         guard var url = URL(string: memoriesBaseURL), url.host != nil else { return nil }
         if !url.absoluteString.hasSuffix("/") {
@@ -44,10 +44,10 @@ struct ServerURL: Equatable, Codable {
         memoriesURL = url
     }
 
-    /// Endpoint public `api/describe` de Memories (version, baseUrl, loginFlowUrl, uid).
+    /// Memories' public `api/describe` endpoint (version, baseUrl, loginFlowUrl, uid).
     var describeURL: URL { memoriesURL.appendingPathComponent("api/describe") }
 
-    /// Racine de Nextcloud (webroot), ex. `https://cloud/` ou `https://exemple.fr/nextcloud/`.
+    /// Nextcloud root (webroot), e.g. `https://cloud/` or `https://exemple.fr/nextcloud/`.
     var nextcloudRoot: URL {
         var text = memoriesURL.absoluteString
         for suffix in ["index.php/apps/memories/", "apps/memories/"] where text.hasSuffix(suffix) {
@@ -57,18 +57,18 @@ struct ServerURL: Equatable, Codable {
         return URL(string: text) ?? origin
     }
 
-    /// Préfixe de chemin de Nextcloud sans `/` final : `""` à la racine du domaine,
-    /// sinon par ex. `/nextcloud` (équivalent de `AssetCache.webrootOf` sur Android).
+    /// Nextcloud path prefix without trailing `/`: `""` at the domain root,
+    /// otherwise e.g. `/nextcloud` (equivalent of `AssetCache.webrootOf` on Android).
     var webRoot: String {
         var path = nextcloudRoot.path
         while path.hasSuffix("/") { path.removeLast() }
         return path
     }
 
-    /// Hôte du serveur (sert à filtrer cookies et navigations).
+    /// Server host (used to filter cookies and navigations).
     var host: String { memoriesURL.host ?? "" }
 
-    /// Origine `schéma://hôte[:port]` du serveur.
+    /// Server origin `scheme://host[:port]`.
     var origin: URL {
         var components = URLComponents()
         components.scheme = memoriesURL.scheme

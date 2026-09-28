@@ -1,17 +1,17 @@
 import UIKit
 import WebKit
 
-/// Possède la `WKWebView` et pilote son cycle de vie :
-/// - **mode local** (par défaut) : app servie par le serveur `127.0.0.1` depuis un snapshot
-///   hors ligne → démarrage instantané, fonctionne sans réseau ;
-/// - **mode distant** (repli) : page chargée directement depuis Nextcloud, si le serveur
-///   ne fournit pas de manifeste signé ou si le serveur local ne démarre pas.
-/// C'est aussi l'hôte du pont NativeX (thème, toasts, déconnexion, rechargement).
+/// Owns the `WKWebView` and drives its lifecycle:
+/// - **local mode** (default): app served by the `127.0.0.1` server from an offline
+///   snapshot → instant startup, works without network;
+/// - **remote mode** (fallback): page loaded directly from Nextcloud, if the server
+///   provides no signed manifest or the local server fails to start.
+/// Also hosts the NativeX bridge (theme, toasts, logout, reload).
 @MainActor
 final class WebViewModel: ObservableObject {
     enum State: Equatable {
         case loading
-        /// Premier téléchargement des fichiers web de Memories.
+        /// First download of the Memories web files.
         case downloading(done: Int, total: Int)
         case ready
         case failed(AppError)
@@ -22,7 +22,7 @@ final class WebViewModel: ObservableObject {
         case remote
     }
 
-    /// Message temporaire affiché par-dessus la WebView (`nativex.toast`).
+    /// Temporary message shown over the web view (`nativex.toast`).
     struct Toast: Equatable {
         let id = UUID()
         let message: String
@@ -30,20 +30,20 @@ final class WebViewModel: ObservableObject {
     }
 
     @Published private(set) var state: State = .loading
-    /// Couleur de fond de l'UI web, peinte derrière la WebView (qui est transparente
-    /// en mode natif) et dans les zones de sécurité. `nil` = fond système.
+    /// Background color of the web UI, painted behind the web view (which is transparent
+    /// in native mode) and in the safe areas. `nil` = system background.
     @Published private(set) var themeColor: UIColor?
     @Published var toast: Toast?
-    /// Bouton retour natif visible (pages sans barre de navigation web, voir `BackNavigationRule`).
+    /// Whether the native back button is visible (pages without a web navigation bar, see `BackNavigationRule`).
     @Published private(set) var showsBackButton = false
 
     let credentials: Credentials
     let webView: WKWebView
     private(set) var mode: Mode = .local
 
-    /// Appelé quand le serveur refuse définitivement les identifiants.
+    /// Called when the server permanently rejects the credentials.
     var onSessionRevoked: () -> Void = {}
-    /// Appelé quand l'utilisateur se déconnecte depuis l'UI web.
+    /// Called when the user logs out from the web UI.
     var onLogout: () -> Void = {}
 
     private let nativeX = NativeXController()
@@ -64,7 +64,7 @@ final class WebViewModel: ObservableObject {
         observeHistory()
     }
 
-    /// Suit l'URL et l'historique (y compris les `pushState` du routeur Vue) pour le bouton retour.
+    /// Tracks the URL and history (including Vue router `pushState` calls) for the back button.
     private func observeHistory() {
         let update: (WKWebView) -> Void = { [weak self] webView in
             Task { @MainActor in
@@ -80,22 +80,22 @@ final class WebViewModel: ObservableObject {
         ]
     }
 
-    /// Bouton retour natif : équivalent du bouton « retour » d'Android (`webview.goBack()`).
+    /// Native back button: equivalent of Android's back button (`webview.goBack()`).
     func goBack() {
         if webView.canGoBack { webView.goBack() }
     }
 
     private var cookieStore: WKHTTPCookieStore { webView.configuration.websiteDataStore.httpCookieStore }
 
-    // MARK: - Chargement
+    // MARK: - Loading
 
-    /// Premier chargement (idempotent : `onAppear` peut être appelé plusieurs fois).
+    /// First load (idempotent: `onAppear` may be called several times).
     func startIfNeeded() {
         guard !hasStarted else { return }
         start()
     }
 
-    /// Charge l'app : mode local si possible, sinon repli distant.
+    /// Loads the app: local mode if possible, otherwise remote fallback.
     func start() {
         hasStarted = true
         state = .loading
@@ -121,7 +121,7 @@ final class WebViewModel: ObservableObject {
         }
     }
 
-    /// Mode distant (étape 2a) : session Nextcloud + cookie `nx_auth`, page chargée depuis le serveur.
+    /// Remote mode (step 2a): Nextcloud session + `nx_auth` cookie, page loaded from the server.
     private func startRemote() async throws {
         mode = .remote
         try await WebSessionBootstrapper.bootstrap(credentials, into: cookieStore)
@@ -130,7 +130,7 @@ final class WebViewModel: ObservableObject {
         webView.load(request)
     }
 
-    /// Vérifie identifiants et mises à jour pendant que l'app tourne sur le snapshot en cache.
+    /// Checks credentials and updates while the app runs on the cached snapshot.
     private func refreshInBackground() async {
         do {
             if try await offline.refreshInBackground() {
@@ -140,29 +140,29 @@ final class WebViewModel: ObservableObject {
         } catch AppError.notAuthenticated {
             onSessionRevoked()
         } catch {
-            // Hors ligne ou serveur indisponible : on reste sur le snapshot en cache.
+            // Offline or server unavailable: stay on the cached snapshot.
         }
     }
 
-    /// Retour au premier plan : iOS a pu fermer le socket du serveur local.
+    /// Back in the foreground: iOS may have closed the local server's socket.
     func appDidBecomeActive() {
         guard hasStarted, mode == .local else { return }
         Task {
             if await offline.ensureServerRunning() {
-                // Nouveau port = nouvelle origine : on recharge la page d'entrée.
+                // New port = new origin: reload the entry page.
                 webView.load(URLRequest(url: offline.entryURL))
             }
         }
     }
 
-    // MARK: - Événements de navigation (appelés par WebNavigationHandler)
+    // MARK: - Navigation events (called by WebNavigationHandler)
 
-    /// Décide du sort d'une navigation de page.
+    /// Decides what to do with a page navigation.
     func decideNavigation(to url: URL) -> WebNavigationHandler.Decision {
         switch mode {
         case .local:
             guard Self.isLoopback(url) else { return .external(url) }
-            // Chemin relayé (ex. lien vers une autre app Nextcloud) : ouvrir la vraie page dans Safari.
+            // Proxied path (e.g. link to another Nextcloud app): open the real page in Safari.
             if let real = LocalHTTPServer.shared.router.browserURL(forPath: url.path, query: url.query) {
                 return .external(real)
             }
@@ -184,8 +184,8 @@ final class WebViewModel: ObservableObject {
         state = .failed(error)
     }
 
-    /// Le serveur a redirigé vers sa page de login : la session a expiré.
-    /// On réamorce une fois ; si ça reboucle en moins de 30 s, on abandonne.
+    /// The server redirected to its login page: the session has expired.
+    /// Re-bootstrap once; if it loops again within 30 s, give up.
     func sessionLost() {
         if let last = lastBootstrap, Date().timeIntervalSince(last) < 30 {
             state = .failed(.notAuthenticated)
@@ -194,7 +194,7 @@ final class WebViewModel: ObservableObject {
         }
     }
 
-    /// Ouvre un lien externe dans l'app par défaut (Safari…).
+    /// Opens an external link in the default app (Safari…).
     func openExternally(_ url: URL) {
         UIApplication.shared.open(url)
     }

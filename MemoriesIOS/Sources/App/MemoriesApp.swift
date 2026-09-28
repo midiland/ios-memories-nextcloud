@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Point d'entrée de l'app.
+/// App entry point.
 @main
 struct MemoriesApp: App {
     @StateObject private var session = SessionStore()

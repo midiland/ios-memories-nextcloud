@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Aiguillage entre l'écran de connexion et l'app Memories.
+/// Switches between the login screen and the Memories app.
 struct RootView: View {
     @EnvironmentObject private var session: SessionStore
 
@@ -10,7 +10,7 @@ struct RootView: View {
             LoginView()
         case .loggedIn(let credentials):
             WebContainerView(credentials: credentials)
-                // Nouvelle identité de vue par compte : la WebView est recréée à chaque login.
+                // New view identity per account: the WebView is recreated on every login.
                 .id(credentials.loginName + "@" + credentials.server.memoriesURL.absoluteString)
         }
     }

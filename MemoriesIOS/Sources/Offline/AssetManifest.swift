@@ -1,11 +1,11 @@
 import CryptoKit
 import Foundation
 
-/// Manifestes des fichiers web de Memories, extraits de `api/describe?manifest=1`
-/// (voir `OtherController::describeApi` et `AssetSyncCoordinator.kt` sur Android).
+/// Manifests of the Memories web files, extracted from `api/describe?manifest=1`
+/// (see `OtherController::describeApi` and `AssetSyncCoordinator.kt` on Android).
 ///
-/// - `jsManifest` : JSON encodé en base64, `{ "<fichier>.js": { hash (SHA-256), href } }`, signé Ed25519 ;
-/// - `cssManifest` : liste des `<link>` de la page serveur (`{ rel, href, … }`), non signée.
+/// - `jsManifest`: base64-encoded JSON, `{ "<file>.js": { hash (SHA-256), href } }`, Ed25519-signed;
+/// - `cssManifest`: list of the server page's `<link>` tags (`{ rel, href, … }`), unsigned.
 struct AssetManifest {
     struct JSAsset {
         let name: String
@@ -14,29 +14,29 @@ struct AssetManifest {
     }
 
     struct CSSAsset {
-        /// Nom local stable : index + nom de fichier distant (`03_server.css`).
+        /// Stable local name: index + remote file name (`03_server.css`).
         let name: String
         let href: String
-        /// Attributs à recopier sur le `<link>` de la page locale.
+        /// Attributes to copy onto the local page's `<link>`.
         let attributes: [String: String]
     }
 
-    /// JSON `describe` complet, conservé tel quel dans le snapshot (`describe.json`).
+    /// Full `describe` JSON, stored as-is in the snapshot (`describe.json`).
     let raw: Data
     let describe: DescribeResponse
-    /// Manifeste JS décodé (octets signés) et document de signature.
+    /// Decoded JS manifest (signed bytes) and signature document.
     let jsManifest: Data
     let signatureDocument: Data?
     let js: [JSAsset]
     let css: [CSSAsset]
-    /// Clé de contenu : identique ⇔ mêmes fichiers (indépendante du numéro de version).
+    /// Content key: equal ⇔ same files (independent of the version number).
     let key: String
 
-    /// Nom du point d'entrée chargé par la page locale ; tout snapshot doit le contenir.
+    /// Name of the entry point loaded by the local page; every snapshot must contain it.
     static let entryJS = "memories-main.js"
     static let l10nJS = "memories-l10n.js"
 
-    /// Analyse un `describe` brut. Lève `OfflineError.noManifest` si le serveur n'en fournit pas.
+    /// Parses a raw `describe`. Throws `OfflineError.noManifest` if the server provides no manifest.
     init(raw: Data) throws {
         guard let object = try JSONSerialization.jsonObject(with: raw) as? [String: Any],
               let describe = try? JSONDecoder().decode(DescribeResponse.self, from: raw)
@@ -72,12 +72,12 @@ struct AssetManifest {
             return CSSAsset(name: Self.cssName(index: index, href: href), href: href, attributes: attributes)
         }
 
-        // Même clé qu'Android : manifeste JS brut (base64) + hrefs CSS dans l'ordre.
+        // Same key as Android: raw JS manifest (base64) + CSS hrefs in order.
         let keySource = jsB64 + "\n" + links.map { ($0["href"] as? String) ?? "" }.joined(separator: "\n")
         key = SHA256.hash(data: Data(keySource.utf8)).map { String(format: "%02x", $0) }.joined()
     }
 
-    /// `%02d_<basename sans requête>`, comme `AssetCache.cssName` sur Android.
+    /// `%02d_<basename without query>`, like `AssetCache.cssName` on Android.
     static func cssName(index: Int, href: String) -> String {
         let base = href.split(separator: "/").last.map(String.init) ?? href
         let name = base.split(separator: "?", maxSplits: 1).first.map(String.init) ?? base
@@ -85,7 +85,7 @@ struct AssetManifest {
     }
 }
 
-/// Erreurs propres au mode hors ligne (toutes provoquent un repli sur le chargement distant).
+/// Offline-mode errors (all of them trigger a fallback to remote loading).
 enum OfflineError: Error {
     case noManifest
     case badSignature

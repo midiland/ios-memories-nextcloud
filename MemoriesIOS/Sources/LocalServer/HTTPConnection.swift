@@ -1,10 +1,10 @@
 import Foundation
 import Network
 
-/// Une connexion TCP du serveur local : analyse HTTP/1.1 minimale (en-têtes + corps
-/// `Content-Length`), une requête à la fois, keep-alive, réponses complètes ou en flux.
+/// A TCP connection to the local server: minimal HTTP/1.1 parsing (headers + `Content-Length`
+/// body), one request at a time, keep-alive, full or streamed responses.
 ///
-/// L'état est confiné à `queue` ; le traitement de la requête se fait dans une `Task`.
+/// State is confined to `queue`; request handling runs in a `Task`.
 final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
     typealias Handler = @Sendable (HTTPRequest) async -> HTTPResponse
 
@@ -14,7 +14,7 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
     private var buffer = Data()
     private var chunked = false
 
-    /// Taille max des en-têtes et du corps d'une requête (les uploads web passent par des morceaux WebDAV).
+    /// Max size of a request's headers and body (web uploads go through WebDAV chunks).
     private let maxHeaderSize = 64 * 1024
     private let maxBodySize = 512 * 1024 * 1024
 
@@ -23,15 +23,15 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
         self.handler = handler
     }
 
-    /// Démarre la connexion. Les handlers retiennent `self` jusqu'à la fermeture
-    /// (personne d'autre ne garde de référence sur la connexion).
+    /// Starts the connection. The handlers retain `self` until it closes
+    /// (nothing else holds a reference to the connection).
     func start() {
         connection.stateUpdateHandler = { state in
             switch state {
             case .failed:
                 self.connection.cancel()
             case .cancelled:
-                self.connection.stateUpdateHandler = nil // rompt le cycle de rétention
+                self.connection.stateUpdateHandler = nil // breaks the retain cycle
             default:
                 break
             }
@@ -40,7 +40,7 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
         receive()
     }
 
-    // MARK: - Lecture
+    // MARK: - Reading
 
     private func receive() {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 256 * 1024) { data, _, isComplete, error in
@@ -52,7 +52,7 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
         }
     }
 
-    /// Traite une requête si elle est complète dans le tampon. `true` si elle a été prise en charge.
+    /// Handles a request if it is complete in the buffer. Returns `true` if it was handled.
     private func tryHandleRequest() -> Bool {
         let separator = Data("\r\n\r\n".utf8)
         guard let headerEnd = buffer.range(of: separator) else {
@@ -93,7 +93,7 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
         return (requestLine[0].uppercased(), requestLine[1], requestLine[2], headers)
     }
 
-    // MARK: - Réponse
+    // MARK: - Response
 
     private func process(_ request: HTTPRequest) async {
         let response = await handler(request)
@@ -132,7 +132,7 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
         do {
             try await rawSend(Data(head.utf8))
         } catch {
-            // Client parti : on laisse le producteur échouer pour qu'il libère sa source (tâche amont).
+            // Client gone: let the producer fail so it releases its source (upstream task).
             if case .stream(_, let producer) = response.body { try? await producer(ClosedWriter()) }
             throw error
         }
@@ -153,7 +153,7 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
         }
     }
 
-    /// `HTTPBodyWriter` : un morceau de corps (encodé en chunk si la longueur est inconnue).
+    /// `HTTPBodyWriter`: one piece of the body (chunk-encoded if the length is unknown).
     func write(_ data: Data) async throws {
         guard !data.isEmpty else { return }
         if chunked {
@@ -167,7 +167,7 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
         }
     }
 
-    /// Envoi avec attente de l'acquittement (contre-pression naturelle).
+    /// Sends and waits for the acknowledgement (natural backpressure).
     private func rawSend(_ data: Data) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             connection.send(content: data, completion: .contentProcessed { error in
@@ -185,7 +185,7 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
     }
 }
 
-/// Writer d'une connexion déjà fermée : toute écriture échoue.
+/// Writer for an already closed connection: every write fails.
 private final class ClosedWriter: HTTPBodyWriter {
     func write(_ data: Data) async throws {
         throw URLError(.networkConnectionLost)

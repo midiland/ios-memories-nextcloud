@@ -1,28 +1,28 @@
 import Foundation
 
-/// Connexion Nextcloud par Login Flow v2, en deux temps (comme `AccountManager` sur Android) :
-/// 1. `prepare` : vérifie le serveur (`api/describe`) puis ouvre un flow → URL de login ;
-/// 2. `waitForApproval` : polling toutes les 3 s (10 min max) jusqu'à l'obtention
-///    de `loginName` + `appPassword`.
+/// Nextcloud login via Login Flow v2, in two steps (like `AccountManager` on Android):
+/// 1. `prepare`: checks the server (`api/describe`), then opens a flow → login URL;
+/// 2. `waitForApproval`: polls every 3 s (10 min max) until `loginName` +
+///    `appPassword` are obtained.
 ///
-/// L'affichage de la page de login (SFSafariViewController) est géré par la vue.
+/// Presenting the login page (SFSafariViewController) is handled by the view.
 struct LoginFlowV2 {
-    /// Flow prêt : page à ouvrir + informations de polling.
+    /// Ready flow: page to open + polling info.
     struct Pending {
         let loginPage: URL
         let poll: LoginFlowInit.Poll
-        /// Racine Memories canonique renvoyée par le serveur.
+        /// Canonical Memories root returned by the server.
         let server: ServerURL
     }
 
     private let client = NextcloudClient()
 
-    /// Valide le serveur saisi et démarre un flow.
+    /// Validates the entered server and starts a flow.
     func prepare(userInput: String) async throws -> Pending {
         guard let entered = ServerURL(userInput: userInput) else { throw AppError.invalidURL }
 
         let describe = try await client.describe(entered)
-        // Le serveur connaît son URL canonique (overwrite.cli.url, protocole…) : on la préfère.
+        // The server knows its canonical URL (overwrite.cli.url, protocol…): prefer it.
         let server = ServerURL(memoriesBaseURL: describe.baseUrl) ?? entered
         guard let loginFlowURL = URL(string: describe.loginFlowUrl) else {
             throw AppError.invalidResponse
@@ -32,13 +32,13 @@ struct LoginFlowV2 {
         return Pending(loginPage: flow.login, poll: flow.poll, server: server)
     }
 
-    /// Attend que l'utilisateur valide la connexion dans le navigateur.
-    /// S'arrête proprement si la tâche est annulée (`CancellationError`).
+    /// Waits for the user to approve the login in the browser.
+    /// Stops cleanly if the task is cancelled (`CancellationError`).
     func waitForApproval(_ pending: Pending) async throws -> Credentials {
         let deadline = Date().addingTimeInterval(AppConstants.loginPollTimeout)
         while Date() < deadline {
             try await Task.sleep(nanoseconds: AppConstants.loginPollInterval)
-            // Les erreurs réseau ponctuelles sont ignorées : on retente au tour suivant.
+            // Transient network errors are ignored: retry on the next round.
             if let result = try? await client.pollLogin(pending.poll) {
                 return Credentials(
                     server: pending.server,

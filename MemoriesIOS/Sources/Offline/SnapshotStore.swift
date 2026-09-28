@@ -1,6 +1,6 @@
 import Foundation
 
-/// Snapshot prêt à servir : fichiers JS/CSS d'une version de Memories.
+/// Snapshot ready to serve: the JS/CSS files of one Memories version.
 struct Snapshot {
     let directory: URL
     let manifest: AssetManifest
@@ -10,10 +10,10 @@ struct Snapshot {
     var cssDirectory: URL { directory.appendingPathComponent("css", isDirectory: true) }
 }
 
-/// Stockage disque des snapshots (équivalent de `AssetCache.kt`) :
-/// `Application Support/offline/<serveur>/<clé SHA-256>/{js/, css/, describe.json, .ready}`.
-/// Un snapshot n'est utilisable qu'avec son marqueur `.ready`. Exclu de la sauvegarde iCloud
-/// (tout est retéléchargeable).
+/// On-disk snapshot storage (equivalent of `AssetCache.kt`):
+/// `Application Support/offline/<server>/<SHA-256 key>/{js/, css/, describe.json, .ready}`.
+/// A snapshot is only usable with its `.ready` marker. Excluded from iCloud backup
+/// (everything can be downloaded again).
 struct SnapshotStore {
     private let fileManager = FileManager.default
 
@@ -22,7 +22,7 @@ struct SnapshotStore {
         return base.appendingPathComponent("offline", isDirectory: true)
     }
 
-    /// Dossier d'un serveur : `schéma_hôte_port`, assaini en segment de chemin sûr.
+    /// Per-server folder: `scheme_host_port`, sanitized into a safe path segment.
     func serverDirectory(for server: ServerURL) -> URL {
         let origin = server.origin
         let raw = "\(origin.scheme ?? "https")_\(origin.host ?? "")\(origin.port.map { "_\($0)" } ?? "")"
@@ -34,7 +34,7 @@ struct SnapshotStore {
         serverDirectory(for: server).appendingPathComponent(key, isDirectory: true)
     }
 
-    /// Snapshot prêt dans `directory`, `nil` s'il est incomplet ou illisible.
+    /// Ready snapshot in `directory`, `nil` if incomplete or unreadable.
     func snapshot(at directory: URL) -> Snapshot? {
         guard fileManager.fileExists(atPath: directory.appendingPathComponent(".ready").path),
               let raw = try? Data(contentsOf: directory.appendingPathComponent("describe.json")),
@@ -43,7 +43,7 @@ struct SnapshotStore {
         return Snapshot(directory: directory, manifest: manifest)
     }
 
-    /// Snapshot prêt le plus récent pour ce serveur.
+    /// Most recent ready snapshot for this server.
     func latest(for server: ServerURL) -> Snapshot? {
         let folder = serverDirectory(for: server)
         let entries = (try? fileManager.contentsOfDirectory(
@@ -54,7 +54,7 @@ struct SnapshotStore {
             .max { modificationDate($0.directory) < modificationDate($1.directory) }
     }
 
-    /// Prépare un dossier vide pour un nouveau snapshot.
+    /// Prepares an empty folder for a new snapshot.
     func prepareEmptyDirectory(_ directory: URL) throws {
         try? fileManager.removeItem(at: directory)
         for sub in ["js", "css"] {
@@ -65,13 +65,13 @@ struct SnapshotStore {
         excludeRootFromBackup()
     }
 
-    /// Finalise un snapshot : `describe.json` puis marqueur `.ready`.
+    /// Finalizes a snapshot: `describe.json`, then the `.ready` marker.
     func markReady(_ directory: URL, manifest: AssetManifest) throws {
         try manifest.raw.write(to: directory.appendingPathComponent("describe.json"), options: .atomic)
         try Data().write(to: directory.appendingPathComponent(".ready"))
     }
 
-    /// Supprime les autres snapshots du serveur (au mieux, sans erreur).
+    /// Deletes the server's other snapshots (best effort, no errors).
     func prune(server: ServerURL, keeping key: String) {
         let folder = serverDirectory(for: server)
         let entries = (try? fileManager.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
@@ -80,7 +80,7 @@ struct SnapshotStore {
         }
     }
 
-    // MARK: - Privé
+    // MARK: - Private
 
     private func modificationDate(_ url: URL) -> Date {
         (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast

@@ -1,10 +1,10 @@
 import Foundation
 import WebKit
 
-/// Démarrage de l'app servie localement (équivalent de `AppStartupCoordinator.kt`) :
-/// - snapshot déjà présent → affichage immédiat, mise à jour vérifiée en arrière-plan ;
-/// - sinon → téléchargement du snapshot (avec progression) puis affichage ;
-/// - serveur sans manifeste signé, ou échec → `nil` : l'appelant se replie sur le chargement distant.
+/// Startup of the locally served app (equivalent of `AppStartupCoordinator.kt`):
+/// - snapshot already present → shown immediately, update checked in the background;
+/// - otherwise → snapshot downloaded (with progress), then shown;
+/// - server without a signed manifest, or failure → `nil`: the caller falls back to remote loading.
 @MainActor
 final class OfflineAppLoader {
     private let credentials: Credentials
@@ -16,14 +16,14 @@ final class OfflineAppLoader {
         self.credentials = credentials
     }
 
-    /// URL de la page d'entrée locale : directement la route de l'app (charger `/`
-    /// provoquerait une redirection du frontend, donc un second chargement complet).
+    /// URL of the local entry page: the app route directly (loading `/` would trigger
+    /// a frontend redirect, and thus a second full load).
     var entryURL: URL {
         URL(string: server.origin.absoluteString + credentials.server.webRoot + "/index.php/apps/memories/")!
     }
 
-    /// Prépare le serveur local et un snapshot. Renvoie l'URL à charger, ou `nil` pour le repli distant.
-    /// Lève `AppError.notAuthenticated` / `.serverUnreachable` quand aucun snapshot ne peut aider.
+    /// Prepares the local server and a snapshot. Returns the URL to load, or `nil` for the remote fallback.
+    /// Throws `AppError.notAuthenticated` / `.serverUnreachable` when no snapshot can help.
     func prepare(into cookieStore: WKHTTPCookieStore, progress: @escaping AssetSyncer.Progress) async throws -> URL? {
         do {
             try await server.ensureStarted()
@@ -37,22 +37,22 @@ final class OfflineAppLoader {
             return entryURL
         }
 
-        // Premier lancement pour ce serveur : téléchargement bloquant.
+        // First launch for this server: blocking download.
         guard let manifest = try await fetchVerifiedManifest() else { return nil }
         let snapshot: Snapshot
         do {
             snapshot = try await AssetSyncer(credentials: credentials).sync(manifest, progress: progress)
         } catch {
-            Log.offline.error("Téléchargement du snapshot échoué : \(String(describing: error), privacy: .public)")
+            Log.offline.error("Snapshot download failed: \(String(describing: error), privacy: .public)")
             return nil
         }
         activate(snapshot)
         return entryURL
     }
 
-    /// Vérifie les identifiants et la version des fichiers web. Si le serveur a changé de version,
-    /// télécharge le nouveau snapshot et l'active. Renvoie `true` si la page doit être rechargée.
-    /// Hors ligne : aucune erreur (on continue avec le snapshot en cache).
+    /// Checks the credentials and the web files version. If the server version changed,
+    /// downloads the new snapshot and activates it. Returns `true` if the page must be reloaded.
+    /// Offline: no error (we keep running on the cached snapshot).
     func refreshInBackground() async throws -> Bool {
         let manifest: AssetManifest?
         do {
@@ -70,25 +70,25 @@ final class OfflineAppLoader {
         return true
     }
 
-    /// Relance l'écoute si iOS a fermé le socket en arrière-plan. `true` si le port a changé.
+    /// Restarts listening if iOS closed the socket in the background. `true` if the port changed.
     func ensureServerRunning() async -> Bool {
         let before = server.port
         guard let after = try? await server.ensureStarted() else { return false }
         return before != 0 && after != before
     }
 
-    // MARK: - Privé
+    // MARK: - Private
 
-    /// `describe?manifest=1` authentifié. `nil` si le serveur ne fournit pas de manifeste valide.
+    /// Authenticated `describe?manifest=1`. `nil` if the server provides no valid manifest.
     private func fetchVerifiedManifest() async throws -> AssetManifest? {
         let (describe, raw) = try await NextcloudClient().describeRaw(credentials.server, credentials: credentials, manifest: true)
         guard describe.uid != nil else { throw AppError.notAuthenticated }
         guard let manifest = try? AssetManifest(raw: raw) else {
-            Log.offline.notice("Pas de manifeste d'assets : repli sur le chargement distant")
+            Log.offline.notice("No asset manifest: falling back to remote loading")
             return nil
         }
         guard ManifestVerifier.verify(manifest) else {
-            Log.offline.error("Signature du manifeste invalide : repli sur le chargement distant")
+            Log.offline.error("Invalid manifest signature: falling back to remote loading")
             return nil
         }
         return manifest
@@ -103,7 +103,7 @@ final class OfflineAppLoader {
         )
     }
 
-    /// Cookie HttpOnly `local-auth` : sans lui le serveur local répond 403 (autres apps de l'appareil).
+    /// HttpOnly `local-auth` cookie: without it the local server responds 403 (other apps on the device).
     private func installAccessCookie(into cookieStore: WKHTTPCookieStore) async {
         let properties: [HTTPCookiePropertyKey: Any] = [
             .name: "local-auth",

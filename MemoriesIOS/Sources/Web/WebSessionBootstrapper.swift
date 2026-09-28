@@ -1,21 +1,21 @@
 import Foundation
 import WebKit
 
-/// Authentifie la WebView auprès de Nextcloud.
+/// Authenticates the web view with Nextcloud.
 ///
-/// Android envoie `Authorization: Basic` sur chaque requête via son proxy local.
-/// WKWebView ne permet pas d'ajouter un header aux sous-requêtes, donc on procède ainsi :
-/// 1. requête `api/describe` en Basic auth via `URLSession` → Nextcloud ouvre une session
-///    et renvoie ses cookies (`nc_session_id`, `oc_sessionPassphrase`, `__Host-nc_sameSiteCookie*`…) ;
-/// 2. copie de ces cookies dans le `WKHTTPCookieStore` de la WebView ;
-/// 3. ajout du cookie `nx_auth` = header Basic : en mode natif (User-Agent `MemoriesNative`),
-///    le serveur le traduit en `Authorization` sur chaque requête
-///    (`Application::handleNativeHeaders`), ce qui survit à l'expiration de la session ;
-/// 4. la WebView charge la page Memories, déjà authentifiée.
+/// Android sends `Authorization: Basic` on every request through its local proxy.
+/// WKWebView cannot add a header to subrequests, so we do the following:
+/// 1. `api/describe` request with Basic auth via `URLSession` → Nextcloud opens a session
+///    and returns its cookies (`nc_session_id`, `oc_sessionPassphrase`, `__Host-nc_sameSiteCookie*`…);
+/// 2. copy those cookies into the web view's `WKHTTPCookieStore`;
+/// 3. add the `nx_auth` cookie = Basic header: in native mode (User-Agent `MemoriesNative`),
+///    the server translates it into `Authorization` on every request
+///    (`Application::handleNativeHeaders`), which survives session expiry;
+/// 4. the web view loads the Memories page, already authenticated.
 @MainActor
 enum WebSessionBootstrapper {
-    /// Vérifie les identifiants et installe les cookies de session dans la WebView.
-    /// Lève `AppError.notAuthenticated` si le serveur refuse les identifiants.
+    /// Checks the credentials and installs the session cookies in the web view.
+    /// Throws `AppError.notAuthenticated` if the server rejects the credentials.
     static func bootstrap(_ credentials: Credentials, into cookieStore: WKHTTPCookieStore) async throws {
         let client = NextcloudClient()
         let describe = try await client.describe(credentials.server, credentials: credentials)
@@ -29,8 +29,8 @@ enum WebSessionBootstrapper {
         }
     }
 
-    /// Cookie `nx_auth` (HttpOnly, invisible du JS). La valeur est encodée en pourcentage :
-    /// PHP décode automatiquement `$_COOKIE`, ce qui redonne `Basic <base64>`.
+    /// `nx_auth` cookie (HttpOnly, hidden from JS). The value is percent-encoded:
+    /// PHP automatically decodes `$_COOKIE`, which yields `Basic <base64>` again.
     private static func nativeAuthCookie(_ credentials: Credentials) -> HTTPCookie? {
         let server = credentials.server
         let allowed = CharacterSet.alphanumerics
@@ -51,7 +51,7 @@ enum WebSessionBootstrapper {
         return HTTPCookie(properties: properties)
     }
 
-    /// Efface cookies, cache et stockage local de la WebView (déconnexion).
+    /// Clears the web view's cookies, cache and local storage (logout).
     static func clearWebsiteData() {
         let store = WKWebsiteDataStore.default()
         store.removeData(

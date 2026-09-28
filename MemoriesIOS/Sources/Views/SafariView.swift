@@ -1,11 +1,11 @@
 import SafariServices
 import SwiftUI
 
-/// `SFSafariViewController` pour la page de login Nextcloud.
+/// `SFSafariViewController` for the Nextcloud login page.
 ///
-/// Choisi plutôt qu'`ASWebAuthenticationSession` : le Login Flow v2 ne redirige vers aucun
-/// schéma de retour, la fin de connexion est détectée par polling. La feuille est fermée
-/// par `SessionStore` dès que le polling aboutit ; « OK » ferme la feuille et annule le login.
+/// Chosen over `ASWebAuthenticationSession`: Login Flow v2 does not redirect to any
+/// callback scheme, so login completion is detected by polling. The sheet is closed
+/// by `SessionStore` as soon as polling succeeds; "Done" closes the sheet and cancels the login.
 struct SafariView: UIViewControllerRepresentable {
     let url: URL
 

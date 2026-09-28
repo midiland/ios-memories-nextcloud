@@ -1,21 +1,21 @@
 import Foundation
 
-/// Quand afficher le bouton retour natif.
+/// When to show the native back button.
 ///
-/// En mode natif, le frontend masque sa barre de navigation hors des onglets principaux
-/// (`showNavigation` dans `App.vue`) et compte sur le bouton « retour » d'Android pour sortir
-/// de pages comme « Ce jour-là », Favoris, Vidéos, Carte ou Dossiers. iOS n'a pas de bouton
-/// système : on affiche le nôtre sur ces pages uniquement.
+/// In native mode, the frontend hides its navigation bar outside the main tabs
+/// (`showNavigation` in `App.vue`) and relies on Android's back button to leave
+/// pages such as "On this day", Favorites, Videos, Map or Folders. iOS has no system
+/// back button, so we show our own on those pages only.
 enum BackNavigationRule {
-    /// Routes de l'app (après `…/apps/memories`) où la barre de navigation est visible.
+    /// App routes (after `…/apps/memories`) where the navigation bar is visible.
     private static let mainRoutes: Set<String> = ["", "/explore", "/albums"]
 
-    /// Routes dont l'en-tête web a déjà sa propre flèche retour (`*TopMatter.vue`).
+    /// Routes whose web header already has its own back arrow (`*TopMatter.vue`).
     private static let routesWithOwnBack = ["/albums/", "/places", "/tags", "/recognize", "/facerecognition"]
 
     static func showsBackButton(url: URL?, canGoBack: Bool, webRoot: String) -> Bool {
         guard canGoBack, let url else { return false }
-        // Fragment = visionneuse, barre latérale ou fenêtre ouverte : elles ont leur bouton fermer.
+        // Fragment = viewer, sidebar or open modal: they have their own close button.
         if let fragment = url.fragment, !fragment.isEmpty { return false }
 
         var route = url.path

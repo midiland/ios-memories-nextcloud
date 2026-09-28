@@ -1,12 +1,12 @@
 import UIKit
 import WebKit
 
-/// Implémentation du pont NativeX (étape 2a : « mode app », sans photos locales).
+/// NativeX bridge implementation (step 2a: "app mode", no local photos).
 ///
-/// - injecte `nativex.js` au début du document (définit `window.nativex`) ;
-/// - handler `nativex` : appels « fire-and-forget » (`postMessage`) ;
-/// - handler `nativexAsync` : requêtes `http://127.0.0.1/...` détournées par le JS,
-///   avec réponse (`WKScriptMessageHandlerWithReply`).
+/// - injects `nativex.js` at document start (defines `window.nativex`);
+/// - `nativex` handler: fire-and-forget calls (`postMessage`);
+/// - `nativexAsync` handler: `http://127.0.0.1/...` requests intercepted by the JS,
+///   with a reply (`WKScriptMessageHandlerWithReply`).
 @MainActor
 final class NativeXController: NSObject, NativeXBridge {
     static let syncHandler = "nativex"
@@ -25,7 +25,7 @@ final class NativeXController: NSObject, NativeXBridge {
 
     func install(into controller: WKUserContentController) {
         guard let source = Self.scriptSource(state: initialState) else {
-            assertionFailure("nativex.js introuvable dans le bundle")
+            assertionFailure("nativex.js not found in bundle")
             return
         }
         controller.addUserScript(WKUserScript(source: source, injectionTime: .atDocumentStart, forMainFrameOnly: true))
@@ -41,18 +41,18 @@ final class NativeXController: NSObject, NativeXBridge {
         controller.removeScriptMessageHandler(forName: Self.asyncHandler, contentWorld: .page)
     }
 
-    // MARK: - État synchrone
+    // MARK: - Synchronous state
 
-    /// Valeurs lues de façon synchrone par le frontend (voir `NativeXMethod.isSynchronous`).
+    /// Values read synchronously by the frontend (see `NativeXMethod.isSynchronous`).
     private var initialState: [String: Any] {
         [
             "localFolders": defaults.string(forKey: localFoldersKey) ?? "[]",
-            "hasMediaPermission": false, // PhotoKit : étape 2b
+            "hasMediaPermission": false, // PhotoKit: step 2b
             "syncStatus": -1,
         ]
     }
 
-    /// Lit `nativex.js` et y insère l'état initial en JSON.
+    /// Reads `nativex.js` and injects the initial state as JSON.
     private static func scriptSource(state: [String: Any]) -> String? {
         guard let url = Bundle.main.url(forResource: "nativex", withExtension: "js"),
               let template = try? String(contentsOf: url, encoding: .utf8),
@@ -63,10 +63,10 @@ final class NativeXController: NSObject, NativeXBridge {
     }
 }
 
-// MARK: - Messages JS → natif
+// MARK: - JS → native messages
 
 extension NativeXController: WKScriptMessageHandler, WKScriptMessageHandlerWithReply {
-    /// Appels « fire-and-forget » : `{ method, args }`.
+    /// Fire-and-forget calls: `{ method, args }`.
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let body = message.body as? [String: Any],
               let name = body["method"] as? String,
@@ -76,7 +76,7 @@ extension NativeXController: WKScriptMessageHandler, WKScriptMessageHandlerWithR
         dispatch(method, args: NativeXArguments(args))
     }
 
-    /// Requêtes du pont asynchrone : `{ method, url }` → `{ status, contentType, body }`.
+    /// Async bridge requests: `{ method, url }` → `{ status, contentType, body }`.
     func userContentController(
         _ controller: WKUserContentController,
         didReceive message: WKScriptMessage,
@@ -113,15 +113,15 @@ extension NativeXController: WKScriptMessageHandler, WKScriptMessageHandlerWithR
         case .configSetLocalFolders:
             defaults.set(args.string(0) ?? "[]", forKey: localFoldersKey)
         case .setHasRemote:
-            break // index local : étape 2b
+            break // local index: step 2b
         case .isNative, .configGetLocalFolders, .configHasMediaPermission, .getSyncStatus,
              .playVideo, .playVideo2, .destroyVideo:
-            break // synchrones (servies par le cache JS) ou non exposées
+            break // synchronous (served by the JS cache) or not exposed
         }
     }
 }
 
-/// Accès typé aux arguments d'un message JS (`null` JS → `NSNull`).
+/// Typed access to a JS message's arguments (JS `null` → `NSNull`).
 struct NativeXArguments {
     private let values: [Any]
 
