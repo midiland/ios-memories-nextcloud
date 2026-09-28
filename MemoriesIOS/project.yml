@@ -1,0 +1,55 @@
+# Projet XcodeGen de l'app iOS Memories.
+# Régénérer le .xcodeproj après toute modification : `cd MemoriesIOS && xcodegen generate`
+name: MemoriesIOS
+options:
+  bundleIdPrefix: gallery.memories
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  MemoriesIOS:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: gallery.memories.ios
+        PRODUCT_NAME: Memories
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: Memories
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSupportsIndirectInputEvents: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSAppTransportSecurity:
+          # Autorise http:// vers les noms locaux (.local, noms sans domaine)
+          # et, plus tard, vers le serveur loopback du pont NativeX.
+          NSAllowsLocalNetworking: true
+        NSLocalNetworkUsageDescription: Memories se connecte à votre serveur Nextcloud sur le réseau local.
+schemes:
+  MemoriesIOS:
+    build:
+      targets:
+        MemoriesIOS: all
+    run:
+      config: Debug
