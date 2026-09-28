@@ -57,6 +57,14 @@ struct ServerURL: Equatable, Codable {
         return URL(string: text) ?? origin
     }
 
+    /// Préfixe de chemin de Nextcloud sans `/` final : `""` à la racine du domaine,
+    /// sinon par ex. `/nextcloud` (équivalent de `AssetCache.webrootOf` sur Android).
+    var webRoot: String {
+        var path = nextcloudRoot.path
+        while path.hasSuffix("/") { path.removeLast() }
+        return path
+    }
+
     /// Hôte du serveur (sert à filtrer cookies et navigations).
     var host: String { memoriesURL.host ?? "" }
 

@@ -27,7 +27,20 @@ final class NextcloudClient {
     /// Erreurs : serveur injoignable, Memories absent (404 ou réponse non JSON),
     /// identifiants refusés (401), version trop ancienne.
     func describe(_ server: ServerURL, credentials: Credentials? = nil) async throws -> DescribeResponse {
-        var request = URLRequest(url: server.describeURL)
+        try await describeRaw(server, credentials: credentials, manifest: false).describe
+    }
+
+    /// Comme `describe`, mais renvoie aussi le JSON brut. Avec `manifest`, la réponse contient
+    /// les manifestes JS (signé) et CSS nécessaires au snapshot hors ligne (`?manifest=1`).
+    func describeRaw(
+        _ server: ServerURL, credentials: Credentials?, manifest: Bool
+    ) async throws -> (describe: DescribeResponse, raw: Data) {
+        var url = server.describeURL
+        if manifest, var components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            components.queryItems = [URLQueryItem(name: "manifest", value: "1")]
+            url = components.url ?? url
+        }
+        var request = URLRequest(url: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         // Sans ce header, Nextcloud peut rediriger vers /login au lieu de répondre 401.
         request.setValue("true", forHTTPHeaderField: "OCS-APIREQUEST")
@@ -51,7 +64,7 @@ final class NextcloudClient {
         if SemanticVersion(describe.version) < SemanticVersion(AppConstants.minServerVersion) {
             throw AppError.serverTooOld(version: describe.version)
         }
-        return describe
+        return (describe, data)
     }
 
     // MARK: - Login Flow v2

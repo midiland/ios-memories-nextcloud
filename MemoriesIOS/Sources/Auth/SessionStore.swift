@@ -91,6 +91,9 @@ final class SessionStore: ObservableObject {
     private func endSession(error: AppError?) {
         store.delete()
         WebSessionBootstrapper.clearWebsiteData()
+        // Mode local : plus rien à servir ni relayer, et on oublie la session Nextcloud du relais.
+        LocalHTTPServer.shared.router.config = nil
+        HTTPCookieStorage.shared.removeCookies(since: .distantPast)
         loginError = error
         phase = .loggedOut
     }

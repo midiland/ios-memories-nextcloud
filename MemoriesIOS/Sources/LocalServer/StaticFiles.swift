@@ -1,0 +1,68 @@
+import Foundation
+
+/// Fichiers servis localement (port de `StaticController.kt`). Recherche par nom de fichier
+/// seul (dernier segment du chemin) : aucune traversée de dossier possible.
+enum StaticFiles {
+    /// Fichier embarqué dans l'app (`Resources/`), ex. `shell-overrides.css`.
+    static func bundled(_ request: HTTPRequest) -> HTTPResponse {
+        guard let name = fileName(request) else { return .notFound }
+        let base = (name as NSString).deletingPathExtension
+        let ext = (name as NSString).pathExtension
+        guard let url = Bundle.main.url(forResource: base, withExtension: ext),
+              let data = try? Data(contentsOf: url)
+        else { return .notFound }
+        return HTTPResponse(
+            status: 200,
+            headers: [("Content-Type", mimeType(ext)), ("Cache-Control", "no-store")],
+            body: .data(data)
+        )
+    }
+
+    /// Fichier du snapshot, validé par ETag pour que WebKit réutilise son cache.
+    /// `transform` éventuel appliqué au contenu (son `version` entre dans l'ETag).
+    static func file(
+        _ request: HTTPRequest, in directory: URL,
+        transform: (version: String, apply: (Data) -> Data)? = nil
+    ) -> HTTPResponse {
+        guard let name = fileName(request) else { return .notFound }
+        let url = directory.appendingPathComponent(name)
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+              let size = attributes[.size] as? Int
+        else { return .notFound }
+
+        let modified = Int((attributes[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0)
+        let suffix = transform.map { "-\($0.version)" } ?? ""
+        let etag = "\"\(String(modified, radix: 16))-\(String(size, radix: 16))\(suffix)\""
+        var headers = [("ETag", etag), ("Cache-Control", "no-cache")]
+
+        let candidates = (request.header("if-none-match") ?? "").split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        if candidates.contains(etag) || candidates.contains("*") {
+            return HTTPResponse(status: 304, headers: headers)
+        }
+        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else { return .notFound }
+        headers.append(("Content-Type", mimeType(url.pathExtension)))
+        return HTTPResponse(status: 200, headers: headers, body: .data(transform?.apply(data) ?? data))
+    }
+
+    /// Nom de fichier demandé ; `nil` (→ 404) si vide, suspect ou méthode autre que GET/HEAD.
+    private static func fileName(_ request: HTTPRequest) -> String? {
+        guard request.method == "GET" || request.method == "HEAD" else { return nil }
+        guard let name = request.path.split(separator: "/").last.map(String.init),
+              !name.isEmpty, !name.contains("..")
+        else { return nil }
+        return name.removingPercentEncoding ?? name
+    }
+
+    private static func mimeType(_ ext: String) -> String {
+        switch ext.lowercased() {
+        case "js", "mjs": return "text/javascript; charset=utf-8"
+        case "css": return "text/css; charset=utf-8"
+        case "html": return "text/html; charset=utf-8"
+        case "svg": return "image/svg+xml"
+        case "png": return "image/png"
+        case "json": return "application/json"
+        case "map": return "application/json"
+        default: return "application/octet-stream"
+        }
+    }
+}

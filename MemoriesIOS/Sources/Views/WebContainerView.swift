@@ -8,6 +8,7 @@ import SwiftUI
 /// - La déconnexion se fait dans l'UI web (Paramètres > Compte), ou depuis l'écran d'erreur.
 struct WebContainerView: View {
     @EnvironmentObject private var session: SessionStore
+    @Environment(\.scenePhase) private var scenePhase
     @StateObject private var model: WebViewModel
 
     init(credentials: Credentials) {
@@ -24,6 +25,8 @@ struct WebContainerView: View {
                 ProgressView()
                     .controlSize(.large)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+            case .downloading(let done, let total):
+                DownloadProgressView(done: done, total: total)
             case .failed(let error):
                 ErrorView(error: error, retry: model.start, logout: session.logout)
             case .ready:
@@ -41,6 +44,9 @@ struct WebContainerView: View {
             model.onSessionRevoked = { [weak session] in session?.sessionRevoked() }
             model.onLogout = { [weak session] in session?.logout() }
             model.startIfNeeded()
+        }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active { model.appDidBecomeActive() }
         }
     }
 

@@ -3,15 +3,19 @@ import WebKit
 /// Délégué de navigation et d'UI de la WebView (équivalent de `MemoriesWebViewClient`
 /// et `MemoriesWebChromeClient` sur Android).
 ///
-/// Règles :
-/// - seules les pages du serveur Nextcloud restent dans la WebView, le reste part dans Safari ;
-/// - une redirection vers la page de login Nextcloud = session expirée → réamorçage ;
+/// Règles (détaillées dans `WebViewModel.decideNavigation`) :
+/// - seules les pages de l'app restent dans la WebView, le reste part dans Safari ;
+/// - mode distant : une redirection vers la page de login Nextcloud = session expirée → réamorçage ;
 /// - erreurs réseau / HTTP du document principal → écran d'erreur.
 @MainActor
 final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
-    weak var model: WebViewModel?
+    enum Decision {
+        case allow
+        case external(URL)
+        case sessionLost
+    }
 
-    private var server: ServerURL? { model?.credentials.server }
+    weak var model: WebViewModel?
 
     // MARK: - Politique de navigation
 
@@ -20,7 +24,7 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         decidePolicyFor action: WKNavigationAction,
         decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void
     ) {
-        guard let url = action.request.url, let server else { return decisionHandler(.allow) }
+        guard let url = action.request.url, let model else { return decisionHandler(.allow) }
 
         // Les sous-frames (carte OpenStreetMap, aperçus…) ne sont pas filtrés.
         let isMainFrame = action.targetFrame?.isMainFrame ?? true
@@ -33,20 +37,20 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
             break
         default:
             // mailto:, tel:, etc.
-            model?.openExternally(url)
+            model.openExternally(url)
             return decisionHandler(.cancel)
         }
 
-        if url.host != server.host {
-            model?.openExternally(url)
-            return decisionHandler(.cancel)
-        }
-        if Self.isLoginPage(url) {
+        switch model.decideNavigation(to: url) {
+        case .allow:
+            decisionHandler(.allow)
+        case .external(let target):
             decisionHandler(.cancel)
-            model?.sessionLost()
-            return
+            model.openExternally(target)
+        case .sessionLost:
+            decisionHandler(.cancel)
+            model.sessionLost()
         }
-        decisionHandler(.allow)
     }
 
     func webView(
@@ -61,7 +65,7 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         case 401:
             decisionHandler(.cancel)
             model?.sessionLost()
-        case 404:
+        case 404 where model?.mode == .remote:
             decisionHandler(.cancel)
             model?.pageDidFail(.memoriesNotInstalled)
         case 400...:
@@ -74,7 +78,9 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     // MARK: - Cycle de chargement
 
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    /// Premier rendu du document : on retire le voile natif sans attendre la fin du chargement
+    /// (le frontend affiche ses propres indicateurs ; en mode local la page arrive en ~50 ms).
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         model?.pageDidFinish()
     }
 
@@ -100,11 +106,11 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         for action: WKNavigationAction,
         windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
-        guard let url = action.request.url else { return nil }
-        if url.host == server?.host {
-            webView.load(action.request)
-        } else {
-            model?.openExternally(url)
+        guard let url = action.request.url, let model else { return nil }
+        switch model.decideNavigation(to: url) {
+        case .allow: webView.load(action.request)
+        case .external(let target): model.openExternally(target)
+        case .sessionLost: model.sessionLost()
         }
         return nil
     }
