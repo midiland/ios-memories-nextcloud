@@ -84,6 +84,12 @@ Info.plist est généré par XcodeGen depuis la section `info:` de `project.yml`
 - **Pont 127.0.0.1 sans serveur local (2a)** : interception JS de `fetch`/`XMLHttpRequest`, réponses texte
   uniquement. Ne couvre pas les `<img src="http://127.0.0.1/image/…">` : il faudra un vrai serveur local
   (ou un patch frontend) pour les miniatures de photos locales en 2b.
+- **Bouton retour natif** (`BackNavigationRule`, `BackButton`) : en mode natif le frontend masque sa barre
+  de navigation hors des onglets principaux et compte sur le bouton retour d'Android (« Ce jour-là »,
+  Favoris, Vidéos, Archives, Carte, Dossiers, Recherche). Bouton flottant en bas à gauche, visible si
+  `canGoBack`, hors onglets principaux (`/`, `/explore`, `/albums`), sans fragment d'URL (visionneuse,
+  fenêtres) et hors pages ayant leur propre flèche (`/albums/…`, `/places`, `/tags`, `/recognize`,
+  `/facerecognition`). Le glissement depuis le bord gauche fait la même chose.
 - `playVideo`/`playVideo2`/`destroyVideo` **non exposés** : le frontend garde son lecteur web.
 - `playTouchSound` = retour haptique ; `downloadFromUrl` = téléchargement puis feuille de partage
   (les identifiants ne partent que vers l'hôte du compte).
@@ -98,6 +104,9 @@ Info.plist est généré par XcodeGen depuis la section `info:` de `project.yml`
 
 - **Journaux** (Debug) : `xcrun simctl spawn booted log stream --level debug --predicate 'subsystem == "gallery.memories.ios"'`
   → une ligne par requête du serveur local (`GET /chemin → statut`) + événements du mode hors ligne.
+- **Navigation automatisée** (Debug) : `xcrun simctl launch "iPhone 17 Pro" gallery.memories.ios -MXRoute /thisday -MXBackAfter 5`
+  → ouvre une route via `_m.router.push` puis appuie sur le bouton retour (`DebugAutomation.swift`).
+  Ne pas relancer l'app si l'utilisateur est en train de s'en servir dans le simulateur.
 - **Serveur local hors simulateur** : `LocalServer/`, `Offline/{AssetManifest,SnapshotStore,ShellPage,CSSPathRewriter}`,
   `Network/{ServerURL,NextcloudModels}`, `Auth/Credentials`, `App/Log` compilent avec `swiftc` sur macOS
   (harnais + faux Nextcloud en Python + `curl`).

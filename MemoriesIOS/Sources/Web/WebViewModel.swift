@@ -34,6 +34,8 @@ final class WebViewModel: ObservableObject {
     /// en mode natif) et dans les zones de sécurité. `nil` = fond système.
     @Published private(set) var themeColor: UIColor?
     @Published var toast: Toast?
+    /// Bouton retour natif visible (pages sans barre de navigation web, voir `BackNavigationRule`).
+    @Published private(set) var showsBackButton = false
 
     let credentials: Credentials
     let webView: WKWebView
@@ -49,6 +51,7 @@ final class WebViewModel: ObservableObject {
     private let offline: OfflineAppLoader
     private var lastBootstrap: Date?
     private var hasStarted = false
+    private var observations: [NSKeyValueObservation] = []
 
     init(credentials: Credentials) {
         self.credentials = credentials
@@ -58,6 +61,28 @@ final class WebViewModel: ObservableObject {
         navigationHandler.model = self
         webView.navigationDelegate = navigationHandler
         webView.uiDelegate = navigationHandler
+        observeHistory()
+    }
+
+    /// Suit l'URL et l'historique (y compris les `pushState` du routeur Vue) pour le bouton retour.
+    private func observeHistory() {
+        let update: (WKWebView) -> Void = { [weak self] webView in
+            Task { @MainActor in
+                guard let self else { return }
+                self.showsBackButton = BackNavigationRule.showsBackButton(
+                    url: webView.url, canGoBack: webView.canGoBack, webRoot: self.credentials.server.webRoot
+                )
+            }
+        }
+        observations = [
+            webView.observe(\.url, options: [.new]) { webView, _ in update(webView) },
+            webView.observe(\.canGoBack, options: [.new]) { webView, _ in update(webView) },
+        ]
+    }
+
+    /// Bouton retour natif : équivalent du bouton « retour » d'Android (`webview.goBack()`).
+    func goBack() {
+        if webView.canGoBack { webView.goBack() }
     }
 
     private var cookieStore: WKHTTPCookieStore { webView.configuration.websiteDataStore.httpCookieStore }
@@ -150,6 +175,9 @@ final class WebViewModel: ObservableObject {
 
     func pageDidFinish() {
         state = .ready
+        #if DEBUG
+        DebugAutomation.run(on: self)
+        #endif
     }
 
     func pageDidFail(_ error: AppError) {

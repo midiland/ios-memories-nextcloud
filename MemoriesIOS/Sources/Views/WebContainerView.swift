@@ -33,6 +33,12 @@ struct WebContainerView: View {
                 EmptyView()
             }
 
+            if model.showsBackButton && model.state == .ready {
+                BackButton(action: model.goBack)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity)
+            }
+
             if let toast = model.toast {
                 ToastView(message: toast.message)
                     .id(toast.id)
@@ -40,6 +46,7 @@ struct WebContainerView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: model.toast)
+        .animation(.easeInOut(duration: 0.2), value: model.showsBackButton)
         .onAppear {
             model.onSessionRevoked = { [weak session] in session?.sessionRevoked() }
             model.onLogout = { [weak session] in session?.logout() }
