@@ -52,6 +52,7 @@ struct WebContainerView: View {
             model.onLogout = { [weak session] in session?.logout() }
             model.startIfNeeded()
         }
+        .onDisappear(perform: model.stop)
         .onChange(of: scenePhase) { phase in
             if phase == .active { model.appDidBecomeActive() }
         }

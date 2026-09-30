@@ -51,6 +51,9 @@ final class WebViewModel: ObservableObject {
     private let offline: OfflineAppLoader
     private var lastBootstrap: Date?
     private var hasStarted = false
+    /// Current load and background update check; cancelled by the next `start()`.
+    private var loadTask: Task<Void, Never>?
+    private var refreshTask: Task<Void, Never>?
     private var observations: [NSKeyValueObservation] = []
 
     init(credentials: Credentials) {
@@ -96,28 +99,47 @@ final class WebViewModel: ObservableObject {
     }
 
     /// Loads the app: local mode if possible, otherwise remote fallback.
+    /// A new call cancels the previous load (retry, expired session, `nativex.reload`),
+    /// so two loads never race to update the state or the web view.
     func start() {
+        loadTask?.cancel()
+        refreshTask?.cancel()
         hasStarted = true
         state = .loading
         lastBootstrap = Date()
-        Task {
-            do {
-                let progress: AssetSyncer.Progress = { [weak self] done, total in
-                    self?.state = .downloading(done: done, total: total)
-                }
-                if let url = try await offline.prepare(into: cookieStore, progress: progress) {
-                    mode = .local
-                    state = .loading
-                    webView.load(URLRequest(url: url))
-                    Task { await refreshInBackground() }
-                } else {
-                    try await startRemote()
-                }
-            } catch AppError.notAuthenticated {
-                onSessionRevoked()
-            } catch {
-                state = .failed(AppError.from(error))
+        loadTask = Task { [weak self] in await self?.load() }
+    }
+
+    /// Cancels pending work when the screen goes away (logout, account change).
+    func stop() {
+        loadTask?.cancel()
+        refreshTask?.cancel()
+    }
+
+    private func load() async {
+        do {
+            let progress: AssetSyncer.Progress = { [weak self] done, total in
+                guard !Task.isCancelled else { return }
+                self?.state = .downloading(done: done, total: total)
             }
+            let localURL = try await offline.prepare(into: cookieStore, progress: progress)
+            try Task.checkCancellation()
+            if let localURL {
+                mode = .local
+                state = .loading
+                webView.load(URLRequest(url: localURL))
+                refreshTask = Task { [weak self] in await self?.refreshInBackground() }
+            } else {
+                try await startRemote()
+            }
+        } catch is CancellationError {
+            // Superseded by a newer load.
+        } catch AppError.notAuthenticated {
+            guard !Task.isCancelled else { return }
+            onSessionRevoked()
+        } catch {
+            guard !Task.isCancelled else { return }
+            state = .failed(AppError.from(error))
         }
     }
 
@@ -125,6 +147,7 @@ final class WebViewModel: ObservableObject {
     private func startRemote() async throws {
         mode = .remote
         try await WebSessionBootstrapper.bootstrap(credentials, into: cookieStore)
+        try Task.checkCancellation()
         var request = URLRequest(url: credentials.server.memoriesURL)
         request.setValue(credentials.basicAuthHeader, forHTTPHeaderField: "Authorization")
         webView.load(request)
@@ -133,11 +156,12 @@ final class WebViewModel: ObservableObject {
     /// Checks credentials and updates while the app runs on the cached snapshot.
     private func refreshInBackground() async {
         do {
-            if try await offline.refreshInBackground() {
-                webView.load(URLRequest(url: offline.entryURL))
-                nativeXToast(String(localized: "Memories has been updated"), long: false)
-            }
+            let updated = try await offline.refreshInBackground()
+            guard updated, !Task.isCancelled else { return }
+            webView.load(URLRequest(url: offline.entryURL))
+            nativeXToast(String(localized: "Memories has been updated"), long: false)
         } catch AppError.notAuthenticated {
+            guard !Task.isCancelled else { return }
             onSessionRevoked()
         } catch {
             // Offline or server unavailable: stay on the cached snapshot.
