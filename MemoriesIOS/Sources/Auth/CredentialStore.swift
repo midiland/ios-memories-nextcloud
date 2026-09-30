@@ -19,15 +19,17 @@ struct CredentialStore {
         ]
     }
 
-    /// Saves (or replaces) the credentials.
+    /// Saves (or replaces) the credentials. Updates the existing item in place, so a failure
+    /// never leaves the Keychain without credentials.
     func save(_ credentials: Credentials) throws {
-        let data = try JSONEncoder().encode(credentials)
-        SecItemDelete(baseQuery as CFDictionary)
-
-        var query = baseQuery
-        query[kSecValueData as String] = data
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        let status = SecItemAdd(query as CFDictionary, nil)
+        let attributes: [String: Any] = [
+            kSecValueData as String: try JSONEncoder().encode(credentials),
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+        ]
+        var status = SecItemUpdate(baseQuery as CFDictionary, attributes as CFDictionary)
+        if status == errSecItemNotFound {
+            status = SecItemAdd(baseQuery.merging(attributes) { _, new in new } as CFDictionary, nil)
+        }
         guard status == errSecSuccess else { throw AppError.keychain(status) }
     }
 
