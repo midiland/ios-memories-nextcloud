@@ -43,7 +43,11 @@ final class NativeXShareService {
         var files: [URL] = []
         for blob in blobs {
             guard let url = URL(string: blob.href) else { continue }
-            if let file = try? await downloader.download(url) { files.append(file) }
+            do {
+                files.append(try await downloader.download(url))
+            } catch {
+                Log.nativex.error("Share download failed: \(String(describing: error), privacy: .public)")
+            }
         }
         guard !files.isEmpty else { return false }
         presentShareSheet(files)

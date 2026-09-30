@@ -26,15 +26,15 @@ enum DebugAutomation {
             try? await Task.sleep(nanoseconds: 4_000_000_000)
             let js = "window._m && _m.router.push(\(jsonString(route)))"
             _ = try? await model.webView.evaluateJavaScript(js)
-            Log.offline.debug("Debug: navigating to \(route, privacy: .public)")
+            Log.web.debug("Debug: navigating to \(route, privacy: .public)")
             if let click {
                 try? await Task.sleep(nanoseconds: 3_000_000_000)
                 _ = try? await model.webView.evaluateJavaScript("document.querySelector(\(jsonString(click)))?.click()")
-                Log.offline.debug("Debug: clicked \(click, privacy: .public)")
+                Log.web.debug("Debug: clicked \(click, privacy: .public)")
             }
             guard backAfter > 0 else { return }
             try? await Task.sleep(nanoseconds: UInt64(backAfter * 1_000_000_000))
-            Log.offline.debug("Debug: back button visible = \(model.showsBackButton), tapping")
+            Log.web.debug("Debug: back button visible = \(model.showsBackButton), tapping")
             model.goBack()
         }
     }

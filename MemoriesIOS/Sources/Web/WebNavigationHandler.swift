@@ -115,6 +115,7 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         // Navigation cancelled (by us or by a new load): not a real error.
         if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled { return }
         if nsError.domain == "WebKitErrorDomain" && nsError.code == 102 { return } // interrupted by policy
+        Log.web.error("Page load failed: \(String(describing: error), privacy: .public)")
         model?.pageDidFail(.serverUnreachable(error.localizedDescription))
     }
 }

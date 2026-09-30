@@ -75,7 +75,11 @@ final class OfflineAppLoader {
             return false
         }
         guard let manifest, manifest.key != current?.key else { return false }
-        guard let snapshot = try? await AssetSyncer(credentials: credentials).sync(manifest, progress: { _, _ in }) else {
+        let snapshot: Snapshot
+        do {
+            snapshot = try await AssetSyncer(credentials: credentials).sync(manifest, progress: { _, _ in })
+        } catch {
+            Log.offline.error("Snapshot update failed: \(String(describing: error), privacy: .public)")
             return false
         }
         activate(snapshot)
