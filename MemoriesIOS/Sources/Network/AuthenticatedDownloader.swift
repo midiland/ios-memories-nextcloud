@@ -10,12 +10,7 @@ struct AuthenticatedDownloader {
     /// Downloads `url` and returns the local file, named after `Content-Disposition`
     /// (or `preferredName` if provided).
     func download(_ url: URL, preferredName: String? = nil) async throws -> URL {
-        var request = URLRequest(url: url)
-        request.setValue(AppConstants.userAgentSuffix, forHTTPHeaderField: "User-Agent")
-        if url.host == credentials.server.host {
-            request.setValue(credentials.basicAuthHeader, forHTTPHeaderField: "Authorization")
-            request.setValue("true", forHTTPHeaderField: "OCS-APIREQUEST")
-        }
+        let request = URLRequest(url: url, authorizedFor: credentials)
 
         let (tempFile, response): (URL, URLResponse)
         do {

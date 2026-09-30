@@ -1,4 +1,3 @@
-import CryptoKit
 import Foundation
 
 /// Downloads a complete snapshot (equivalent of `AssetSyncCoordinator.syncBlocking`):
@@ -99,18 +98,13 @@ struct AssetSyncer {
 
     /// Downloads a file, checks its SHA-256 if any, and writes it atomically.
     private func fetch(_ task: DownloadItem) async throws {
-        var request = URLRequest(url: task.url)
-        request.setValue(AppConstants.userAgentSuffix, forHTTPHeaderField: "User-Agent")
-        if task.url.host == credentials.server.host {
-            request.setValue(credentials.basicAuthHeader, forHTTPHeaderField: "Authorization")
-        }
+        let request = URLRequest(url: task.url, authorizedFor: credentials)
         let (data, response) = try await URLSession.shared.data(for: request)
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else { throw OfflineError.download(task.url.lastPathComponent, status) }
 
         if let expected = task.sha256 {
-            let actual = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
-            guard actual.caseInsensitiveCompare(expected) == .orderedSame else {
+            guard data.sha256Hex.caseInsensitiveCompare(expected) == .orderedSame else {
                 throw OfflineError.integrity(task.destination.lastPathComponent)
             }
         }

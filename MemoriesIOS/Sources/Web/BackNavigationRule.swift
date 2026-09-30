@@ -10,13 +10,13 @@ enum BackNavigationRule {
     /// App routes (after `…/apps/memories`) where the navigation bar is visible.
     private static let mainRoutes: Set<String> = ["", "/explore", "/albums"]
 
-    static func showsBackButton(url: URL?, canGoBack: Bool, webRoot: String) -> Bool {
+    static func showsBackButton(url: URL?, canGoBack: Bool, server: ServerURL) -> Bool {
         guard canGoBack, let url else { return false }
         // Fragment = viewer, sidebar or open modal: they have their own close button.
         if let fragment = url.fragment, !fragment.isEmpty { return false }
 
         var route = url.path
-        for prefix in [webRoot + "/index.php/apps/memories", webRoot + "/apps/memories"] where route.hasPrefix(prefix) {
+        for prefix in server.appPaths where route.hasPrefix(prefix) {
             route.removeFirst(prefix.count)
             break
         }

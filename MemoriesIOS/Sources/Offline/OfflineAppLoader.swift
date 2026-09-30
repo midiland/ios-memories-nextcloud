@@ -20,7 +20,7 @@ final class OfflineAppLoader {
     /// URL of the local entry page: the app route directly (loading `/` would trigger
     /// a frontend redirect, and thus a second full load).
     var entryURL: URL {
-        URL(string: server.origin.absoluteString + credentials.server.webRoot + "/index.php/apps/memories/")!
+        URL(string: server.origin.absoluteString + credentials.server.appPath + "/")!
     }
 
     /// Whether `url` points to the local server (loopback host).

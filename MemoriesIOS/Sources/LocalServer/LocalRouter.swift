@@ -66,13 +66,12 @@ final class LocalRouter: @unchecked Sendable {
         let webRoot = config.webRoot
 
         let isGet = request.method == "GET"
-        if isGet, path.hasPrefix(webRoot + "/index.php/apps/memories/js/") || path.hasPrefix(webRoot + "/apps/memories/js/") {
+        if isGet, config.server.appPaths.contains(where: { path.hasPrefix($0 + "/js/") }) {
             return StaticFiles.file(request, in: config.snapshot.jsDirectory)
         }
 
-        let appPrefix = webRoot + "/index.php/apps/memories"
         let isEntry = path == "/" || path == webRoot || path == webRoot + "/"
-        let isAppRoute = hasPrefix(path, appPrefix)
+        let isAppRoute = hasPrefix(path, config.server.appPath)
         if isGet, isEntry || (isAppRoute && request.header("accept")?.contains("text/html") == true) {
             return shell(config)
         }
@@ -87,7 +86,7 @@ final class LocalRouter: @unchecked Sendable {
     func browserURL(forPath path: String, query: String?) -> URL? {
         guard let config else { return nil }
         let webRoot = config.webRoot
-        let localPrefixes = ["/local", "/api", "/image", "/video", webRoot + "/index.php/apps/memories", webRoot + "/apps/memories"]
+        let localPrefixes = ["/local", "/api", "/image", "/video"] + config.server.appPaths
         if path == "/" || path == webRoot || path == webRoot + "/" || path == "/favicon.ico" { return nil }
         if localPrefixes.contains(where: { hasPrefix(path, $0) }) { return nil }
         let suffix = query.map { "?\($0)" } ?? ""

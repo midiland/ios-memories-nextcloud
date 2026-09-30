@@ -1,4 +1,3 @@
-import CryptoKit
 import Foundation
 
 /// Manifests of the Memories web files, extracted from `api/describe?manifest=1`
@@ -74,7 +73,7 @@ struct AssetManifest {
 
         // Same key as Android: raw JS manifest (base64) + CSS hrefs in order.
         let keySource = jsB64 + "\n" + links.map { ($0["href"] as? String) ?? "" }.joined(separator: "\n")
-        key = SHA256.hash(data: Data(keySource.utf8)).map { String(format: "%02x", $0) }.joined()
+        key = Data(keySource.utf8).sha256Hex
     }
 
     /// `%02d_<basename without query>`, like `AssetCache.cssName` on Android.

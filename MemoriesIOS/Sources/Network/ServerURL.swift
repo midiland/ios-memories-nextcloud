@@ -65,6 +65,12 @@ struct ServerURL: Equatable, Codable {
         return path
     }
 
+    /// Path of the Memories app on the server, e.g. `/nextcloud/index.php/apps/memories`.
+    var appPath: String { webRoot + "/index.php/apps/memories" }
+
+    /// Paths under which the server serves the Memories app (with and without `index.php`).
+    var appPaths: [String] { [appPath, webRoot + "/apps/memories"] }
+
     /// Server host (used to filter cookies and navigations).
     var host: String { memoriesURL.host ?? "" }
 

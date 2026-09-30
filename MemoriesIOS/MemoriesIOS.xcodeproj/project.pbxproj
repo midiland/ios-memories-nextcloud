@@ -21,6 +21,7 @@
 		4E615A9B789489FC9D5A8652 /* WebSessionBootstrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8AD772AF3C105562180EB0 /* WebSessionBootstrapper.swift */; };
 		4ECC0BDB761F7685B143B1FC /* UIColor+CSS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4ECF1854EBBE63EDE3525B7 /* UIColor+CSS.swift */; };
 		51921BB7B2FB1B804806501B /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = C685B024E9E6EC4BE8BF4F97 /* Credentials.swift */; };
+		57F2EBAA933BF2B7C6F1AB5B /* Data+SHA256.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2979A6B3F3F1369986AB59 /* Data+SHA256.swift */; };
 		58045639F3E2058DE81B2566 /* NextcloudModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28D34FFC28713D84A4787A19 /* NextcloudModels.swift */; };
 		5809D13775AFD39232F5A34C /* NextcloudClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE9D8A0862DCDCCF8E3C1D83 /* NextcloudClient.swift */; };
 		62CE9D8F13F0BA3FD5B72CA1 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */; };
@@ -40,6 +41,7 @@
 		8FD49D87F27EF4142964CCA6 /* nativex.js in Resources */ = {isa = PBXBuildFile; fileRef = 8C60C16C55D86D78274624E7 /* nativex.js */; };
 		91C103B5E32D12F5DDF368C2 /* SessionTeardown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52610CD542E15A2561D4E0D8 /* SessionTeardown.swift */; };
 		98A70BF29AF50356242D7AE7 /* MemoriesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43AC8C11C4F54E363481FE4 /* MemoriesApp.swift */; };
+		9D933143F54B028AD23731A6 /* URLRequest+Nextcloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4D7BFC45D492A6DB401166 /* URLRequest+Nextcloud.swift */; };
 		A3B8635A1D8D540176DE899A /* UpstreamProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5553864E4F497C37B3A11B42 /* UpstreamProxy.swift */; };
 		A85E3A592D94B0670AEDD95C /* WebContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2109B18C4219F7C865ACE05 /* WebContainerView.swift */; };
 		AC90EC875D47062F248B376B /* HTTPConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26E4329F93753F78269FB95 /* HTTPConnection.swift */; };
@@ -107,6 +109,7 @@
 		C685B024E9E6EC4BE8BF4F97 /* Credentials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Credentials.swift; sourceTree = "<group>"; };
 		C9E2C1CF7261009A52D14C10 /* AuthenticatedDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedDownloader.swift; sourceTree = "<group>"; };
 		CC8F46DAF454C89AF55728EF /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		CD4D7BFC45D492A6DB401166 /* URLRequest+Nextcloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+Nextcloud.swift"; sourceTree = "<group>"; };
 		CF128F55B6FD07F44DC5AD3C /* WebViewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewFactory.swift; sourceTree = "<group>"; };
 		D26E4329F93753F78269FB95 /* HTTPConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPConnection.swift; sourceTree = "<group>"; };
 		D939D7444B65506922E9E701 /* BackNavigationRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackNavigationRule.swift; sourceTree = "<group>"; };
@@ -119,6 +122,7 @@
 		F2109B18C4219F7C865ACE05 /* WebContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebContainerView.swift; sourceTree = "<group>"; };
 		F43AC8C11C4F54E363481FE4 /* MemoriesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoriesApp.swift; sourceTree = "<group>"; };
 		FB8AD772AF3C105562180EB0 /* WebSessionBootstrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSessionBootstrapper.swift; sourceTree = "<group>"; };
+		FC2979A6B3F3F1369986AB59 /* Data+SHA256.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+SHA256.swift"; sourceTree = "<group>"; };
 		FF49598246D6C081211A8E7E /* AssetSyncer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSyncer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -131,6 +135,7 @@
 				BE9D8A0862DCDCCF8E3C1D83 /* NextcloudClient.swift */,
 				28D34FFC28713D84A4787A19 /* NextcloudModels.swift */,
 				7975D8D019695BF59E23AFB4 /* ServerURL.swift */,
+				CD4D7BFC45D492A6DB401166 /* URLRequest+Nextcloud.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -265,6 +270,7 @@
 				522973BDEA6FF4B3A3E305BC /* AssetManifest.swift */,
 				FF49598246D6C081211A8E7E /* AssetSyncer.swift */,
 				46B2F58E3B813012A1F0CE4F /* CSSPathRewriter.swift */,
+				FC2979A6B3F3F1369986AB59 /* Data+SHA256.swift */,
 				B7F435177E9AF666F47E8B3E /* ManifestVerifier.swift */,
 				E7CE0B8100755A4931902610 /* OfflineAppLoader.swift */,
 				12DE8CF992978EC7BF336714 /* ShellPage.swift */,
@@ -357,6 +363,7 @@
 				C49265FD3021601C302CA5E1 /* CSSPathRewriter.swift in Sources */,
 				413112E9547AE1F5F8AF4F49 /* CredentialStore.swift in Sources */,
 				51921BB7B2FB1B804806501B /* Credentials.swift in Sources */,
+				57F2EBAA933BF2B7C6F1AB5B /* Data+SHA256.swift in Sources */,
 				D1D1F5DB4F241EA093053C38 /* DebugAutomation.swift in Sources */,
 				62CE9D8F13F0BA3FD5B72CA1 /* DownloadProgressView.swift in Sources */,
 				85EB6597E285963DE9AE1087 /* ErrorView.swift in Sources */,
@@ -390,6 +397,7 @@
 				E33CD93BC07993C7A75A0B2D /* StaticFiles.swift in Sources */,
 				AEBC81A44DED211654759A92 /* ToastView.swift in Sources */,
 				4ECC0BDB761F7685B143B1FC /* UIColor+CSS.swift in Sources */,
+				9D933143F54B028AD23731A6 /* URLRequest+Nextcloud.swift in Sources */,
 				A3B8635A1D8D540176DE899A /* UpstreamProxy.swift in Sources */,
 				D0892634EFAA1FF454CE8A65 /* WeakScriptMessageProxy.swift in Sources */,
 				A85E3A592D94B0670AEDD95C /* WebContainerView.swift in Sources */,

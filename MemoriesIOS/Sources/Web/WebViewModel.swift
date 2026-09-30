@@ -79,7 +79,7 @@ final class WebViewModel: ObservableObject {
             Task { @MainActor in
                 guard let self else { return }
                 self.showsBackButton = BackNavigationRule.showsBackButton(
-                    url: webView.url, canGoBack: webView.canGoBack, webRoot: self.credentials.server.webRoot
+                    url: webView.url, canGoBack: webView.canGoBack, server: self.credentials.server
                 )
             }
         }
