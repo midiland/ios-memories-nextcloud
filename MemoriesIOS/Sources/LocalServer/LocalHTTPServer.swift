@@ -68,7 +68,8 @@ final class LocalHTTPServer {
 
         let bound: UInt16 = try await withCheckedThrowingContinuation { continuation in
             let once = OnceFlag()
-            listener.stateUpdateHandler = { [weak self] state in
+            // Runs on `queue`, not on the main actor.
+            listener.stateUpdateHandler = { @Sendable [weak self] state in
                 switch state {
                 case .ready:
                     if once.claim() { continuation.resume(returning: listener.port?.rawValue ?? port) }

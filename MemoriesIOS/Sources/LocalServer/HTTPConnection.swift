@@ -4,7 +4,9 @@ import Network
 /// A TCP connection to the local server: minimal HTTP/1.1 parsing (headers + `Content-Length`
 /// body), one request at a time, keep-alive, full or streamed responses.
 ///
-/// State is confined to `queue`; request handling runs in a `Task`.
+/// Reading (`buffer`) happens on `queue`. A request is then handled and its response written
+/// in a `Task` (`chunked`, `send`, `write`); this is safe because a connection handles one request
+/// at a time: reading only resumes once the response has been sent.
 final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
     typealias Handler = @Sendable (HTTPRequest) async -> HTTPResponse
 
