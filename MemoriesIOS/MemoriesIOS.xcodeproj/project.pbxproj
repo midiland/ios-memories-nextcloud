@@ -38,6 +38,7 @@
 		8BC15ABBF4A028ABB17F7C05 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC8F46DAF454C89AF55728EF /* RootView.swift */; };
 		8C305309BE2F4B65694E6B6D /* WebViewFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF128F55B6FD07F44DC5AD3C /* WebViewFactory.swift */; };
 		8FD49D87F27EF4142964CCA6 /* nativex.js in Resources */ = {isa = PBXBuildFile; fileRef = 8C60C16C55D86D78274624E7 /* nativex.js */; };
+		91C103B5E32D12F5DDF368C2 /* SessionTeardown.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52610CD542E15A2561D4E0D8 /* SessionTeardown.swift */; };
 		98A70BF29AF50356242D7AE7 /* MemoriesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F43AC8C11C4F54E363481FE4 /* MemoriesApp.swift */; };
 		A3B8635A1D8D540176DE899A /* UpstreamProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5553864E4F497C37B3A11B42 /* UpstreamProxy.swift */; };
 		A85E3A592D94B0670AEDD95C /* WebContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2109B18C4219F7C865ACE05 /* WebContainerView.swift */; };
@@ -79,6 +80,7 @@
 		45A55732DC69AFE92CAB8B1E /* MemoriesWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoriesWebView.swift; sourceTree = "<group>"; };
 		46B2F58E3B813012A1F0CE4F /* CSSPathRewriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSSPathRewriter.swift; sourceTree = "<group>"; };
 		522973BDEA6FF4B3A3E305BC /* AssetManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetManifest.swift; sourceTree = "<group>"; };
+		52610CD542E15A2561D4E0D8 /* SessionTeardown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTeardown.swift; sourceTree = "<group>"; };
 		5553864E4F497C37B3A11B42 /* UpstreamProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpstreamProxy.swift; sourceTree = "<group>"; };
 		584963AC705E453ED4BB1D2B /* NativeXShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXShareService.swift; sourceTree = "<group>"; };
 		623D531A3CAF7256AA4A556E /* DebugAutomation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugAutomation.swift; sourceTree = "<group>"; };
@@ -94,7 +96,7 @@
 		A9C046AD44136921D0B836A3 /* ErrorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorView.swift; sourceTree = "<group>"; };
 		AA1300AD3AB4FD7E3045AECC /* NativeXLoopbackRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXLoopbackRouter.swift; sourceTree = "<group>"; };
 		ABEB41FB80250E35047AAD3C /* StaticFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticFiles.swift; sourceTree = "<group>"; };
-		AE35E4D6829D59D3099844A9 /* Memories.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Memories.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE35E4D6829D59D3099844A9 /* MemoriesIOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MemoriesIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B01346191B200D19D6D211AB /* WeakScriptMessageProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeakScriptMessageProxy.swift; sourceTree = "<group>"; };
 		B0A36D6568685189E036A167 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		B1D822DDAB4B1EEECC1DB434 /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 				93BFE100B41E08DA9D601855 /* Log.swift */,
 				F43AC8C11C4F54E363481FE4 /* MemoriesApp.swift */,
 				CC8F46DAF454C89AF55728EF /* RootView.swift */,
+				52610CD542E15A2561D4E0D8 /* SessionTeardown.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -240,7 +243,7 @@
 		A8A226C019E06D2DC2A820B9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AE35E4D6829D59D3099844A9 /* Memories.app */,
+				AE35E4D6829D59D3099844A9 /* MemoriesIOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -288,7 +291,7 @@
 			packageProductDependencies = (
 			);
 			productName = MemoriesIOS;
-			productReference = AE35E4D6829D59D3099844A9 /* Memories.app */;
+			productReference = AE35E4D6829D59D3099844A9 /* MemoriesIOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -380,6 +383,7 @@
 				E10C3A2B259066D7FCFC7871 /* SafariView.swift in Sources */,
 				CC93BF8D5EF86B71A71663D2 /* ServerURL.swift in Sources */,
 				FF0BC6BD37D183DAB5984E95 /* SessionStore.swift in Sources */,
+				91C103B5E32D12F5DDF368C2 /* SessionTeardown.swift in Sources */,
 				E13B781CF672250A52E48769 /* SharePresenter.swift in Sources */,
 				CD8A3480ACCAC1FABE2B98CC /* ShellPage.swift in Sources */,
 				C4C58626190581A2A99D4BE3 /* SnapshotStore.swift in Sources */,
@@ -470,22 +474,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 53LB2CD33L;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Memories Nexcloud";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = fr.midiland.memories;
+				PRODUCT_BUNDLE_IDENTIFIER = gallery.memories.ios;
 				PRODUCT_NAME = Memories;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -496,22 +493,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 53LB2CD33L;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Memories Nexcloud";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = fr.midiland.memories;
+				PRODUCT_BUNDLE_IDENTIFIER = gallery.memories.ios;
 				PRODUCT_NAME = Memories;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;

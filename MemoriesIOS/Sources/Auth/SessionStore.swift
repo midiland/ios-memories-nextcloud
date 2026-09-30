@@ -24,8 +24,11 @@ final class SessionStore: ObservableObject {
 
     private let store = CredentialStore()
     private var loginTask: Task<Void, Never>?
+    /// Clears the rest of the session (web data, local server), provided by the app.
+    private let onSessionEnd: () -> Void
 
-    init() {
+    init(onSessionEnd: @escaping () -> Void) {
+        self.onSessionEnd = onSessionEnd
         // Restores the previous session; its validity is checked when the WebView loads.
         if let saved = store.load() {
             phase = .loggedIn(saved)
@@ -90,10 +93,7 @@ final class SessionStore: ObservableObject {
 
     private func endSession(error: AppError?) {
         store.delete()
-        WebSessionBootstrapper.clearWebsiteData()
-        // Local mode: nothing left to serve or relay, and forget the relay's Nextcloud session.
-        LocalHTTPServer.shared.router.config = nil
-        HTTPCookieStorage.shared.removeCookies(since: .distantPast)
+        onSessionEnd()
         loginError = error
         phase = .loggedOut
     }
