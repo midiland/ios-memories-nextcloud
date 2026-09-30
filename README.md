@@ -47,6 +47,13 @@ xcodebuild -project MemoriesIOS/MemoriesIOS.xcodeproj -scheme MemoriesIOS \
   -destination 'platform=iOS Simulator,name=iPhone 16' build
 ```
 
+Unit tests (`MemoriesIOS/Tests/`):
+
+```sh
+xcodebuild -project MemoriesIOS/MemoriesIOS.xcodeproj -scheme MemoriesIOS \
+  -destination 'platform=iOS Simulator,name=iPhone 16' test
+```
+
 `project.yml` is the source of truth; regenerate the Xcode project after adding or removing files.
 To run on a device, select your development team under *Signing & Capabilities*.
 
@@ -86,13 +93,14 @@ A detailed analysis of the Android app and of the frontend's native API is avail
 MemoriesIOS/
 ├── project.yml            XcodeGen spec
 ├── Resources/             nativex.js, shell CSS, String Catalogs (en, fr)
+├── Tests/                 unit tests (MemoriesIOSTests)
 └── Sources/
-    ├── App/               entry point, constants, logging
+    ├── App/               entry point and wiring, constants, errors, logging
     ├── Auth/              Keychain, Login Flow v2, session state
-    ├── Network/           Nextcloud client, server URL, errors, downloads
+    ├── Network/           Nextcloud client, server URL, downloads
     ├── Offline/           signed manifest, snapshot storage and sync, HTML shell
     ├── LocalServer/       loopback HTTP server, router, upstream relay
-    ├── Web/               WKWebView setup, navigation, back button rule
+    ├── Web/               WKWebView setup, navigation policy, back button rule
     ├── NativeX/           window.nativex bridge implementation
     └── Views/             SwiftUI screens
 ```
