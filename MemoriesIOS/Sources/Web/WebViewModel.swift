@@ -17,11 +17,6 @@ final class WebViewModel: ObservableObject {
         case failed(AppError)
     }
 
-    enum Mode {
-        case local
-        case remote
-    }
-
     /// Temporary message shown over the web view (`nativex.toast`).
     struct Toast: Equatable {
         let id = UUID()
@@ -39,7 +34,7 @@ final class WebViewModel: ObservableObject {
 
     let credentials: Credentials
     let webView: WKWebView
-    private(set) var mode: Mode = .local
+    private(set) var mode: NavigationPolicy.Mode = .local
 
     /// Called when the server permanently rejects the credentials.
     let onSessionRevoked: () -> Void
@@ -188,20 +183,15 @@ final class WebViewModel: ObservableObject {
 
     // MARK: - Navigation events (called by WebNavigationHandler)
 
-    /// Decides what to do with a page navigation.
-    func decideNavigation(to url: URL) -> WebNavigationHandler.Decision {
-        switch mode {
-        case .local:
-            guard offline.isLocal(url) else { return .external(url) }
-            // Proxied path (e.g. link to another Nextcloud app): open the real page in Safari.
-            if let real = offline.serverPage(for: url) {
-                return .external(real)
-            }
-            return .allow
-        case .remote:
-            guard url.host == credentials.server.host else { return .external(url) }
-            return WebNavigationHandler.isLoginPage(url) ? .sessionLost : .allow
-        }
+    /// Navigation rules for the current mode.
+    var navigationPolicy: NavigationPolicy {
+        let offline = offline
+        return NavigationPolicy(
+            mode: mode,
+            serverHost: credentials.server.host,
+            isLocal: { offline.isLocal($0) },
+            serverPage: { offline.serverPage(for: $0) }
+        )
     }
 
     func pageDidFinish() {

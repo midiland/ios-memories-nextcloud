@@ -33,6 +33,7 @@
 		82D509754A4343651C5DCA9A /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = DBE394490710151EAA9893CD /* InfoPlist.xcstrings */; };
 		83FE18EFE3C2F4A6BA10297A /* BackNavigationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D939D7444B65506922E9E701 /* BackNavigationRule.swift */; };
 		85EB6597E285963DE9AE1087 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9C046AD44136921D0B836A3 /* ErrorView.swift */; };
+		88529058F2E15DA80C2E57A0 /* NavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BAF48A1102A5E5C47A366B0 /* NavigationPolicy.swift */; };
 		88D65D54EB7E299D1CA4C2BD /* AssetSyncer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF49598246D6C081211A8E7E /* AssetSyncer.swift */; };
 		88F8201C703F476EB24C969F /* LocalRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD6CEED9FA8725E31B565022 /* LocalRouter.swift */; };
 		8BC15ABBF4A028ABB17F7C05 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC8F46DAF454C89AF55728EF /* RootView.swift */; };
@@ -66,6 +67,7 @@
 /* Begin PBXFileReference section */
 		0269CD2B24DBF8CE71ABE4E5 /* SnapshotStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotStore.swift; sourceTree = "<group>"; };
 		09C18C38E8EA70E5C09C47C5 /* NativeXMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXMethod.swift; sourceTree = "<group>"; };
+		0BAF48A1102A5E5C47A366B0 /* NavigationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationPolicy.swift; sourceTree = "<group>"; };
 		12DE8CF992978EC7BF336714 /* ShellPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellPage.swift; sourceTree = "<group>"; };
 		1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressView.swift; sourceTree = "<group>"; };
 		1C728FC7B67583E5ED70EEFE /* shell-overrides.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "shell-overrides.css"; sourceTree = "<group>"; };
@@ -231,6 +233,7 @@
 				D939D7444B65506922E9E701 /* BackNavigationRule.swift */,
 				623D531A3CAF7256AA4A556E /* DebugAutomation.swift */,
 				45A55732DC69AFE92CAB8B1E /* MemoriesWebView.swift */,
+				0BAF48A1102A5E5C47A366B0 /* NavigationPolicy.swift */,
 				A4ECF1854EBBE63EDE3525B7 /* UIColor+CSS.swift */,
 				B9C803954A14CF4F6F44D81F /* WebNavigationHandler.swift */,
 				FB8AD772AF3C105562180EB0 /* WebSessionBootstrapper.swift */,
@@ -376,6 +379,7 @@
 				215DCD0312AC6723661B5937 /* NativeXLoopbackRouter.swift in Sources */,
 				73E9484F4DCAC1C593F5F7BF /* NativeXMethod.swift in Sources */,
 				0E02A493FCB73E545C79563C /* NativeXShareService.swift in Sources */,
+				88529058F2E15DA80C2E57A0 /* NavigationPolicy.swift in Sources */,
 				5809D13775AFD39232F5A34C /* NextcloudClient.swift in Sources */,
 				58045639F3E2058DE81B2566 /* NextcloudModels.swift in Sources */,
 				FA4132B43CA43D52EE6C7689 /* OfflineAppLoader.swift in Sources */,

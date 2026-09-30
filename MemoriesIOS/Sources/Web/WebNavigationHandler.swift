@@ -3,18 +3,11 @@ import WebKit
 /// Navigation and UI delegate for the web view (equivalent of `MemoriesWebViewClient`
 /// and `MemoriesWebChromeClient` on Android).
 ///
-/// Rules (detailed in `WebViewModel.decideNavigation`):
-/// - only app pages stay in the web view; everything else opens in Safari;
-/// - remote mode: a redirect to the Nextcloud login page = expired session → re-bootstrap;
+/// - main-frame navigations follow `NavigationPolicy` (app pages stay, the rest opens in Safari,
+///   remote login page = expired session → re-bootstrap);
 /// - network / HTTP errors on the main document → error screen.
 @MainActor
 final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
-    enum Decision {
-        case allow
-        case external(URL)
-        case sessionLost
-    }
-
     weak var model: WebViewModel?
 
     // MARK: - Navigation policy
@@ -41,7 +34,7 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
             return decisionHandler(.cancel)
         }
 
-        switch model.decideNavigation(to: url) {
+        switch model.navigationPolicy.decide(url) {
         case .allow:
             decisionHandler(.allow)
         case .external(let target):
@@ -107,7 +100,7 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
         guard let url = action.request.url, let model else { return nil }
-        switch model.decideNavigation(to: url) {
+        switch model.navigationPolicy.decide(url) {
         case .allow: webView.load(action.request)
         case .external(let target): model.openExternally(target)
         case .sessionLost: model.sessionLost()
@@ -123,13 +116,5 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled { return }
         if nsError.domain == "WebKitErrorDomain" && nsError.code == 102 { return } // interrupted by policy
         model?.pageDidFail(.serverUnreachable(error.localizedDescription))
-    }
-
-    /// Nextcloud web login page (`/login`, `/index.php/login`), excluding Login Flow v2.
-    static func isLoginPage(_ url: URL) -> Bool {
-        let components = url.pathComponents
-        guard let index = components.firstIndex(of: "login") else { return false }
-        let rest = components[(index + 1)...]
-        return rest.isEmpty || rest.first == "challenge" || rest.first == "selectchallenge"
     }
 }
