@@ -4,7 +4,7 @@ import WebKit
 /// Creates and configures the `WKWebView` (equivalent of `WebViewSetup.kt` on Android).
 @MainActor
 enum WebViewFactory {
-    static func make(bridge: NativeXBridge) -> WKWebView {
+    static func make(bridge: NativeXController) -> WKWebView {
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .default()
         config.allowsInlineMediaPlayback = true

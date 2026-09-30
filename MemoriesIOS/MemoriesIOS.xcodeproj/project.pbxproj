@@ -16,7 +16,6 @@
 		215DCD0312AC6723661B5937 /* NativeXLoopbackRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1300AD3AB4FD7E3045AECC /* NativeXLoopbackRouter.swift */; };
 		2EADC08FB615EB3066C88F65 /* LoginFlowV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9445CA15C29A6891936FB808 /* LoginFlowV2.swift */; };
 		3121BD32EDB5987591AEF3F2 /* LocalHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2586D18FD65C760329E8F42D /* LocalHTTPServer.swift */; };
-		354C22B7DC2CB53616229BE4 /* NativeXBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AE3785F720EC56C352E622B /* NativeXBridge.swift */; };
 		413112E9547AE1F5F8AF4F49 /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB961FEAFE715CB9D5D5CFF /* CredentialStore.swift */; };
 		42433DF89F081EAE28514898 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27A044B691E9FB3066E0045B /* AppError.swift */; };
 		4E615A9B789489FC9D5A8652 /* WebSessionBootstrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8AD772AF3C105562180EB0 /* WebSessionBootstrapper.swift */; };
@@ -86,7 +85,6 @@
 		5553864E4F497C37B3A11B42 /* UpstreamProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpstreamProxy.swift; sourceTree = "<group>"; };
 		584963AC705E453ED4BB1D2B /* NativeXShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXShareService.swift; sourceTree = "<group>"; };
 		623D531A3CAF7256AA4A556E /* DebugAutomation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugAutomation.swift; sourceTree = "<group>"; };
-		6AE3785F720EC56C352E622B /* NativeXBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXBridge.swift; sourceTree = "<group>"; };
 		6F48B1AD829B7A6948CE41A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		7975D8D019695BF59E23AFB4 /* ServerURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerURL.swift; sourceTree = "<group>"; };
 		8672B5BEFA9FEB0519451E23 /* NativeXController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXController.swift; sourceTree = "<group>"; };
@@ -216,7 +214,6 @@
 		6F5AAED46380A0F1A1C160D1 /* NativeX */ = {
 			isa = PBXGroup;
 			children = (
-				6AE3785F720EC56C352E622B /* NativeXBridge.swift */,
 				8672B5BEFA9FEB0519451E23 /* NativeXController.swift */,
 				89823EC4465556A2C7DADB0F /* NativeXHost.swift */,
 				AA1300AD3AB4FD7E3045AECC /* NativeXLoopbackRouter.swift */,
@@ -373,7 +370,6 @@
 				7C20A7020CFBA87CEAB9887A /* ManifestVerifier.swift in Sources */,
 				98A70BF29AF50356242D7AE7 /* MemoriesApp.swift in Sources */,
 				1BE9D9968E6A07791C9E7C71 /* MemoriesWebView.swift in Sources */,
-				354C22B7DC2CB53616229BE4 /* NativeXBridge.swift in Sources */,
 				F0F282E15D155A261DD466B5 /* NativeXController.swift in Sources */,
 				0FBA02B989471D0BD90955C5 /* NativeXHost.swift in Sources */,
 				215DCD0312AC6723661B5937 /* NativeXLoopbackRouter.swift in Sources */,

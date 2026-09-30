@@ -2,7 +2,7 @@ import Foundation
 
 /// `window.nativex` methods expected by the frontend (`src/native/api.ts`),
 /// with the same signatures as `NativeX.kt` on Android.
-enum NativeXMethod: String, CaseIterable {
+enum NativeXMethod: String {
     case isNative                  // () -> Boolean
     case setThemeColor             // (color: String?, isDark: Boolean)
     case playTouchSound            // ()
@@ -19,15 +19,4 @@ enum NativeXMethod: String, CaseIterable {
     case configHasMediaPermission  // () -> Boolean
     case getSyncStatus             // () -> Int (-1 if no sync)
     case setHasRemote              // (auids: String JSON, buids: String JSON, value: Boolean)
-
-    /// The JS reads the return value immediately: impossible via `postMessage`,
-    /// so the value has to be cached on the JS side and pushed by the native code.
-    var isSynchronous: Bool {
-        switch self {
-        case .isNative, .configGetLocalFolders, .configHasMediaPermission, .getSyncStatus:
-            return true
-        default:
-            return false
-        }
-    }
 }

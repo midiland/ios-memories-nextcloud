@@ -1,14 +1,17 @@
 import UIKit
 import WebKit
 
-/// NativeX bridge implementation (step 2a: "app mode", no local photos).
+/// NativeX bridge: exposes native functions to the Memories JavaScript
+/// (step 2a: "app mode", no local photos).
 ///
+/// On Android this is the `window.nativex` object (`addJavascriptInterface`) plus an HTTP bridge
+/// on 127.0.0.1 (see `docs/ANALYSIS.md` §3). On iOS:
 /// - injects `nativex.js` at document start (defines `window.nativex`);
 /// - `nativex` handler: fire-and-forget calls (`postMessage`);
 /// - `nativexAsync` handler: `http://127.0.0.1/...` requests intercepted by the JS,
 ///   with a reply (`WKScriptMessageHandlerWithReply`).
 @MainActor
-final class NativeXController: NSObject, NativeXBridge {
+final class NativeXController: NSObject {
     static let syncHandler = "nativex"
     static let asyncHandler = "nativexAsync"
 
@@ -21,8 +24,10 @@ final class NativeXController: NSObject, NativeXBridge {
     private let defaults = UserDefaults.standard
     private let localFoldersKey = "nativex.localFolders"
 
-    // MARK: - NativeXBridge
+    // MARK: - Installation
 
+    /// Installs the script and the message handlers into the web view configuration.
+    /// `WKUserContentController` retains its handlers strongly: they go through a weak proxy.
     func install(into controller: WKUserContentController) {
         guard let source = Self.scriptSource(state: initialState) else {
             assertionFailure("nativex.js not found in bundle")
@@ -35,15 +40,10 @@ final class NativeXController: NSObject, NativeXBridge {
         controller.addScriptMessageHandler(proxy, contentWorld: .page, name: Self.asyncHandler)
     }
 
-    func uninstall(from controller: WKUserContentController) {
-        controller.removeAllUserScripts()
-        controller.removeScriptMessageHandler(forName: Self.syncHandler)
-        controller.removeScriptMessageHandler(forName: Self.asyncHandler, contentWorld: .page)
-    }
-
     // MARK: - Synchronous state
 
-    /// Values read synchronously by the frontend (see `NativeXMethod.isSynchronous`).
+    /// Values the frontend reads synchronously (`configGetLocalFolders`, `configHasMediaPermission`,
+    /// `getSyncStatus`): impossible through `postMessage`, so `nativex.js` serves them from this state.
     private var initialState: [String: Any] {
         [
             "localFolders": defaults.string(forKey: localFoldersKey) ?? "[]",
