@@ -4,9 +4,6 @@ import UIKit
 /// The bridge decodes JS messages; the host acts on the UI and the session.
 @MainActor
 protocol NativeXHost: AnyObject {
-    /// Current account (to download with the right credentials).
-    var credentials: Credentials { get }
-
     /// Web UI theme color (`nil` = system color), and whether it is dark.
     func nativeXSetTheme(color: UIColor?, isDark: Bool)
 

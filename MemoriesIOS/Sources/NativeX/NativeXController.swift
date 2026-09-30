@@ -19,10 +19,15 @@ final class NativeXController: NSObject {
         didSet { share.host = host }
     }
 
-    private let share = NativeXShareService()
-    private lazy var router = NativeXLoopbackRouter(share: share)
+    private let share: NativeXShareService
+    private let router: NativeXLoopbackRouter
     private let defaults = UserDefaults.standard
     private let localFoldersKey = "nativex.localFolders"
+
+    init(share: NativeXShareService) {
+        self.share = share
+        router = NativeXLoopbackRouter(share: share)
+    }
 
     // MARK: - Installation
 

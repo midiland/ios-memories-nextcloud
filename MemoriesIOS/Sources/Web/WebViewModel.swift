@@ -41,7 +41,7 @@ final class WebViewModel: ObservableObject {
     /// Called when the user logs out (web UI or error screen).
     let onLogout: () -> Void
 
-    private let nativeX = NativeXController()
+    private let nativeX: NativeXController
     private let navigationHandler = WebNavigationHandler()
     private let offline: OfflineAppLoader
     private var lastBootstrap: Date?
@@ -61,6 +61,10 @@ final class WebViewModel: ObservableObject {
         self.onSessionRevoked = onSessionRevoked
         self.onLogout = onLogout
         offline = OfflineAppLoader(credentials: credentials, server: server)
+        nativeX = NativeXController(share: NativeXShareService(
+            downloader: AuthenticatedDownloader(credentials: credentials),
+            presentShareSheet: SharePresenter.present
+        ))
         webView = WebViewFactory.make(bridge: nativeX)
         nativeX.host = self
         navigationHandler.model = self

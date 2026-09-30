@@ -13,8 +13,17 @@ final class NativeXShareService {
         let href: String
     }
 
+    /// Receives the toasts (download started / failed).
     weak var host: NativeXHost?
+    private let downloader: AuthenticatedDownloader
+    /// Shows the share sheet for files or links.
+    private let presentShareSheet: @MainActor ([Any]) -> Void
     private var stagedBlobs: [Blob] = []
+
+    init(downloader: AuthenticatedDownloader, presentShareSheet: @escaping @MainActor ([Any]) -> Void) {
+        self.downloader = downloader
+        self.presentShareSheet = presentShareSheet
+    }
 
     /// `nativex.setShareBlobs(json)`: remembers the files for the next `/api/share/blobs`.
     func stageBlobs(_ json: String?) {
@@ -29,22 +38,21 @@ final class NativeXShareService {
     func shareStagedBlobs() async -> Bool {
         let blobs = stagedBlobs
         stagedBlobs = []
-        guard let host, !blobs.isEmpty else { return false }
+        guard !blobs.isEmpty else { return false }
 
-        let downloader = AuthenticatedDownloader(credentials: host.credentials)
         var files: [URL] = []
         for blob in blobs {
             guard let url = URL(string: blob.href) else { continue }
             if let file = try? await downloader.download(url) { files.append(file) }
         }
         guard !files.isEmpty else { return false }
-        SharePresenter.present(files)
+        presentShareSheet(files)
         return true
     }
 
     /// `/api/share/url/…`: shares the link as is, without downloading it.
     func shareLink(_ url: URL) {
-        SharePresenter.present([url])
+        presentShareSheet([url])
     }
 
     /// `nativex.downloadFromUrl(url, filename, title)`: background download,
@@ -57,12 +65,11 @@ final class NativeXShareService {
             host.nativeXToast(String(localized: "Downloading…"), long: false)
         }
 
-        let downloader = AuthenticatedDownloader(credentials: host.credentials)
         let name = filename?.isEmpty == false ? filename : nil
         Task {
             do {
                 let file = try await downloader.download(url, preferredName: name)
-                SharePresenter.present([file])
+                presentShareSheet([file])
             } catch {
                 self.host?.nativeXToast(String(localized: "Download failed: \(error.localizedDescription)"), long: true)
             }
