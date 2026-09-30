@@ -59,14 +59,14 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
             if buffer.count > maxHeaderSize { respondAndClose(.text(431, "headers too large")) ; return true }
             return false
         }
-        guard let head = String(data: buffer[buffer.startIndex..<headerEnd.lowerBound], encoding: .utf8),
-              let (method, target, version, headers) = Self.parseHead(head)
+        guard let text = String(data: buffer[buffer.startIndex..<headerEnd.lowerBound], encoding: .utf8),
+              let head = HTTPRequestHead(text)
         else { respondAndClose(.text(400, "bad request")); return true }
 
-        if headers["transfer-encoding"] != nil {
+        if head.headers["transfer-encoding"] != nil {
             respondAndClose(.text(411, "length required")); return true
         }
-        let length = Int(headers["content-length"] ?? "0") ?? 0
+        let length = Int(head.headers["content-length"] ?? "0") ?? 0
         guard length <= maxBodySize else { respondAndClose(.text(413, "too large")); return true }
 
         let bodyStart = headerEnd.upperBound
@@ -74,23 +74,11 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
         let body = buffer.subdata(in: bodyStart..<(bodyStart + length))
         buffer = Data(buffer[(bodyStart + length)...])
 
-        let request = HTTPRequest(method: method, target: target, version: version, headers: headers, body: body)
+        let request = HTTPRequest(
+            method: head.method, target: head.target, version: head.version, headers: head.headers, body: body
+        )
         Task { await self.process(request) }
         return true
-    }
-
-    private static func parseHead(_ head: String) -> (String, String, String, [String: String])? {
-        var lines = head.components(separatedBy: "\r\n")
-        let requestLine = lines.removeFirst().split(separator: " ").map(String.init)
-        guard requestLine.count == 3 else { return nil }
-        var headers: [String: String] = [:]
-        for line in lines {
-            guard let colon = line.firstIndex(of: ":") else { continue }
-            let name = line[..<colon].trimmingCharacters(in: .whitespaces).lowercased()
-            let value = line[line.index(after: colon)...].trimmingCharacters(in: .whitespaces)
-            headers[name] = headers[name].map { "\($0), \(value)" } ?? value
-        }
-        return (requestLine[0].uppercased(), requestLine[1], requestLine[2], headers)
     }
 
     // MARK: - Response

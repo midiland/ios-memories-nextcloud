@@ -17,19 +17,23 @@
 		2EADC08FB615EB3066C88F65 /* LoginFlowV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9445CA15C29A6891936FB808 /* LoginFlowV2.swift */; };
 		3121BD32EDB5987591AEF3F2 /* LocalHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2586D18FD65C760329E8F42D /* LocalHTTPServer.swift */; };
 		413112E9547AE1F5F8AF4F49 /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB961FEAFE715CB9D5D5CFF /* CredentialStore.swift */; };
-		42433DF89F081EAE28514898 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27A044B691E9FB3066E0045B /* AppError.swift */; };
+		41C47FD14FE19427CA435595 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51523A13AA1DC5DA3171F621 /* AppError.swift */; };
+		44EAD9F120A6E90C8A88A792 /* LocalAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F41AD1FBD89805A5B42558 /* LocalAppConfig.swift */; };
 		4E615A9B789489FC9D5A8652 /* WebSessionBootstrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB8AD772AF3C105562180EB0 /* WebSessionBootstrapper.swift */; };
 		4ECC0BDB761F7685B143B1FC /* UIColor+CSS.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4ECF1854EBBE63EDE3525B7 /* UIColor+CSS.swift */; };
 		51921BB7B2FB1B804806501B /* Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = C685B024E9E6EC4BE8BF4F97 /* Credentials.swift */; };
 		57F2EBAA933BF2B7C6F1AB5B /* Data+SHA256.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2979A6B3F3F1369986AB59 /* Data+SHA256.swift */; };
 		58045639F3E2058DE81B2566 /* NextcloudModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28D34FFC28713D84A4787A19 /* NextcloudModels.swift */; };
 		5809D13775AFD39232F5A34C /* NextcloudClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE9D8A0862DCDCCF8E3C1D83 /* NextcloudClient.swift */; };
+		616C5F2497D8EE2F45C9EF52 /* NativeXArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A15C8DB79A413AF2B5057A /* NativeXArguments.swift */; };
 		62CE9D8F13F0BA3FD5B72CA1 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */; };
 		62F7F8D88EA9F24B007BB463 /* HTTPTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A734F8BC6EA1E75997D3B5 /* HTTPTypes.swift */; };
+		6725C86B8F2726D40215A77E /* NativeXResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A728D9BB86B96CF10DA427 /* NativeXResponse.swift */; };
 		6B7FC3B2FB73D6A5E4234A43 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECEB9D7993CB70E1CE7C346E /* LoginView.swift */; };
 		6BCFA375FD1B9D0B372F561F /* AuthenticatedDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E2C1CF7261009A52D14C10 /* AuthenticatedDownloader.swift */; };
 		73E9484F4DCAC1C593F5F7BF /* NativeXMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C18C38E8EA70E5C09C47C5 /* NativeXMethod.swift */; };
 		7C20A7020CFBA87CEAB9887A /* ManifestVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F435177E9AF666F47E8B3E /* ManifestVerifier.swift */; };
+		7DF3C93C24860D652861F2D0 /* HTTPRequestHead.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65039079FDAA9F138B15D0BB /* HTTPRequestHead.swift */; };
 		82D509754A4343651C5DCA9A /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = DBE394490710151EAA9893CD /* InfoPlist.xcstrings */; };
 		83FE18EFE3C2F4A6BA10297A /* BackNavigationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D939D7444B65506922E9E701 /* BackNavigationRule.swift */; };
 		85EB6597E285963DE9AE1087 /* ErrorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9C046AD44136921D0B836A3 /* ErrorView.swift */; };
@@ -50,16 +54,19 @@
 		C49265FD3021601C302CA5E1 /* CSSPathRewriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B2F58E3B813012A1F0CE4F /* CSSPathRewriter.swift */; };
 		C4C58626190581A2A99D4BE3 /* SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0269CD2B24DBF8CE71ABE4E5 /* SnapshotStore.swift */; };
 		CC93BF8D5EF86B71A71663D2 /* ServerURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7975D8D019695BF59E23AFB4 /* ServerURL.swift */; };
+		CD83436BA6482C5FC3228B38 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEACD12F0AD6EF6ED30A0BF1 /* Snapshot.swift */; };
 		CD8A3480ACCAC1FABE2B98CC /* ShellPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DE8CF992978EC7BF336714 /* ShellPage.swift */; };
 		D0892634EFAA1FF454CE8A65 /* WeakScriptMessageProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01346191B200D19D6D211AB /* WeakScriptMessageProxy.swift */; };
 		D1B233FBB1D1ADED6D403859 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2212DA2CDC57AC2548D23532 /* AppConstants.swift */; };
 		D1D1F5DB4F241EA093053C38 /* DebugAutomation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 623D531A3CAF7256AA4A556E /* DebugAutomation.swift */; };
+		DD60C51E7B49820A75AD2376 /* OfflineError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298CB93F1B2C16EEAA998820 /* OfflineError.swift */; };
 		E0DF2BB0D41049766A675C9D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 35EE2AE740C81030FFD724A9 /* Localizable.xcstrings */; };
 		E10510BA68EDAF5E8D661E6D /* WebNavigationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9C803954A14CF4F6F44D81F /* WebNavigationHandler.swift */; };
 		E10C3A2B259066D7FCFC7871 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC25928F66C5B8D6F52683F4 /* SafariView.swift */; };
 		E13B781CF672250A52E48769 /* SharePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3941723D6802D2C98CCB0C3B /* SharePresenter.swift */; };
 		E33CD93BC07993C7A75A0B2D /* StaticFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABEB41FB80250E35047AAD3C /* StaticFiles.swift */; };
 		F0F282E15D155A261DD466B5 /* NativeXController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8672B5BEFA9FEB0519451E23 /* NativeXController.swift */; };
+		F8545973EE0A5563A79829F3 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74A4A6531629FD15E2E4086 /* SemanticVersion.swift */; };
 		F960AB8460F08BA0FD603DFE /* BackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC31B71637A0A4B4853BCD27 /* BackButton.swift */; };
 		FA4132B43CA43D52EE6C7689 /* OfflineAppLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CE0B8100755A4931902610 /* OfflineAppLoader.swift */; };
 		FF0BC6BD37D183DAB5984E95 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A36D6568685189E036A167 /* SessionStore.swift */; };
@@ -75,23 +82,27 @@
 		21A734F8BC6EA1E75997D3B5 /* HTTPTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPTypes.swift; sourceTree = "<group>"; };
 		2212DA2CDC57AC2548D23532 /* AppConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstants.swift; sourceTree = "<group>"; };
 		2586D18FD65C760329E8F42D /* LocalHTTPServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalHTTPServer.swift; sourceTree = "<group>"; };
-		27A044B691E9FB3066E0045B /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		28D34FFC28713D84A4787A19 /* NextcloudModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextcloudModels.swift; sourceTree = "<group>"; };
+		298CB93F1B2C16EEAA998820 /* OfflineError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineError.swift; sourceTree = "<group>"; };
 		35EE2AE740C81030FFD724A9 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		3941723D6802D2C98CCB0C3B /* SharePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharePresenter.swift; sourceTree = "<group>"; };
 		4582ED08B5E5B3E110A6D69D /* WebViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewModel.swift; sourceTree = "<group>"; };
 		45A55732DC69AFE92CAB8B1E /* MemoriesWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoriesWebView.swift; sourceTree = "<group>"; };
 		46B2F58E3B813012A1F0CE4F /* CSSPathRewriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSSPathRewriter.swift; sourceTree = "<group>"; };
+		51523A13AA1DC5DA3171F621 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		522973BDEA6FF4B3A3E305BC /* AssetManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetManifest.swift; sourceTree = "<group>"; };
 		52610CD542E15A2561D4E0D8 /* SessionTeardown.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionTeardown.swift; sourceTree = "<group>"; };
 		5553864E4F497C37B3A11B42 /* UpstreamProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpstreamProxy.swift; sourceTree = "<group>"; };
 		584963AC705E453ED4BB1D2B /* NativeXShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXShareService.swift; sourceTree = "<group>"; };
 		623D531A3CAF7256AA4A556E /* DebugAutomation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugAutomation.swift; sourceTree = "<group>"; };
+		65039079FDAA9F138B15D0BB /* HTTPRequestHead.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestHead.swift; sourceTree = "<group>"; };
 		6F48B1AD829B7A6948CE41A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		74A728D9BB86B96CF10DA427 /* NativeXResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXResponse.swift; sourceTree = "<group>"; };
 		7975D8D019695BF59E23AFB4 /* ServerURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerURL.swift; sourceTree = "<group>"; };
 		8672B5BEFA9FEB0519451E23 /* NativeXController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXController.swift; sourceTree = "<group>"; };
 		89823EC4465556A2C7DADB0F /* NativeXHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXHost.swift; sourceTree = "<group>"; };
 		8C60C16C55D86D78274624E7 /* nativex.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = nativex.js; sourceTree = "<group>"; };
+		92F41AD1FBD89805A5B42558 /* LocalAppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalAppConfig.swift; sourceTree = "<group>"; };
 		93BFE100B41E08DA9D601855 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		9445CA15C29A6891936FB808 /* LoginFlowV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginFlowV2.swift; sourceTree = "<group>"; };
 		A4ECF1854EBBE63EDE3525B7 /* UIColor+CSS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+CSS.swift"; sourceTree = "<group>"; };
@@ -99,9 +110,11 @@
 		AA1300AD3AB4FD7E3045AECC /* NativeXLoopbackRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXLoopbackRouter.swift; sourceTree = "<group>"; };
 		ABEB41FB80250E35047AAD3C /* StaticFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticFiles.swift; sourceTree = "<group>"; };
 		AE35E4D6829D59D3099844A9 /* MemoriesIOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MemoriesIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEACD12F0AD6EF6ED30A0BF1 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		B01346191B200D19D6D211AB /* WeakScriptMessageProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeakScriptMessageProxy.swift; sourceTree = "<group>"; };
 		B0A36D6568685189E036A167 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		B1D822DDAB4B1EEECC1DB434 /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
+		B74A4A6531629FD15E2E4086 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
 		B7F435177E9AF666F47E8B3E /* ManifestVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManifestVerifier.swift; sourceTree = "<group>"; };
 		B9C803954A14CF4F6F44D81F /* WebNavigationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebNavigationHandler.swift; sourceTree = "<group>"; };
 		BD6CEED9FA8725E31B565022 /* LocalRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRouter.swift; sourceTree = "<group>"; };
@@ -114,6 +127,7 @@
 		D26E4329F93753F78269FB95 /* HTTPConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPConnection.swift; sourceTree = "<group>"; };
 		D939D7444B65506922E9E701 /* BackNavigationRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackNavigationRule.swift; sourceTree = "<group>"; };
 		DBE394490710151EAA9893CD /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
+		E0A15C8DB79A413AF2B5057A /* NativeXArguments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXArguments.swift; sourceTree = "<group>"; };
 		E7CE0B8100755A4931902610 /* OfflineAppLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineAppLoader.swift; sourceTree = "<group>"; };
 		EC25928F66C5B8D6F52683F4 /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		EC31B71637A0A4B4853BCD27 /* BackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackButton.swift; sourceTree = "<group>"; };
@@ -130,10 +144,10 @@
 		032FFE2B2678ECE40333E7A5 /* Network */ = {
 			isa = PBXGroup;
 			children = (
-				27A044B691E9FB3066E0045B /* AppError.swift */,
 				C9E2C1CF7261009A52D14C10 /* AuthenticatedDownloader.swift */,
 				BE9D8A0862DCDCCF8E3C1D83 /* NextcloudClient.swift */,
 				28D34FFC28713D84A4787A19 /* NextcloudModels.swift */,
+				B74A4A6531629FD15E2E4086 /* SemanticVersion.swift */,
 				7975D8D019695BF59E23AFB4 /* ServerURL.swift */,
 				CD4D7BFC45D492A6DB401166 /* URLRequest+Nextcloud.swift */,
 			);
@@ -144,6 +158,7 @@
 			isa = PBXGroup;
 			children = (
 				2212DA2CDC57AC2548D23532 /* AppConstants.swift */,
+				51523A13AA1DC5DA3171F621 /* AppError.swift */,
 				93BFE100B41E08DA9D601855 /* Log.swift */,
 				F43AC8C11C4F54E363481FE4 /* MemoriesApp.swift */,
 				CC8F46DAF454C89AF55728EF /* RootView.swift */,
@@ -156,7 +171,9 @@
 			isa = PBXGroup;
 			children = (
 				D26E4329F93753F78269FB95 /* HTTPConnection.swift */,
+				65039079FDAA9F138B15D0BB /* HTTPRequestHead.swift */,
 				21A734F8BC6EA1E75997D3B5 /* HTTPTypes.swift */,
+				92F41AD1FBD89805A5B42558 /* LocalAppConfig.swift */,
 				2586D18FD65C760329E8F42D /* LocalHTTPServer.swift */,
 				BD6CEED9FA8725E31B565022 /* LocalRouter.swift */,
 				ABEB41FB80250E35047AAD3C /* StaticFiles.swift */,
@@ -219,10 +236,12 @@
 		6F5AAED46380A0F1A1C160D1 /* NativeX */ = {
 			isa = PBXGroup;
 			children = (
+				E0A15C8DB79A413AF2B5057A /* NativeXArguments.swift */,
 				8672B5BEFA9FEB0519451E23 /* NativeXController.swift */,
 				89823EC4465556A2C7DADB0F /* NativeXHost.swift */,
 				AA1300AD3AB4FD7E3045AECC /* NativeXLoopbackRouter.swift */,
 				09C18C38E8EA70E5C09C47C5 /* NativeXMethod.swift */,
+				74A728D9BB86B96CF10DA427 /* NativeXResponse.swift */,
 				584963AC705E453ED4BB1D2B /* NativeXShareService.swift */,
 				B01346191B200D19D6D211AB /* WeakScriptMessageProxy.swift */,
 			);
@@ -273,7 +292,9 @@
 				FC2979A6B3F3F1369986AB59 /* Data+SHA256.swift */,
 				B7F435177E9AF666F47E8B3E /* ManifestVerifier.swift */,
 				E7CE0B8100755A4931902610 /* OfflineAppLoader.swift */,
+				298CB93F1B2C16EEAA998820 /* OfflineError.swift */,
 				12DE8CF992978EC7BF336714 /* ShellPage.swift */,
+				AEACD12F0AD6EF6ED30A0BF1 /* Snapshot.swift */,
 				0269CD2B24DBF8CE71ABE4E5 /* SnapshotStore.swift */,
 			);
 			path = Offline;
@@ -354,7 +375,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D1B233FBB1D1ADED6D403859 /* AppConstants.swift in Sources */,
-				42433DF89F081EAE28514898 /* AppError.swift in Sources */,
+				41C47FD14FE19427CA435595 /* AppError.swift in Sources */,
 				1911522D3DC7855E558C950E /* AssetManifest.swift in Sources */,
 				88D65D54EB7E299D1CA4C2BD /* AssetSyncer.swift in Sources */,
 				6BCFA375FD1B9D0B372F561F /* AuthenticatedDownloader.swift in Sources */,
@@ -368,7 +389,9 @@
 				62CE9D8F13F0BA3FD5B72CA1 /* DownloadProgressView.swift in Sources */,
 				85EB6597E285963DE9AE1087 /* ErrorView.swift in Sources */,
 				AC90EC875D47062F248B376B /* HTTPConnection.swift in Sources */,
+				7DF3C93C24860D652861F2D0 /* HTTPRequestHead.swift in Sources */,
 				62F7F8D88EA9F24B007BB463 /* HTTPTypes.swift in Sources */,
+				44EAD9F120A6E90C8A88A792 /* LocalAppConfig.swift in Sources */,
 				3121BD32EDB5987591AEF3F2 /* LocalHTTPServer.swift in Sources */,
 				88F8201C703F476EB24C969F /* LocalRouter.swift in Sources */,
 				BD199E2CDC70374F6176ED32 /* Log.swift in Sources */,
@@ -377,22 +400,27 @@
 				7C20A7020CFBA87CEAB9887A /* ManifestVerifier.swift in Sources */,
 				98A70BF29AF50356242D7AE7 /* MemoriesApp.swift in Sources */,
 				1BE9D9968E6A07791C9E7C71 /* MemoriesWebView.swift in Sources */,
+				616C5F2497D8EE2F45C9EF52 /* NativeXArguments.swift in Sources */,
 				F0F282E15D155A261DD466B5 /* NativeXController.swift in Sources */,
 				0FBA02B989471D0BD90955C5 /* NativeXHost.swift in Sources */,
 				215DCD0312AC6723661B5937 /* NativeXLoopbackRouter.swift in Sources */,
 				73E9484F4DCAC1C593F5F7BF /* NativeXMethod.swift in Sources */,
+				6725C86B8F2726D40215A77E /* NativeXResponse.swift in Sources */,
 				0E02A493FCB73E545C79563C /* NativeXShareService.swift in Sources */,
 				88529058F2E15DA80C2E57A0 /* NavigationPolicy.swift in Sources */,
 				5809D13775AFD39232F5A34C /* NextcloudClient.swift in Sources */,
 				58045639F3E2058DE81B2566 /* NextcloudModels.swift in Sources */,
 				FA4132B43CA43D52EE6C7689 /* OfflineAppLoader.swift in Sources */,
+				DD60C51E7B49820A75AD2376 /* OfflineError.swift in Sources */,
 				8BC15ABBF4A028ABB17F7C05 /* RootView.swift in Sources */,
 				E10C3A2B259066D7FCFC7871 /* SafariView.swift in Sources */,
+				F8545973EE0A5563A79829F3 /* SemanticVersion.swift in Sources */,
 				CC93BF8D5EF86B71A71663D2 /* ServerURL.swift in Sources */,
 				FF0BC6BD37D183DAB5984E95 /* SessionStore.swift in Sources */,
 				91C103B5E32D12F5DDF368C2 /* SessionTeardown.swift in Sources */,
 				E13B781CF672250A52E48769 /* SharePresenter.swift in Sources */,
 				CD8A3480ACCAC1FABE2B98CC /* ShellPage.swift in Sources */,
+				CD83436BA6482C5FC3228B38 /* Snapshot.swift in Sources */,
 				C4C58626190581A2A99D4BE3 /* SnapshotStore.swift in Sources */,
 				E33CD93BC07993C7A75A0B2D /* StaticFiles.swift in Sources */,
 				AEBC81A44DED211654759A92 /* ToastView.swift in Sources */,

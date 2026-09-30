@@ -1,16 +1,5 @@
 import Foundation
 
-/// Configuration of the locally served app: upstream server + current snapshot.
-struct LocalAppConfig {
-    let credentials: Credentials
-    let snapshot: Snapshot
-    /// User ID displayed by the frontend (`<head data-user>`).
-    let user: String?
-
-    var server: ServerURL { credentials.server }
-    var webRoot: String { server.webRoot }
-}
-
 /// Request routing for the local server (port of `ServerRouter.kt`). Order matters:
 /// 1. access control (host + `local-auth` cookie);
 /// 2. `/api`, `/image`, `/video`: NativeX bridge (normally intercepted in JS before reaching here);
