@@ -7,8 +7,13 @@ import Security
 /// Accessible after first unlock, not synced to iCloud, not migrated
 /// to another device.
 struct CredentialStore {
-    private let service = "gallery.memories.ios.credentials"
+    private let service: String
     private let account = "default"
+
+    /// `service` identifies the Keychain item; tests use their own so they never touch the real account.
+    init(service: String = "gallery.memories.ios.credentials") {
+        self.service = service
+    }
 
     /// Base query identifying the Keychain item.
     private var baseQuery: [String: Any] {
