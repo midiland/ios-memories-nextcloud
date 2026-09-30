@@ -7,12 +7,21 @@ import SwiftUI
 ///   (notch, home indicator), like Android's themed root view.
 /// - Logout happens in the web UI (Settings > Account), or from the error screen.
 struct WebContainerView: View {
-    @EnvironmentObject private var session: SessionStore
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var model: WebViewModel
 
-    init(credentials: Credentials) {
-        _model = StateObject(wrappedValue: WebViewModel(credentials: credentials))
+    init(
+        credentials: Credentials,
+        server: LocalHTTPServer,
+        onSessionRevoked: @escaping () -> Void,
+        onLogout: @escaping () -> Void
+    ) {
+        _model = StateObject(wrappedValue: WebViewModel(
+            credentials: credentials,
+            server: server,
+            onSessionRevoked: onSessionRevoked,
+            onLogout: onLogout
+        ))
     }
 
     var body: some View {
@@ -28,7 +37,7 @@ struct WebContainerView: View {
             case .downloading(let done, let total):
                 DownloadProgressView(done: done, total: total)
             case .failed(let error):
-                ErrorView(error: error, retry: model.start, logout: session.logout)
+                ErrorView(error: error, retry: model.start, logout: model.onLogout)
             case .ready:
                 EmptyView()
             }
@@ -48,8 +57,6 @@ struct WebContainerView: View {
         .animation(.easeInOut(duration: 0.2), value: model.toast)
         .animation(.easeInOut(duration: 0.2), value: model.showsBackButton)
         .onAppear {
-            model.onSessionRevoked = { [weak session] in session?.sessionRevoked() }
-            model.onLogout = { [weak session] in session?.logout() }
             model.startIfNeeded()
         }
         .onDisappear(perform: model.stop)

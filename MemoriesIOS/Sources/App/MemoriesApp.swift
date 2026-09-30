@@ -15,7 +15,7 @@ struct MemoriesApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(server: server)
                 .environmentObject(session)
         }
     }

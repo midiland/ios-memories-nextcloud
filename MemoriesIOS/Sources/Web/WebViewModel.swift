@@ -42,9 +42,9 @@ final class WebViewModel: ObservableObject {
     private(set) var mode: Mode = .local
 
     /// Called when the server permanently rejects the credentials.
-    var onSessionRevoked: () -> Void = {}
-    /// Called when the user logs out from the web UI.
-    var onLogout: () -> Void = {}
+    let onSessionRevoked: () -> Void
+    /// Called when the user logs out (web UI or error screen).
+    let onLogout: () -> Void
 
     private let nativeX = NativeXController()
     private let navigationHandler = WebNavigationHandler()
@@ -56,9 +56,16 @@ final class WebViewModel: ObservableObject {
     private var refreshTask: Task<Void, Never>?
     private var observations: [NSKeyValueObservation] = []
 
-    init(credentials: Credentials) {
+    init(
+        credentials: Credentials,
+        server: LocalHTTPServer,
+        onSessionRevoked: @escaping () -> Void,
+        onLogout: @escaping () -> Void
+    ) {
         self.credentials = credentials
-        offline = OfflineAppLoader(credentials: credentials)
+        self.onSessionRevoked = onSessionRevoked
+        self.onLogout = onLogout
+        offline = OfflineAppLoader(credentials: credentials, server: server)
         webView = WebViewFactory.make(bridge: nativeX)
         nativeX.host = self
         navigationHandler.model = self
@@ -185,9 +192,9 @@ final class WebViewModel: ObservableObject {
     func decideNavigation(to url: URL) -> WebNavigationHandler.Decision {
         switch mode {
         case .local:
-            guard Self.isLoopback(url) else { return .external(url) }
+            guard offline.isLocal(url) else { return .external(url) }
             // Proxied path (e.g. link to another Nextcloud app): open the real page in Safari.
-            if let real = LocalHTTPServer.shared.router.browserURL(forPath: url.path, query: url.query) {
+            if let real = offline.serverPage(for: url) {
                 return .external(real)
             }
             return .allow
@@ -221,10 +228,6 @@ final class WebViewModel: ObservableObject {
     /// Opens an external link in the default app (Safari…).
     func openExternally(_ url: URL) {
         UIApplication.shared.open(url)
-    }
-
-    private static func isLoopback(_ url: URL) -> Bool {
-        url.host == LocalHTTPServer.host || url.host == "localhost"
     }
 }
 

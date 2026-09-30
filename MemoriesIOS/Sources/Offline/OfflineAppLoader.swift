@@ -8,18 +8,30 @@ import WebKit
 @MainActor
 final class OfflineAppLoader {
     private let credentials: Credentials
-    private let server = LocalHTTPServer.shared
+    private let server: LocalHTTPServer
     private let store = SnapshotStore()
     private(set) var current: Snapshot?
 
-    init(credentials: Credentials) {
+    init(credentials: Credentials, server: LocalHTTPServer) {
         self.credentials = credentials
+        self.server = server
     }
 
     /// URL of the local entry page: the app route directly (loading `/` would trigger
     /// a frontend redirect, and thus a second full load).
     var entryURL: URL {
         URL(string: server.origin.absoluteString + credentials.server.webRoot + "/index.php/apps/memories/")!
+    }
+
+    /// Whether `url` points to the local server (loopback host).
+    func isLocal(_ url: URL) -> Bool {
+        url.host == LocalHTTPServer.host || url.host == "localhost"
+    }
+
+    /// Real server page for a proxied local path (e.g. a link to another Nextcloud app),
+    /// to open in Safari; `nil` for the app's own pages.
+    func serverPage(for url: URL) -> URL? {
+        server.router.browserURL(forPath: url.path, query: url.query)
     }
 
     /// Prepares the local server and a snapshot. Returns the URL to load, or `nil` for the remote fallback.
