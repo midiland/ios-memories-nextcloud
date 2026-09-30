@@ -44,18 +44,22 @@
     // then plays videos with its web player (WebKit handles HLS natively).
   };
 
-  // The iOS app shows a single native back button on every page that needs one
-  // (BackNavigationRule.swift), so hide the web back arrows of the cluster headers
-  // (*TopMatter.vue: person, place, tag, album). Matched by icon, not by the
-  // translated "Back" label.
-  const hideWebBackArrows = () => {
+  // Web controls the iOS app replaces or does not support yet:
+  // - the web back arrows of the cluster headers (*TopMatter.vue: person, place, tag, album):
+  //   the app shows a single native back button on every page that needs one
+  //   (BackNavigationRule.swift). Matched by icon, not by the translated "Back" label;
+  // - the upload button of the mobile header (UploadMenuItem.vue): upload is not implemented
+  //   on iOS yet. Remove this rule once it is.
+  const hideUnsupportedControls = () => {
     const style = document.createElement('style');
-    style.textContent =
-      ':is(.face-top-matter, .places-top-matter, .top-matter) > :has(.arrow-left-icon) { display: none !important; }';
+    style.textContent = [
+      ':is(.face-top-matter, .places-top-matter, .top-matter) > :has(.arrow-left-icon) { display: none !important; }',
+      '#mobile-header .upload-menu { display: none !important; }',
+    ].join('\n');
     document.head.appendChild(style);
   };
-  if (document.head) hideWebBackArrows();
-  else document.addEventListener('DOMContentLoaded', hideWebBackArrows, { once: true });
+  if (document.head) hideUnsupportedControls();
+  else document.addEventListener('DOMContentLoaded', hideUnsupportedControls, { once: true });
 
   /** Cache update from the native side (evaluateJavaScript). */
   Object.defineProperty(window, '__nativexSetState', {
