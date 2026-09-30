@@ -21,6 +21,8 @@ final class LocalHTTPServer {
 
     private(set) var port: UInt16 = 0
     private var listener: NWListener?
+    /// Start in progress, awaited by concurrent `ensureStarted()` calls.
+    private var starting: Task<UInt16, Error>?
     private let queue = DispatchQueue(label: "memories.localserver.listener")
 
     private init() {
@@ -29,10 +31,19 @@ final class LocalHTTPServer {
 
     var origin: URL { URL(string: "http://\(Self.host):\(port)")! }
 
-    /// Starts listening if needed and returns the port.
+    /// Starts listening if needed and returns the port. Concurrent callers share the same
+    /// start, so the server never binds twice (the second bind would fall back to a random port).
     @discardableResult
     func ensureStarted() async throws -> UInt16 {
         if listener != nil { return port }
+        if let starting { return try await starting.value }
+        let task = Task { try await bind() }
+        starting = task
+        defer { starting = nil }
+        return try await task.value
+    }
+
+    private func bind() async throws -> UInt16 {
         do {
             port = try await listen(on: Self.preferredPort)
         } catch {
