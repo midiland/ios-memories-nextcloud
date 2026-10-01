@@ -9,12 +9,14 @@ import WebKit
 final class OfflineAppLoader {
     private let credentials: Credentials
     private let server: LocalHTTPServer
+    private let media: LocalMediaProvider?
     private let store = SnapshotStore()
     private(set) var current: Snapshot?
 
-    init(credentials: Credentials, server: LocalHTTPServer) {
+    init(credentials: Credentials, server: LocalHTTPServer, media: LocalMediaProvider? = nil) {
         self.credentials = credentials
         self.server = server
+        self.media = media
     }
 
     /// URL of the local entry page: the app route directly (loading `/` would trigger
@@ -115,7 +117,8 @@ final class OfflineAppLoader {
         server.router.config = LocalAppConfig(
             credentials: credentials,
             snapshot: snapshot,
-            user: snapshot.manifest.describe.uid ?? credentials.loginName
+            user: snapshot.manifest.describe.uid ?? credentials.loginName,
+            media: media
         )
     }
 

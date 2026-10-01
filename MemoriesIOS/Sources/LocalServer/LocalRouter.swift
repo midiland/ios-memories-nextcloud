@@ -2,7 +2,8 @@ import Foundation
 
 /// Request routing for the local server (port of `ServerRouter.kt`). Order matters:
 /// 1. access control (host + `local-auth` cookie);
-/// 2. `/api`, `/image`, `/video`: NativeX bridge (normally intercepted in JS before reaching here);
+/// 2. `/image/preview|full`: device photos as JPEG; other `/api`, `/image`, `/video`: NativeX bridge
+///    (normally intercepted in JS before reaching here);
 /// 3. `/local/static/*` (app files) and `/local/assets/{js,css}/*` (snapshot);
 /// 4. Memories JS chunks requested by webpack → snapshot;
 /// 5. entry page and app routes (HTML) → local page;
@@ -36,7 +37,10 @@ final class LocalRouter: @unchecked Sendable {
         guard isAuthorized(request) else { return .forbidden }
         let path = request.path
 
-        if hasPrefix(path, "/api") || hasPrefix(path, "/image") || hasPrefix(path, "/video") {
+        if hasPrefix(path, "/image") {
+            return await localImage(request, media: config?.media)
+        }
+        if hasPrefix(path, "/api") || hasPrefix(path, "/video") {
             return .notFound // bridge served by nativex.js (fetch/XHR interception)
         }
         if path.hasPrefix("/local/static/") {
@@ -105,6 +109,36 @@ final class LocalRouter: @unchecked Sendable {
             version: CSSPathRewriter.version,
             apply: { CSSPathRewriter.rewrite($0, originalHref: asset.href) }
         ))
+    }
+
+    /// `/image/preview/{fileid}?x&y` and `/image/full/{auid}?size` (`NAPI` in `src/native/api.ts`).
+    private func localImage(_ request: HTTPRequest, media: LocalMediaProvider?) async -> HTTPResponse {
+        guard let media, request.method == "GET" || request.method == "HEAD" else { return .notFound }
+        let parts = request.path.split(separator: "/").map(String.init)
+        guard parts.count == 3 else { return .notFound }
+        let query = Self.queryItems(request.target)
+
+        let data: Data?
+        switch parts[1] {
+        case "preview":
+            guard let fileId = Int64(parts[2]) else { return .notFound }
+            data = await media.preview(fileId: fileId, width: query["x"].flatMap(Int.init), height: query["y"].flatMap(Int.init))
+        case "full":
+            data = await media.full(auid: parts[2], longEdge: query["size"].flatMap(Int.init))
+        default:
+            return .notFound
+        }
+        guard let data else { return .notFound }
+        return HTTPResponse(
+            status: 200,
+            headers: [("Content-Type", "image/jpeg"), ("Cache-Control", "private, max-age=3600")],
+            body: .data(data)
+        )
+    }
+
+    private static func queryItems(_ target: String) -> [String: String] {
+        let items = URLComponents(string: target)?.queryItems ?? []
+        return Dictionary(items.compactMap { item in item.value.map { (item.name, $0) } }, uniquingKeysWith: { first, _ in first })
     }
 
     private func shell(_ config: LocalAppConfig) -> HTTPResponse {

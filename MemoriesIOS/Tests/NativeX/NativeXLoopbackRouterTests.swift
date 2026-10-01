@@ -13,19 +13,22 @@ final class NativeXLoopbackRouterTests: XCTestCase {
             downloader: AuthenticatedDownloader(credentials: Fixtures.credentials),
             presentShareSheet: { [unowned self] items in presented.append(items) }
         )
-        router = NativeXLoopbackRouter(share: share)
+        // No timeline attached (remote mode, or before the first load): no device photos.
+        router = NativeXLoopbackRouter(share: share, photos: NativeXPhotoService(library: PhotoLibrary()))
     }
 
     private func get(_ path: String, method: String = "GET") async -> NativeXResponse {
         await router.handle(method: method, url: URL(string: "http://127.0.0.1" + path)!)
     }
 
-    func testLocalTimelineIsEmpty() async {
+    func testNoDevicePhotosWithoutTimeline() async {
         let days = await get("/api/days")
         XCTAssertEqual(days.status, 200)
         XCTAssertEqual(days.body, "[]")
         let day = await get("/api/days/19000")
         XCTAssertEqual(day.body, "[]")
+        let info = await get("/api/image/info/42")
+        XCTAssertEqual(info.status, 404)
     }
 
     func testLocalDeleteDeletesNothing() async {
@@ -51,14 +54,15 @@ final class NativeXLoopbackRouterTests: XCTestCase {
     }
 
     func testStubRoutes() async {
-        let allowMedia = await get("/api/config/allow_media/1")
+        // Opt-out only: opting in would show the iOS permission prompt.
+        let allowMedia = await get("/api/config/allow_media/0")
         XCTAssertEqual(allowMedia.body, #""done""#)
         let progress = await get("/api/assets/progress")
         XCTAssertTrue(progress.body.contains(#""status":"ready""#))
     }
 
     func testUnknownRoutesAndMethods() async {
-        let unknown = await get("/api/image/info/1")
+        let unknown = await get("/api/upload/local")
         XCTAssertEqual(unknown.status, 404)
         let post = await get("/api/days", method: "POST")
         XCTAssertEqual(post.status, 500)

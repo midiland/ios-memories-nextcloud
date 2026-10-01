@@ -1,8 +1,7 @@
 import UIKit
 import WebKit
 
-/// NativeX bridge: exposes native functions to the Memories JavaScript
-/// (step 2a: "app mode", no local photos).
+/// NativeX bridge: exposes native functions to the Memories JavaScript.
 ///
 /// On Android this is the `window.nativex` object (`addJavascriptInterface`) plus an HTTP bridge
 /// on 127.0.0.1 (see `docs/ANALYSIS.md` §3). On iOS:
@@ -16,17 +15,20 @@ final class NativeXController: NSObject {
     static let asyncHandler = "nativexAsync"
 
     weak var host: NativeXHost? {
-        didSet { share.host = host }
+        didSet {
+            share.host = host
+            photos.host = host
+        }
     }
 
     private let share: NativeXShareService
+    let photos: NativeXPhotoService
     private let router: NativeXLoopbackRouter
-    private let defaults = UserDefaults.standard
-    private let localFoldersKey = "nativex.localFolders"
 
-    init(share: NativeXShareService) {
+    init(share: NativeXShareService, photos: NativeXPhotoService) {
         self.share = share
-        router = NativeXLoopbackRouter(share: share)
+        self.photos = photos
+        router = NativeXLoopbackRouter(share: share, photos: photos)
     }
 
     // MARK: - Installation
@@ -49,13 +51,7 @@ final class NativeXController: NSObject {
 
     /// Values the frontend reads synchronously (`configGetLocalFolders`, `configHasMediaPermission`,
     /// `getSyncStatus`): impossible through `postMessage`, so `nativex.js` serves them from this state.
-    private var initialState: [String: Any] {
-        [
-            "localFolders": defaults.string(forKey: localFoldersKey) ?? "[]",
-            "hasMediaPermission": false, // PhotoKit: step 2b
-            "syncStatus": -1,
-        ]
-    }
+    private var initialState: [String: Any] { photos.state }
 
     /// Reads `nativex.js` and injects the initial state as JSON.
     private static func scriptSource(state: [String: Any]) -> String? {
@@ -116,9 +112,9 @@ extension NativeXController: WKScriptMessageHandler, WKScriptMessageHandlerWithR
         case .setShareBlobs:
             share.stageBlobs(args.string(0))
         case .configSetLocalFolders:
-            defaults.set(args.string(0) ?? "[]", forKey: localFoldersKey)
+            photos.setFolders(json: args.string(0))
         case .setHasRemote:
-            break // local index: step 2b
+            photos.setHasRemote(auidsJSON: args.string(0), buidsJSON: args.string(1), value: args.bool(2))
         case .isNative, .configGetLocalFolders, .configHasMediaPermission, .getSyncStatus,
              .playVideo, .playVideo2, .destroyVideo:
             break // synchronous (served by the JS cache) or not exposed

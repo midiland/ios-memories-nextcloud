@@ -105,6 +105,32 @@ final class LocalRouterTests: XCTestCase {
         XCTAssertEqual(response.status, 503)
     }
 
+    // MARK: - Device photos
+
+    func testServesDevicePhotosAsJPEG() async {
+        router.config?.media = FakeMedia()
+        let preview = await get("/image/preview/42?c=1&x=256&y=128")
+        XCTAssertEqual(preview.status, 200)
+        XCTAssertEqual(preview.header("Content-Type"), "image/jpeg")
+        XCTAssertEqual(preview.text, "preview 42 256x128")
+
+        let full = await get("/image/full/abc?size=1024")
+        XCTAssertEqual(full.text, "full abc 1024")
+        let original = await get("/image/full/abc")
+        XCTAssertEqual(original.text, "full abc -")
+    }
+
+    func testUnknownOrUnavailableDevicePhotos() async {
+        let withoutMedia = await get("/image/preview/42")
+        XCTAssertEqual(withoutMedia.status, 404)
+
+        router.config?.media = FakeMedia()
+        for target in ["/image/preview/unknown", "/image/preview/notanumber", "/image/other/1", "/image/preview/1/2"] {
+            let response = await get(target)
+            XCTAssertEqual(response.status, 404, target)
+        }
+    }
+
     // MARK: - Browser URL
 
     func testBrowserURLForProxiedPaths() {
@@ -119,5 +145,16 @@ final class LocalRouterTests: XCTestCase {
                      "/nextcloud/index.php/apps/memories/albums", "/nextcloud/apps/memories/js/a.js"] {
             XCTAssertNil(router.browserURL(forPath: path, query: nil), path)
         }
+    }
+}
+
+/// Returns a description of the request instead of an image; fileid 1 / auid "unknown" are missing.
+private struct FakeMedia: LocalMediaProvider {
+    func preview(fileId: Int64, width: Int?, height: Int?) async -> Data? {
+        fileId == 1 ? nil : Data("preview \(fileId) \(width ?? 0)x\(height ?? 0)".utf8)
+    }
+
+    func full(auid: String, longEdge: Int?) async -> Data? {
+        auid == "unknown" ? nil : Data("full \(auid) \(longEdge.map(String.init) ?? "-")".utf8)
     }
 }

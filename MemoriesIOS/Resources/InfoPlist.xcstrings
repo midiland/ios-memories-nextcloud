@@ -54,6 +54,24 @@
           }
         }
       }
+    },
+    "NSPhotoLibraryUsageDescription": {
+      "comment": "Photo library permission prompt",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memories shows the photos of this device in your timeline, next to the ones on your Nextcloud server."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memories affiche les photos de cet appareil dans votre chronologie, à côté de celles de votre serveur Nextcloud."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

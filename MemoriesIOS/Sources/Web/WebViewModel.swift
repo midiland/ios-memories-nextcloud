@@ -42,6 +42,8 @@ final class WebViewModel: ObservableObject {
     let onLogout: () -> Void
 
     private let nativeX: NativeXController
+    /// Device photos shown in the timeline (local mode only).
+    private let localPhotos: LocalTimeline
     private let navigationHandler = WebNavigationHandler()
     private let offline: OfflineAppLoader
     private var lastBootstrap: Date?
@@ -60,11 +62,16 @@ final class WebViewModel: ObservableObject {
         self.credentials = credentials
         self.onSessionRevoked = onSessionRevoked
         self.onLogout = onLogout
-        offline = OfflineAppLoader(credentials: credentials, server: server)
-        nativeX = NativeXController(share: NativeXShareService(
-            downloader: AuthenticatedDownloader(credentials: credentials),
-            presentShareSheet: SharePresenter.present
-        ))
+        let library = PhotoLibrary()
+        localPhotos = LocalTimeline(credentials: credentials, library: library)
+        offline = OfflineAppLoader(credentials: credentials, server: server, media: localPhotos)
+        nativeX = NativeXController(
+            share: NativeXShareService(
+                downloader: AuthenticatedDownloader(credentials: credentials),
+                presentShareSheet: SharePresenter.present
+            ),
+            photos: NativeXPhotoService(library: library)
+        )
         webView = WebViewFactory.make(bridge: nativeX)
         nativeX.host = self
         navigationHandler.model = self
@@ -132,6 +139,7 @@ final class WebViewModel: ObservableObject {
             try Task.checkCancellation()
             if let localURL {
                 mode = .local
+                nativeX.photos.timeline = localPhotos
                 state = .loading
                 webView.load(URLRequest(url: localURL))
                 refreshTask = Task { [weak self] in await self?.refreshInBackground() }
@@ -152,6 +160,7 @@ final class WebViewModel: ObservableObject {
     /// Remote mode (step 2a): Nextcloud session + `nx_auth` cookie, page loaded from the server.
     private func startRemote() async throws {
         mode = .remote
+        nativeX.photos.timeline = nil
         try await WebSessionBootstrapper.bootstrap(credentials, into: cookieStore)
         try Task.checkCancellation()
         var request = URLRequest(url: credentials.server.memoriesURL)
@@ -242,5 +251,9 @@ extension WebViewModel: NativeXHost {
 
     func nativeXReload() {
         start()
+    }
+
+    func nativeXEvaluate(_ script: String) {
+        webView.evaluateJavaScript(script, completionHandler: nil)
     }
 }

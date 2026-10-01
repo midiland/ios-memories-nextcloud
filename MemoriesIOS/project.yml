@@ -55,6 +55,7 @@ targets:
           NSAllowsLocalNetworking: true
         # Localized in Resources/InfoPlist.xcstrings
         NSLocalNetworkUsageDescription: Memories connects to your Nextcloud server on the local network.
+        NSPhotoLibraryUsageDescription: Memories shows the photos of this device in your timeline, next to the ones on your Nextcloud server.
   MemoriesIOSTests:
     type: bundle.unit-test
     platform: iOS

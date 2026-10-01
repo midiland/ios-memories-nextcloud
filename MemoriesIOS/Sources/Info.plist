@@ -32,6 +32,8 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Memories connects to your Nextcloud server on the local network.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Memories shows the photos of this device in your timeline, next to the ones on your Nextcloud server.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchScreen</key>

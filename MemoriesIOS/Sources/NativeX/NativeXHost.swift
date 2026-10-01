@@ -15,4 +15,7 @@ protocol NativeXHost: AnyObject {
 
     /// Full reload (session re-bootstrap + Memories page).
     func nativeXReload()
+
+    /// Runs a script in the page (state updates, events on the frontend's bus).
+    func nativeXEvaluate(_ script: String)
 }

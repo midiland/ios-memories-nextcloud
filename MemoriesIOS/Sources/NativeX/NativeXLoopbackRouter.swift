@@ -2,11 +2,11 @@ import Foundation
 
 /// Async bridge routes (`NAPI` in `src/native/api.ts`, `ApiRouter.kt` on Android).
 ///
-/// Step 2a: no local photos yet (PhotoKit = step 2b), so the "local media" routes
-/// return empty results; sharing is fully implemented.
+/// Device photos are read-only for now: deletion and upload are not implemented.
 @MainActor
 struct NativeXLoopbackRouter {
     let share: NativeXShareService
+    let photos: NativeXPhotoService
 
     func handle(method: String, url: URL) async -> NativeXResponse {
         guard method == "GET" || method == "OPTIONS" else { return .error }
@@ -15,11 +15,15 @@ struct NativeXLoopbackRouter {
         let parts = rawPath.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
 
         switch parts.first == "api" ? Array(parts.dropFirst()) : parts {
-        // Local timeline: no days / no photos on the device for now.
+        // Local timeline: device photos without a server copy.
         case ["days"]:
-            return .json("[]")
+            return .json(await photos.daysJSON())
         case let p where p.count == 2 && p[0] == "days":
-            return .json("[]")
+            guard let dayId = Int(p[1]) else { return .notFound }
+            return .json(await photos.dayJSON(dayId))
+        case let p where p.count == 3 && p[0] == "image" && p[1] == "info":
+            guard let fileId = Int64(p[2]), let info = await photos.imageInfoJSON(fileId: fileId) else { return .notFound }
+            return .json(info)
 
         // Local deletion: nothing to delete; the frontend shows its own confirmation.
         case let p where p.count == 3 && p[0] == "image" && p[1] == "delete":
@@ -37,15 +41,16 @@ struct NativeXLoopbackRouter {
         case ["share", "blobs"]:
             return await share.shareStagedBlobs() ? .json("{}") : .error
 
-        // Local media permission: no effect until PhotoKit is wired up.
+        // Device photos opt-in / opt-out (iOS permission prompt on first opt-in).
         case let p where p.count == 3 && p[0] == "config" && p[1] == "allow_media":
+            await photos.allowMedia(p[2] == "1")
             return .json(#""done""#)
 
         case ["assets", "progress"]:
             return .json(#"{"status":"ready","done":0,"total":0,"error":null}"#)
 
         default:
-            // image/info, image/preview, image/full, upload/local, login…: not handled yet.
+            // upload/local, login…: not handled (images are served by the local server).
             return .notFound
         }
     }

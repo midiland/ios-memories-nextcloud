@@ -6,4 +6,5 @@ enum Log {
     static let offline = Logger(subsystem: "gallery.memories.ios", category: "offline")
     static let web = Logger(subsystem: "gallery.memories.ios", category: "web")
     static let nativex = Logger(subsystem: "gallery.memories.ios", category: "nativex")
+    static let photos = Logger(subsystem: "gallery.memories.ios", category: "photos")
 }
