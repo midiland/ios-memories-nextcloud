@@ -17,10 +17,13 @@ Memories web interface, with a "NativeX" bridge that gives the web app native fe
   (Ed25519-signed manifest, SHA-256 per file) and served from the device; the app opens immediately,
   even without network access, and updates itself in the background when the server is upgraded.
 - **Native integrations**: iOS share sheet for photos, albums and links, downloads, toasts and haptics.
+- **Device photos in the timeline** (opt-in, read-only): photos of the iPhone that are not on Nextcloud yet
+  appear next to the server ones. Photos already uploaded are recognized, even when the Nextcloud app
+  converted them to JPEG or renamed them.
 - **English and French** user interface (follows the iOS language setting).
 
-Not included (yet): showing photos stored on the device in the timeline. Automatic upload is left to the
-official Nextcloud iOS app.
+Not included (yet): device videos, deleting or uploading device photos from the app. Automatic upload is
+left to the official Nextcloud iOS app.
 
 ## Requirements
 
