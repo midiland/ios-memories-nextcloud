@@ -9,21 +9,58 @@ Memories web interface, with a "NativeX" bridge that gives the web app native fe
 
 ## Features
 
+### Implemented on iOS
+
 - **Nextcloud sign-in** with [Login Flow v2](https://docs.nextcloud.com/server/latest/developer_manual/client_apis/LoginFlow/index.html)
   in an in-app Safari sheet; the app password is stored in the iOS Keychain and revoked on logout.
 - **App-like interface**: the Memories web UI runs in native mode (no Nextcloud header, mobile
-  navigation bar, theme color applied to the status bar and safe areas, native back button).
+  navigation bar, theme color applied to the status bar and safe areas).
+- **Native back navigation**: a floating back button and the left-edge swipe on the screens where the
+  web UI relies on a system back button (On this day, Favorites, Videos, Archive, Map, Folders, Search,
+  People/Places/Tags…).
 - **Instant startup and offline shell**: the Memories web assets are downloaded once, verified
   (Ed25519-signed manifest, SHA-256 per file) and served from the device; the app opens immediately,
   even without network access, and updates itself in the background when the server is upgraded.
-- **Native integrations**: iOS share sheet for photos, albums and links, downloads, toasts and haptics.
-- **Device photos in the timeline** (opt-in, read-only): photos of the iPhone that are not on Nextcloud yet
-  appear next to the server ones. Photos already uploaded are recognized, even when the Nextcloud app
-  converted them to JPEG or renamed them.
+- **Remote fallback**: servers without a signed manifest still work; the web interface is then loaded
+  directly from Nextcloud.
+- **Automatic session recovery**: expired sessions are renewed transparently; revoked credentials bring
+  the user back to the login screen.
+- **Device photos in the timeline** (opt-in, read-only): photos of the iPhone (whole library or selected
+  albums) that are not on Nextcloud yet appear next to the server ones, with a "device" badge. Photos
+  already uploaded are not shown twice, even when the Nextcloud app converted them to JPEG or renamed them.
+- **Native integrations**: iOS share sheet for photos, albums and links, downloads (then share sheet),
+  native toasts and haptic feedback.
 - **English and French** user interface (follows the iOS language setting).
 
-Not included (yet): device videos, deleting or uploading device photos from the app. Automatic upload is
-left to the official Nextcloud iOS app.
+### Not implemented yet on iOS
+
+- Device **videos** in the timeline (device photos only).
+- **Deleting** device photos and **uploading** them to Nextcloud from the app. The upload button of the
+  mobile header is hidden until then; automatic upload is left to the official Nextcloud iOS app.
+- Native **video player**: videos play in the web player.
+- **Self-signed certificates** ("trust all certificates" option).
+
+### Comparison with the Android app
+
+| Feature | Android | iOS |
+|---|:---:|:---:|
+| Login Flow v2 | ✅ system browser | ✅ in-app Safari sheet |
+| Secure credential storage | ✅ Android Keystore | ✅ Keychain |
+| Self-signed certificates ("trust all") | ✅ | ❌ |
+| Offline shell from a signed asset snapshot | ✅ | ✅ |
+| Fallback to the remote web interface | — | ✅ |
+| Native mode UI (mobile navigation, theme color) | ✅ | ✅ |
+| Back navigation | ✅ system back button | ✅ floating button + swipe |
+| Share photos, albums and links | ✅ | ✅ share sheet |
+| Download files | ✅ background download + notification | ✅ download, then share sheet |
+| Touch feedback | ✅ click sound | ✅ haptics |
+| Native video player | ✅ ExoPlayer | ❌ web player |
+| Device photos in the timeline | ✅ MediaStore | ✅ PhotoKit (read-only) |
+| Device videos in the timeline | ✅ | ❌ |
+| Device folder selection and setup screen | ✅ folders | ✅ library + albums |
+| Deduplication with server photos | ✅ auid/buid | ✅ auid/buid + capture date/dimensions |
+| Upload device photos from the app | ✅ | ❌ (button hidden) |
+| Delete device photos from the app | ✅ | ❌ |
 
 ## Requirements
 
