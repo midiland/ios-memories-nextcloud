@@ -2,7 +2,7 @@
 # Regenerate the .xcodeproj after any change: `cd MemoriesIOS && xcodegen generate`
 name: MemoriesIOS
 options:
-  bundleIdPrefix: gallery.memories
+  bundleIdPrefix: fr.midiland
   deploymentTarget:
     iOS: "16.0"
   createIntermediateGroups: true
@@ -23,7 +23,7 @@ targets:
         buildPhase: resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: gallery.memories.ios
+        PRODUCT_BUNDLE_IDENTIFIER: fr.midiland.memories
         PRODUCT_NAME: Memories
         TARGETED_DEVICE_FAMILY: "1,2"
         GENERATE_INFOPLIST_FILE: NO
@@ -65,7 +65,7 @@ targets:
       - target: MemoriesIOS
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: gallery.memories.ios.tests
+        PRODUCT_BUNDLE_IDENTIFIER: fr.midiland.memories.tests
         GENERATE_INFOPLIST_FILE: YES
         # The app's PRODUCT_NAME is "Memories", not the target name.
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/Memories.app/Memories

@@ -789,7 +789,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gallery.memories.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.midiland.memories;
 				PRODUCT_NAME = Memories;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -807,7 +807,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gallery.memories.ios.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.midiland.memories.tests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Memories.app/Memories";
@@ -826,7 +826,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gallery.memories.ios;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.midiland.memories;
 				PRODUCT_NAME = Memories;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -902,7 +902,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gallery.memories.ios.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.midiland.memories.tests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Memories.app/Memories";

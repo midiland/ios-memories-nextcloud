@@ -11,7 +11,7 @@ struct CredentialStore {
     private let account = "default"
 
     /// `service` identifies the Keychain item; tests use their own so they never touch the real account.
-    init(service: String = "gallery.memories.ios.credentials") {
+    init(service: String = "fr.midiland.memories.credentials") {
         self.service = service
     }
 

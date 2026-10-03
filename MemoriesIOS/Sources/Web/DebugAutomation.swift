@@ -5,7 +5,7 @@ import WebKit
 /// Test automation (Debug builds only), driven by launch arguments, since the simulator
 /// screen cannot be tapped from the command line:
 ///
-///     xcrun simctl launch "iPhone 17 Pro" gallery.memories.ios -MXRoute /thisday -MXBackAfter 4
+///     xcrun simctl launch "iPhone 17 Pro" fr.midiland.memories -MXRoute /thisday -MXBackAfter 4
 ///
 /// - `-MXRoute <route>`: 4 s after first display, navigates via the Vue router (`_m.router.push`);
 /// - `-MXClick <css selector>`: then clicks the first matching element 3 s later

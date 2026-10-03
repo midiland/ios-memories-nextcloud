@@ -155,7 +155,7 @@ Nextcloud.
 ## Debugging
 
 - Logs (Debug builds), one line per local server request:
-  `xcrun simctl spawn booted log stream --level debug --predicate 'subsystem == "gallery.memories.ios"'`
+  `xcrun simctl spawn booted log stream --level debug --predicate 'subsystem == "fr.midiland.memories"'`
 - Inspect the web view with Safari › Develop › *Simulator*.
 
 ## Contributing

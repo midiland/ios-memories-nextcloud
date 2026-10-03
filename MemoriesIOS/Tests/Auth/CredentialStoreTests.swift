@@ -3,7 +3,7 @@ import XCTest
 
 /// Uses a dedicated Keychain service: never touches the real account's credentials.
 final class CredentialStoreTests: XCTestCase {
-    private let store = CredentialStore(service: "gallery.memories.ios.tests.\(UUID().uuidString)")
+    private let store = CredentialStore(service: "fr.midiland.memories.tests.\(UUID().uuidString)")
 
     override func tearDown() {
         store.delete()
