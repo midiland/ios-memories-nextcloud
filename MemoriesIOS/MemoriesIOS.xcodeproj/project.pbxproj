@@ -88,6 +88,7 @@
 		CD8A3480ACCAC1FABE2B98CC /* ShellPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12DE8CF992978EC7BF336714 /* ShellPage.swift */; };
 		CEEB85E9D892559D6BDEC7F6 /* SemanticVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3087F7FABD8E0CCD42AE82B /* SemanticVersionTests.swift */; };
 		D0892634EFAA1FF454CE8A65 /* WeakScriptMessageProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01346191B200D19D6D211AB /* WeakScriptMessageProxy.swift */; };
+		D14B2B187E70C644AC2A6D94 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7EC1163269942404A9C0FECB /* Assets.xcassets */; };
 		D1B233FBB1D1ADED6D403859 /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2212DA2CDC57AC2548D23532 /* AppConstants.swift */; };
 		D1D1F5DB4F241EA093053C38 /* DebugAutomation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 623D531A3CAF7256AA4A556E /* DebugAutomation.swift */; };
 		D7891FCDD506DA1996EE1F00 /* ManifestVerifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F92FD9973AE9B4872815D5A /* ManifestVerifierTests.swift */; };
@@ -161,6 +162,7 @@
 		78AB113A377363502B95681F /* ServerURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerURLTests.swift; sourceTree = "<group>"; };
 		7975D8D019695BF59E23AFB4 /* ServerURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerURL.swift; sourceTree = "<group>"; };
 		7D2ABDF1B11759410C24DF15 /* NativeXPhotoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXPhotoService.swift; sourceTree = "<group>"; };
+		7EC1163269942404A9C0FECB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8174267D8D9F1D2443A1F01F /* NavigationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationPolicyTests.swift; sourceTree = "<group>"; };
 		81C405E78BD3996D9F1C0513 /* PhotoLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibrary.swift; sourceTree = "<group>"; };
 		8672B5BEFA9FEB0519451E23 /* NativeXController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXController.swift; sourceTree = "<group>"; };
@@ -180,7 +182,7 @@
 		AA1300AD3AB4FD7E3045AECC /* NativeXLoopbackRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXLoopbackRouter.swift; sourceTree = "<group>"; };
 		AB96B768B5C81732119129CA /* AssetManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetManifestTests.swift; sourceTree = "<group>"; };
 		ABEB41FB80250E35047AAD3C /* StaticFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticFiles.swift; sourceTree = "<group>"; };
-		AE35E4D6829D59D3099844A9 /* Memories.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Memories.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE35E4D6829D59D3099844A9 /* MemoriesIOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MemoriesIOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEACD12F0AD6EF6ED30A0BF1 /* Snapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Snapshot.swift; sourceTree = "<group>"; };
 		B01346191B200D19D6D211AB /* WeakScriptMessageProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeakScriptMessageProxy.swift; sourceTree = "<group>"; };
 		B0A36D6568685189E036A167 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
@@ -331,6 +333,7 @@
 		63110D8277F5D80206B8F4AE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				7EC1163269942404A9C0FECB /* Assets.xcassets */,
 				DBE394490710151EAA9893CD /* InfoPlist.xcstrings */,
 				35EE2AE740C81030FFD724A9 /* Localizable.xcstrings */,
 				8C60C16C55D86D78274624E7 /* nativex.js */,
@@ -417,7 +420,7 @@
 		A8A226C019E06D2DC2A820B9 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AE35E4D6829D59D3099844A9 /* Memories.app */,
+				AE35E4D6829D59D3099844A9 /* MemoriesIOS.app */,
 				D3B109855539A71E9F4227E6 /* MemoriesIOSTests.xctest */,
 			);
 			name = Products;
@@ -518,7 +521,7 @@
 			packageProductDependencies = (
 			);
 			productName = MemoriesIOS;
-			productReference = AE35E4D6829D59D3099844A9 /* Memories.app */;
+			productReference = AE35E4D6829D59D3099844A9 /* MemoriesIOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 		ABC0848E15C10023ED79AA18 /* MemoriesIOSTests */ = {
@@ -549,6 +552,7 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					00FAD637E946F557D5B0C917 = {
+						DevelopmentTeam = 53LB2CD33L;
 						ProvisioningStyle = Automatic;
 					};
 					ABC0848E15C10023ED79AA18 = {
@@ -582,6 +586,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D14B2B187E70C644AC2A6D94 /* Assets.xcassets in Resources */,
 				82D509754A4343651C5DCA9A /* InfoPlist.xcstrings in Resources */,
 				E0DF2BB0D41049766A675C9D /* Localizable.xcstrings in Resources */,
 				8FD49D87F27EF4142964CCA6 /* nativex.js in Resources */,
@@ -781,7 +786,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 53LB2CD33L;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -792,7 +797,12 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = fr.midiland.memories;
 				PRODUCT_NAME = Memories;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -819,7 +829,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 53LB2CD33L;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -830,7 +840,12 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = fr.midiland.memories;
 				PRODUCT_NAME = Memories;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
