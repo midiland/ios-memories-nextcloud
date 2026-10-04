@@ -1,10 +1,12 @@
 import Foundation
 
 /// User choices for device photos, stored in `UserDefaults`:
-/// opt-in (`/api/config/allow_media/{0|1}`) and the folders shown (`configSetLocalFolders`).
+/// opt-in (`/api/config/allow_media/{0|1}`), the folders shown (`configSetLocalFolders`)
+/// and whether the device setup was already offered (`DeviceSetupRule`).
 struct LocalPhotoSettings: Sendable {
     private let enabledKey = "photos.enabled"
     private let foldersKey = "nativex.localFolders"
+    private let setupOfferedKey = "photos.setupOffered"
 
     private var defaults: UserDefaults { .standard }
 
@@ -12,6 +14,12 @@ struct LocalPhotoSettings: Sendable {
     var isEnabled: Bool {
         get { defaults.bool(forKey: enabledKey) }
         nonmutating set { defaults.set(newValue, forKey: enabledKey) }
+    }
+
+    /// The device setup page was opened once (see `DeviceSetupRule`).
+    var setupOffered: Bool {
+        get { defaults.bool(forKey: setupOfferedKey) }
+        nonmutating set { defaults.set(newValue, forKey: setupOfferedKey) }
     }
 
     /// Folder choices as saved by the frontend.

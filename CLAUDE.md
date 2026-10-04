@@ -97,7 +97,8 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
    (`WKScriptMessageHandlerWithReply`): sharing (`/api/share/url`, `/api/share/blobs`) goes through the
    iOS share sheet; device photos, see below.
 4b. **Device photos** (local mode only, opt-in): Settings > Device Folders > "Run initial device setup"
-   (`/nxsetup`) → `/api/config/allow_media/1` (iOS prompt) → `/api/days` (device-only photo counts),
+   (`/nxsetup`; opened automatically once per install, like Android after sign-in, while the iOS photo
+   permission was never asked: `DeviceSetupRule`) → `/api/config/allow_media/1` (iOS prompt) → `/api/days` (device-only photo counts),
    `/api/days/{id}` (photos), `/api/image/info/{id}`; thumbnails/full images on the local server
    (`/image/preview/{fileid}`, `/image/full/{auid}`, loaded by `<img>` and the image worker, not the JS bridge).
    For each day, the server photos of `day ± 1` are fetched and `PhotoMatcher` drops device photos that

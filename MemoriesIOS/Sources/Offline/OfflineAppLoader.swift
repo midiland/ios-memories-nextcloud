@@ -25,6 +25,11 @@ final class OfflineAppLoader {
         URL(string: server.origin.absoluteString + credentials.server.appPath + "/")!
     }
 
+    /// Frontend device setup page (`/nxsetup`), opened instead of the entry page on first launch.
+    var setupURL: URL {
+        entryURL.appendingPathComponent("nxsetup")
+    }
+
     /// Whether `url` points to the local server (loopback host).
     func isLocal(_ url: URL) -> Bool {
         url.host == LocalHTTPServer.host || url.host == "localhost"

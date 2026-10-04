@@ -1,4 +1,5 @@
 import Foundation
+import Photos
 
 /// Device photos on the bridge side: permission and folder settings, synchronous state pushed to
 /// `nativex.js`, and the local timeline routes (`/api/days`, `/api/days/{id}`, `/api/image/info/{id}`).
@@ -37,6 +38,20 @@ final class NativeXPhotoService {
         let folders = LocalFolder.merge(available: library.folders(), saved: settings.savedFolders)
         let data = (try? JSONEncoder().encode(folders)) ?? Data("[]".utf8)
         return String(data: data, encoding: .utf8) ?? "[]"
+    }
+
+    // MARK: - Startup
+
+    /// Whether to open the device setup instead of the timeline (first launch, iOS prompt
+    /// never shown). Returns `true` once: the offer is recorded.
+    func takeSetupOffer() -> Bool {
+        let offer = DeviceSetupRule.shouldOffer(
+            alreadyOffered: settings.setupOffered,
+            isEnabled: settings.isEnabled,
+            status: PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        )
+        if offer { settings.setupOffered = true }
+        return offer
     }
 
     // MARK: - Calls from the frontend

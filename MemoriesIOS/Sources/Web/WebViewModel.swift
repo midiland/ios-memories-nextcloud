@@ -141,7 +141,9 @@ final class WebViewModel: ObservableObject {
                 mode = .local
                 nativeX.photos.timeline = localPhotos
                 state = .loading
-                webView.load(URLRequest(url: localURL))
+                // Like Android after signing in: offer device photos (and the iOS prompt) once.
+                let url = nativeX.photos.takeSetupOffer() ? offline.setupURL : localURL
+                webView.load(URLRequest(url: url))
                 refreshTask = Task { [weak self] in await self?.refreshInBackground() }
             } else {
                 try await startRemote()
