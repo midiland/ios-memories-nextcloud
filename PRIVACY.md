@@ -60,4 +60,4 @@ Changes to this policy will be published on this page, with a new "Last updated"
 
 ## Contact
 
-Questions about this policy: me@midiland.fr, or open an issue on the project's GitHub repository.
+Questions about this policy: contact@midiland.fr, or open an issue on the project's GitHub repository.
