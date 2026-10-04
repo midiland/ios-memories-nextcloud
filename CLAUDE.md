@@ -95,7 +95,8 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 4. **App mode (NativeX)**: `nativex.js` defines `window.nativex` ⇒ the frontend hides the Nextcloud
    header, shows the mobile header and bottom navigation, makes the page transparent and sends its
    color (`setThemeColor`), painted behind the WebView and in the safe areas.
-   `http://127.0.0.1/…` calls (fetch and XHR) are diverted in JS to the `nativexAsync` handler
+   `http://127.0.0.1/api/…` calls (fetch and XHR, any port; other loopback paths such as HLS segments
+   reach the local server) are diverted in JS to the `nativexAsync` handler
    (`WKScriptMessageHandlerWithReply`): sharing (`/api/share/url`, `/api/share/blobs`) goes through the
    iOS share sheet; device photos, see below.
 4b. **Device photos** (local mode only, opt-in): Settings > Device Folders > "Run initial device setup"

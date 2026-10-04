@@ -34,7 +34,11 @@ final class LocalRouter: @unchecked Sendable {
     // MARK: - Routing
 
     func handle(_ request: HTTPRequest) async -> HTTPResponse {
-        guard isAuthorized(request) else { return .forbidden }
+        guard isAuthorized(request) else {
+            // Requests not made by the page itself, e.g. a media loader without the page's cookies.
+            Log.localServer.notice("Forbidden: \(request.method, privacy: .public) \(request.path, privacy: .public) (\(request.header("user-agent") ?? "no user agent", privacy: .public))")
+            return .forbidden
+        }
         let path = request.path
 
         if hasPrefix(path, "/image") {

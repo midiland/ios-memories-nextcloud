@@ -73,7 +73,10 @@
   // Async bridge http://127.0.0.1 → native `nativexAsync` handler
   // ---------------------------------------------------------------------------
 
-  const LOOPBACK = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//i;
+  // Only the bridge routes (`/api/...` at the root, `NAPI` in `src/native/api.ts`): in local mode the
+  // page itself is served from 127.0.0.1, and its other requests (HLS playlists and segments,
+  // Nextcloud APIs, device images) must reach the local server.
+  const LOOPBACK = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/api\//i;
 
   /** Sends the request to the native side. Resolves to `{ status, contentType, body }`. */
   const loopback = (method, url) =>
