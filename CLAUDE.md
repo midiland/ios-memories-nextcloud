@@ -163,6 +163,12 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
   `-MXEval "<js>"` logs the result of an (async) expression, e.g. a bridge call:
   `-MXEval "JSON.stringify(await fetch(location.origin + '/api/days').then(r => r.json()))"`
   (`-MXEvalEvery <s>` repeats it). The value must not start with `(`: `UserDefaults` would parse it as a plist.
+  Sign-in without the Login Flow page: `SIMCTL_CHILD_MX_SERVER=… SIMCTL_CHILD_MX_LOGIN=… SIMCTL_CHILD_MX_APP_PASSWORD=…
+  xcrun simctl launch …` (app password from `GET /ocs/v2.php/core/getapppassword` with Basic auth).
+  Open a photo in the viewer: `-MXRoute / -MXEval "document.querySelectorAll('.p-outer .img-outer')[0].dispatchEvent(new PointerEvent('pointerdown', {pointerType: 'mouse', button: 0, bubbles: true}))"`.
+- **App Store screenshots**: on dedicated simulators ("iPhone 17 Pro Max" = 6.9", "iPad Pro 13-inch (M5)" = 13"), never
+  the user's "iPhone 17 Pro"; `xcrun simctl status_bar <udid> override --time 9:41 …`. The web UI language follows the
+  Nextcloud account setting, not iOS.
 - **Device photos on the simulator**: `xcrun simctl privacy … grant photos` did not pre-grant access here;
   the prompt needs a tap. Add photos with `xcrun simctl addmedia` or drag and drop. `log stream` stops when
   the app is reinstalled: restart it.
