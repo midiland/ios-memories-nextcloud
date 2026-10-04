@@ -17,6 +17,8 @@ targets:
   MemoriesIOS:
     type: application
     platform: iOS
+    # Read by XcodeGen for the scheme's BuildableName (PRODUCT_NAME alone is not).
+    productName: Memories
     sources:
       - Sources
       - path: Resources
