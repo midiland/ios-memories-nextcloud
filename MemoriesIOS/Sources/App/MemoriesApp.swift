@@ -7,6 +7,9 @@ struct MemoriesApp: App {
     @StateObject private var session: SessionStore
 
     init() {
+        #if DEBUG
+        DebugAutomation.seedCredentials()
+        #endif
         let server = LocalHTTPServer.shared
         self.server = server
         let teardown = SessionTeardown(server: server)
