@@ -8,7 +8,9 @@ import Network
 ///   localStorage and cache — stays the same across launches; falls back to a free port.
 /// - The port is not a secret (any app on the device can connect to it): every
 ///   request must carry the HttpOnly `local-auth` cookie (a per-process secret).
-/// - iOS may invalidate the socket in the background: `ensureStarted()` restarts it on return.
+/// - iOS reclaims listening sockets of suspended apps: the app calls `suspend()` when it goes to
+///   the background and `ensureStarted()` on return, which binds the same port again (same origin).
+///   A listener that fails anyway is restarted right away.
 @MainActor
 final class LocalHTTPServer {
     static let shared = LocalHTTPServer()
@@ -21,6 +23,8 @@ final class LocalHTTPServer {
 
     private(set) var port: UInt16 = 0
     private var listener: NWListener?
+    /// Stopped on purpose (background): a failure must not restart it.
+    private var isSuspended = false
     /// Start in progress, awaited by concurrent `ensureStarted()` calls.
     private var starting: Task<UInt16, Error>?
     private let queue = DispatchQueue(label: "memories.localserver.listener")
@@ -35,6 +39,7 @@ final class LocalHTTPServer {
     /// start, so the server never binds twice (the second bind would fall back to a random port).
     @discardableResult
     func ensureStarted() async throws -> UInt16 {
+        isSuspended = false
         if listener != nil { return port }
         if let starting { return try await starting.value }
         let task = Task { try await bind() }
@@ -43,14 +48,25 @@ final class LocalHTTPServer {
         return try await task.value
     }
 
+    /// Stops listening while the app is in the background (open connections are left alone).
+    func suspend() {
+        isSuspended = true
+        guard let listener else { return }
+        self.listener = nil
+        listener.cancel()
+        Log.localServer.notice("Listener suspended")
+    }
+
     private func bind() async throws -> UInt16 {
+        // Same port as before when restarting, so the page origin does not change.
         do {
-            port = try await listen(on: Self.preferredPort)
+            port = try await listen(on: port != 0 ? port : Self.preferredPort)
         } catch {
             // Port in use: take a free port; the origin changes for this session only.
             port = try await listen(on: 0)
         }
         router.port = port
+        Log.localServer.notice("Listening on port \(self.port)")
         return port
     }
 
@@ -76,6 +92,7 @@ final class LocalHTTPServer {
                 case .failed(let error):
                     listener.cancel()
                     if once.claim() { continuation.resume(throwing: error) }
+                    Log.localServer.error("Listener failed: \(String(describing: error), privacy: .public)")
                     Task { @MainActor in self?.listenerDidStop(listener) }
                 case .cancelled:
                     Task { @MainActor in self?.listenerDidStop(listener) }
@@ -89,9 +106,12 @@ final class LocalHTTPServer {
         return bound
     }
 
-    /// Socket lost (background, error): the next `ensureStarted()` will restart listening.
+    /// Socket lost while in use: listen again at once (the page keeps loading from this origin).
     private func listenerDidStop(_ stopped: NWListener) {
-        if listener === stopped { listener = nil }
+        guard listener === stopped else { return }
+        listener = nil
+        guard !isSuspended else { return }
+        Task { try? await ensureStarted() }
     }
 }
 

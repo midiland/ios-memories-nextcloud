@@ -62,6 +62,7 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
         do {
             head = try await stream.response()
         } catch {
+            Log.localServer.error("Upstream \(request.method, privacy: .public) \(request.path, privacy: .public) failed: \(String(describing: error), privacy: .public)")
             return .text(504, "upstream unreachable")
         }
         return response(for: head, stream: stream, config: config, localOrigin: localOrigin)

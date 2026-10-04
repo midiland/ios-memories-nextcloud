@@ -61,7 +61,11 @@ struct WebContainerView: View {
         }
         .onDisappear(perform: model.stop)
         .onChange(of: scenePhase) { phase in
-            if phase == .active { model.appDidBecomeActive() }
+            switch phase {
+            case .active: model.appDidBecomeActive()
+            case .background: model.appDidEnterBackground()
+            default: break
+            }
         }
     }
 

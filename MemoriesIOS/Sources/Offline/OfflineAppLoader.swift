@@ -93,11 +93,19 @@ final class OfflineAppLoader {
         return true
     }
 
-    /// Restarts listening if iOS closed the socket in the background. `true` if the port changed.
-    func ensureServerRunning() async -> Bool {
-        let before = server.port
-        guard let after = try? await server.ensureStarted() else { return false }
-        return before != 0 && after != before
+    /// Stops listening in the background: iOS would reclaim the socket of the suspended app.
+    func suspendServer() {
+        server.suspend()
+    }
+
+    /// Listens again on return. Returns the port, `nil` if the server cannot start.
+    func ensureServerRunning() async -> UInt16? {
+        do {
+            return try await server.ensureStarted()
+        } catch {
+            Log.localServer.error("Restart failed: \(String(describing: error), privacy: .public)")
+            return nil
+        }
     }
 
     // MARK: - Private

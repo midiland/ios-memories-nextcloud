@@ -185,14 +185,22 @@ final class WebViewModel: ObservableObject {
         }
     }
 
-    /// Back in the foreground: iOS may have closed the local server's socket.
+    /// In the background: closes the local server's socket before iOS reclaims it.
+    func appDidEnterBackground() {
+        guard hasStarted, mode == .local else { return }
+        offline.suspendServer()
+    }
+
+    /// Back in the foreground: listens again (same port, so the page keeps working).
     func appDidBecomeActive() {
         guard hasStarted, mode == .local else { return }
         Task {
-            if await offline.ensureServerRunning() {
-                // New port = new origin: reload the entry page.
-                webView.load(URLRequest(url: offline.entryURL))
-            }
+            guard let port = await offline.ensureServerRunning(),
+                  let page = webView.url, offline.isLocal(page),
+                  page.port != Int(port)
+            else { return }
+            // Port taken by another app = new origin: reload the entry page.
+            webView.load(URLRequest(url: offline.entryURL))
         }
     }
 
