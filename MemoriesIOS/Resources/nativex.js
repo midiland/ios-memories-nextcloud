@@ -49,12 +49,15 @@
   //   the app shows a single native back button on every page that needs one
   //   (BackNavigationRule.swift). Matched by icon, not by the translated "Back" label;
   // - the upload button of the mobile header (UploadMenuItem.vue): upload is not implemented
-  //   on iOS yet. Remove this rule once it is.
+  //   on iOS yet. Remove this rule once it is;
+  // - the logo of the mobile header (MobileHeader.vue) when the navigation sidebar is open
+  //   (wide screens, e.g. iPad): the header spans the whole width and its logo covers the sidebar.
   const hideUnsupportedControls = () => {
     const style = document.createElement('style');
     style.textContent = [
       ':is(.face-top-matter, .places-top-matter, .top-matter) > :has(.arrow-left-icon) { display: none !important; }',
       '#mobile-header .upload-menu { display: none !important; }',
+      'body:has(.app-navigation:not(.app-navigation--closed)) #mobile-header .logo { visibility: hidden; }',
     ].join('\n');
     document.head.appendChild(style);
   };
