@@ -53,8 +53,8 @@ final class NativeXController: NSObject {
     /// `getSyncStatus`): impossible through `postMessage`, so `nativex.js` serves them from this state.
     private var initialState: [String: Any] { photos.state }
 
-    /// Reads `nativex.js` and injects the initial state as JSON.
-    private static func scriptSource(state: [String: Any]) -> String? {
+    /// Reads `nativex.js` and injects the initial state as JSON (internal for the script tests).
+    nonisolated static func scriptSource(state: [String: Any]) -> String? {
         guard let url = Bundle.main.url(forResource: "nativex", withExtension: "js"),
               let template = try? String(contentsOf: url, encoding: .utf8),
               let json = try? JSONSerialization.data(withJSONObject: state),

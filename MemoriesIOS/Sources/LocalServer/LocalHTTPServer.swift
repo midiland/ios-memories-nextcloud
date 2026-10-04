@@ -15,11 +15,12 @@ import Network
 final class LocalHTTPServer {
     static let shared = LocalHTTPServer()
     nonisolated static let host = "127.0.0.1"
-    nonisolated static let preferredPort: UInt16 = 62079
 
     /// Secret for the `local-auth` cookie, regenerated on every app launch.
     nonisolated let secret = UUID().uuidString
     let router: LocalRouter
+    /// Port tried first; 62079 for the app, 0 (any free port) in tests.
+    private let preferredPort: UInt16
 
     private(set) var port: UInt16 = 0
     private var listener: NWListener?
@@ -29,7 +30,8 @@ final class LocalHTTPServer {
     private var starting: Task<UInt16, Error>?
     private let queue = DispatchQueue(label: "memories.localserver.listener")
 
-    private init() {
+    init(preferredPort: UInt16 = 62079) {
+        self.preferredPort = preferredPort
         router = LocalRouter(secret: secret)
     }
 
@@ -59,8 +61,9 @@ final class LocalHTTPServer {
 
     private func bind() async throws -> UInt16 {
         // Same port as before when restarting, so the page origin does not change.
+        let isRestart = port != 0
         do {
-            port = try await listen(on: port != 0 ? port : Self.preferredPort)
+            port = try await listen(on: isRestart ? port : preferredPort, attempts: isRestart ? 10 : 1)
         } catch {
             // Port in use: take a free port; the origin changes for this session only.
             port = try await listen(on: 0)
@@ -68,6 +71,15 @@ final class LocalHTTPServer {
         router.port = port
         Log.localServer.notice("Listening on port \(self.port)")
         return port
+    }
+
+    /// The suspended listener releases its port asynchronously: a restart retries for up to ~0.5 s.
+    private func listen(on port: UInt16, attempts: Int) async throws -> UInt16 {
+        for _ in 1..<attempts {
+            if let bound = try? await listen(on: port) { return bound }
+            try? await Task.sleep(nanoseconds: 50_000_000)
+        }
+        return try await listen(on: port)
     }
 
     private func listen(on port: UInt16) async throws -> UInt16 {

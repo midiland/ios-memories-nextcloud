@@ -182,8 +182,12 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
   (harness + fake Nextcloud in Python + `curl`).
 - **Signature**: a manifest signed with the default seed of `webpack.manifest-sign-plugin.ts`
   must be accepted in Debug and rejected in Release (covered by `ManifestVerifierTests`).
-- **Bridge JS**: `nativex.js` can be tested with Node by mocking `window.webkit.messageHandlers`,
-  `XMLHttpRequest` and `ProgressEvent`. Live inspection: Safari > Develop > Simulator.
+- **Bridge JS**: `NativeXScriptTests` runs the real `nativex.js` in JavaScriptCore with a fake page
+  (`webkit.messageHandlers`, `fetch`, `XMLHttpRequest`) and checks which URLs reach the bridge: only
+  `127.0.0.1/api/…`; HLS playlists/segments and other paths of the local origin must reach the network.
+  Live inspection: Safari > Develop > Simulator.
+- **Listener lifecycle**: `LocalHTTPServerTests` uses a real socket on a free port (`LocalHTTPServer(preferredPort: 0)`):
+  suspend → restart must keep the same port.
 - Simulator with the user's account: **iPhone 17 Pro**. Never delete anything and never log out
   (logging out revokes the app password).
 
