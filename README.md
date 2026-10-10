@@ -7,6 +7,14 @@ Memories web interface, with a "NativeX" bridge that gives the web app native fe
 
 > This project is not affiliated with the Memories or Nextcloud projects.
 
+## Try the beta
+
+The app is available as a public beta on TestFlight: **[join the beta](https://testflight.apple.com/join/GZvYN5cE)**
+(iOS 16 or later, Memories 9.0.0-rc.1 or later on your Nextcloud server, see [Requirements](#requirements)).
+
+Found a bug or have an idea? Please [open an issue](https://github.com/midiland/ios-memories-nextcloud/issues) with your iOS version, device,
+Memories and Nextcloud versions, and the steps to reproduce.
+
 ## Features
 
 ### Implemented on iOS
