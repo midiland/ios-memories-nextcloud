@@ -1,0 +1,142 @@
+name: Bug report
+description: Something does not work as expected in the iOS app.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing Memories for iOS! A few details help a lot to reproduce the problem.
+
+        ⚠️ **Privacy:** this issue is public. Do not post your server address, user name, passwords or
+        app passwords, and blur personal photos in screenshots.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+      placeholder: When I open an album and tap the back button, the app shows a blank page.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the app
+        2. Go to Explore > People
+        3. Tap a person
+        4. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Does it also happen in a web browser?
+      description: |
+        Open Memories on your Nextcloud server in Safari and try the same steps. If it happens there too, the
+        bug is in Memories itself; please report it on the [Memories repository](https://github.com/pulsejet/memories/issues).
+      options:
+        - "No, only in the iOS app"
+        - "Yes, also in the browser"
+        - "I did not check"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: How often does it happen?
+      options:
+        - Every time
+        - Sometimes
+        - Only once
+    validations:
+      required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: App version and build
+      description: Shown in the TestFlight app under Memories (e.g. 1.0.0 (1000005)).
+      placeholder: 1.0.0 (1000005)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installed from
+      options:
+        - TestFlight
+        - App Store
+        - Built from source
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and iOS version
+      placeholder: iPhone 15, iOS 18.2
+    validations:
+      required: true
+
+  - type: input
+    id: memories-version
+    attributes:
+      label: Memories version (server)
+      description: Nextcloud > Apps > Memories.
+      placeholder: "9.0.1"
+    validations:
+      required: true
+
+  - type: input
+    id: nextcloud-version
+    attributes:
+      label: Nextcloud version
+      description: Nextcloud > Administration settings > Overview.
+      placeholder: "31.0.2"
+
+  - type: checkboxes
+    id: context
+    attributes:
+      label: Context
+      description: Check what applies.
+      options:
+        - label: Device photos are enabled (Settings > Device Folders)
+        - label: The server is only reachable on my local network or through a VPN
+        - label: The server uses a reverse proxy (nginx, Traefik, Cloudflare…)
+        - label: It happened right after updating the app or Memories on the server
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or screen recording
+      description: Drag and drop files here. Remember to blur personal photos.
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Error messages shown by the app, network conditions (Wi-Fi, cellular, offline), etc.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched the existing issues and this bug is not already reported.
+          required: true
+        - label: This issue contains no server address, credentials or private photos.
+          required: true

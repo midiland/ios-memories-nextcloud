@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Bug or feature of the Memories web interface
+    url: https://github.com/pulsejet/memories/issues
+    about: If it also happens in a web browser, it belongs to Memories itself, not to the iOS app.

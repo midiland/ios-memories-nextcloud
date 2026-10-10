@@ -1,0 +1,50 @@
+name: Feature request
+description: Suggest an idea or a missing feature for the iOS app.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Features of the Memories web interface (timeline, albums, faces, map…) come from Memories itself and
+        are requested on the [Memories repository](https://github.com/pulsejet/memories/issues). This tracker
+        is for what the iOS app adds around it (native integrations, device photos, sharing, offline mode…).
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve?
+      placeholder: I would like to… because…
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How you imagine it working in the app.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: android
+    attributes:
+      label: Does the Memories Android app have it?
+      options:
+        - "Yes"
+        - "No"
+        - "I don't know"
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds
+      description: Anything you use today instead.
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, mockups, links. Remember to blur personal photos.
