@@ -45,6 +45,7 @@
 		6725C86B8F2726D40215A77E /* NativeXResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74A728D9BB86B96CF10DA427 /* NativeXResponse.swift */; };
 		67A02E114B34F03BF54AE6A6 /* LocalAsset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 020F307D850E2C961A1FE9EA /* LocalAsset.swift */; };
 		681B6F5E44F7473173D7E61F /* LocalFolderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56D67C9F0EF5CCD308FEB3E9 /* LocalFolderTests.swift */; };
+		69BE68CCC83FDC44390396A8 /* LocalReloadRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CA91A9A54F1A70BB2534E56 /* LocalReloadRule.swift */; };
 		6AF336532974C7CFEA37D89A /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5431150E493839D33F2E6D24 /* Fixtures.swift */; };
 		6B7FC3B2FB73D6A5E4234A43 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECEB9D7993CB70E1CE7C346E /* LoginView.swift */; };
 		6BCFA375FD1B9D0B372F561F /* AuthenticatedDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E2C1CF7261009A52D14C10 /* AuthenticatedDownloader.swift */; };
@@ -104,6 +105,7 @@
 		E9F21054B26305EBB6B9E0EE /* DeviceSetupRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C1AC91381AB6DCF955A075 /* DeviceSetupRule.swift */; };
 		EAEFED0801470FD0D15C08B5 /* DeviceSetupRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DFD628F4137736C1D2B6028 /* DeviceSetupRuleTests.swift */; };
 		EC756466FA3AE955193B2AC7 /* StaticFilesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 932B49D93B318D8E503CB78D /* StaticFilesTests.swift */; };
+		EF5DD300DDFCC0D537D0712D /* LocalReloadRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD57D4A87BB439E16821A397 /* LocalReloadRuleTests.swift */; };
 		F0F282E15D155A261DD466B5 /* NativeXController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8672B5BEFA9FEB0519451E23 /* NativeXController.swift */; };
 		F8545973EE0A5563A79829F3 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74A4A6531629FD15E2E4086 /* SemanticVersion.swift */; };
 		F960AB8460F08BA0FD603DFE /* BackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC31B71637A0A4B4853BCD27 /* BackButton.swift */; };
@@ -164,6 +166,7 @@
 		5D422473FD7DE808D32BFE2E /* PhotoMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoMatcher.swift; sourceTree = "<group>"; };
 		623D531A3CAF7256AA4A556E /* DebugAutomation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugAutomation.swift; sourceTree = "<group>"; };
 		65039079FDAA9F138B15D0BB /* HTTPRequestHead.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestHead.swift; sourceTree = "<group>"; };
+		6CA91A9A54F1A70BB2534E56 /* LocalReloadRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReloadRule.swift; sourceTree = "<group>"; };
 		6EFF8FD8DFA03385FB8F7D02 /* LocalRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRouterTests.swift; sourceTree = "<group>"; };
 		6F48B1AD829B7A6948CE41A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		74A728D9BB86B96CF10DA427 /* NativeXResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXResponse.swift; sourceTree = "<group>"; };
@@ -200,6 +203,7 @@
 		B74A4A6531629FD15E2E4086 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
 		B7F435177E9AF666F47E8B3E /* ManifestVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManifestVerifier.swift; sourceTree = "<group>"; };
 		B9C803954A14CF4F6F44D81F /* WebNavigationHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebNavigationHandler.swift; sourceTree = "<group>"; };
+		BD57D4A87BB439E16821A397 /* LocalReloadRuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReloadRuleTests.swift; sourceTree = "<group>"; };
 		BD6CEED9FA8725E31B565022 /* LocalRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRouter.swift; sourceTree = "<group>"; };
 		BE9D8A0862DCDCCF8E3C1D83 /* NextcloudClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextcloudClient.swift; sourceTree = "<group>"; };
 		BF591F8C575EA9F19CAEC211 /* SnapshotStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotStoreTests.swift; sourceTree = "<group>"; };
@@ -372,6 +376,7 @@
 			children = (
 				A326EE046A23BBB659525E98 /* BackNavigationRuleTests.swift */,
 				5727B3053867AC663CA8A32E /* CSSColorTests.swift */,
+				BD57D4A87BB439E16821A397 /* LocalReloadRuleTests.swift */,
 				8174267D8D9F1D2443A1F01F /* NavigationPolicyTests.swift */,
 			);
 			path = Web;
@@ -382,6 +387,7 @@
 			children = (
 				D939D7444B65506922E9E701 /* BackNavigationRule.swift */,
 				623D531A3CAF7256AA4A556E /* DebugAutomation.swift */,
+				6CA91A9A54F1A70BB2534E56 /* LocalReloadRule.swift */,
 				45A55732DC69AFE92CAB8B1E /* MemoriesWebView.swift */,
 				0BAF48A1102A5E5C47A366B0 /* NavigationPolicy.swift */,
 				A4ECF1854EBBE63EDE3525B7 /* UIColor+CSS.swift */,
@@ -623,6 +629,7 @@
 				49BB9D06CD58C29DB1D483CA /* HTTPTypesTests.swift in Sources */,
 				681B6F5E44F7473173D7E61F /* LocalFolderTests.swift in Sources */,
 				6FD3623FFA305B2FFB08C98E /* LocalHTTPServerTests.swift in Sources */,
+				EF5DD300DDFCC0D537D0712D /* LocalReloadRuleTests.swift in Sources */,
 				A52BA17C364ED5DD4908F7FD /* LocalRouterTests.swift in Sources */,
 				D7891FCDD506DA1996EE1F00 /* ManifestVerifierTests.swift in Sources */,
 				DC4F7A9FA9E881F3FA49BA5F /* NativeXArgumentsTests.swift in Sources */,
@@ -671,6 +678,7 @@
 				26BF3C16EAFB5D9698C60A4A /* LocalImageRenderer.swift in Sources */,
 				9A02FE274B7AD38656F51471 /* LocalMediaProvider.swift in Sources */,
 				FAEA500499CC7F026668C2B7 /* LocalPhotoSettings.swift in Sources */,
+				69BE68CCC83FDC44390396A8 /* LocalReloadRule.swift in Sources */,
 				88F8201C703F476EB24C969F /* LocalRouter.swift in Sources */,
 				28D05460CD4DC54AA4189F95 /* LocalTimeline.swift in Sources */,
 				BD199E2CDC70374F6176ED32 /* Log.swift in Sources */,

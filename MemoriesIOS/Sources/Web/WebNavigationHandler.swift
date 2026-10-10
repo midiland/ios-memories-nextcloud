@@ -85,9 +85,9 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         handle(error)
     }
 
-    /// The WebContent process was killed (memory pressure): reload.
+    /// The WebContent process was killed (memory pressure): reload once possible.
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
-        webView.reload()
+        model?.webContentProcessDidTerminate()
     }
 
     // MARK: - UI
@@ -116,6 +116,6 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled { return }
         if nsError.domain == "WebKitErrorDomain" && nsError.code == 102 { return } // interrupted by policy
         Log.web.error("Page load failed: \(String(describing: error), privacy: .public)")
-        model?.pageDidFail(.serverUnreachable(error.localizedDescription))
+        model?.pageDidFail(loading: error)
     }
 }

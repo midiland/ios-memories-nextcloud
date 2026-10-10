@@ -84,6 +84,8 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
    - access protected by the HttpOnly `local-auth` cookie (per-launch secret) + `Host` check;
    - background: the listener is closed (iOS reclaims the sockets of suspended apps, which broke every
      new request after a while) and bound again on the same port when the app becomes active;
+     if iOS kills the WebContent process meanwhile, the reload waits for the listener, and a local connection
+     error is retried once (`LocalReloadRule`); a "Server unreachable" screen is retried on return to the app;
    - entry page loaded directly at `<webroot>/index.php/apps/memories/` (avoids a frontend redirect);
    - server CSS files use relative paths (`@import '../../dist/icons.css'`): rewritten on the fly
      from their original `href` (`CSSPathRewriter`; the Android app has the same bug).

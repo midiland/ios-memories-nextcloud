@@ -48,6 +48,12 @@ final class WebViewModel: ObservableObject {
     private let offline: OfflineAppLoader
     private var lastBootstrap: Date?
     private var hasStarted = false
+    /// Scene in the foreground (the local server only listens then).
+    private var isActive = true
+    /// The WebContent process died: reload once the local server listens again.
+    private var contentProcessTerminated = false
+    /// A failed local load was already retried (reset by the next committed page).
+    private var retriedLocalLoad = false
     /// Current load and background update check; cancelled by the next `start()`.
     private var loadTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
@@ -187,20 +193,36 @@ final class WebViewModel: ObservableObject {
 
     /// In the background: closes the local server's socket before iOS reclaims it.
     func appDidEnterBackground() {
+        isActive = false
         guard hasStarted, mode == .local else { return }
         offline.suspendServer()
     }
 
-    /// Back in the foreground: listens again (same port, so the page keeps working).
+    /// Back in the foreground: listens again (same port, so the page keeps working), then
+    /// reloads what the background broke (see `LocalReloadRule`).
     func appDidBecomeActive() {
+        isActive = true
         guard hasStarted, mode == .local else { return }
-        Task {
-            guard let port = await offline.ensureServerRunning(),
-                  let page = webView.url, offline.isLocal(page),
-                  page.port != Int(port)
-            else { return }
-            // Port taken by another app = new origin: reload the entry page.
-            webView.load(URLRequest(url: offline.entryURL))
+        Task { await recoverLocalPage() }
+    }
+
+    /// Restarts the local server if needed, then reloads the page if it was lost.
+    private func recoverLocalPage() async {
+        guard let port = await offline.ensureServerRunning(), isActive, mode == .local else { return }
+        let page = webView.url.flatMap { offline.isLocal($0) ? $0 : nil }
+        var showsUnreachableError = false
+        if case .failed(.serverUnreachable) = state { showsUnreachableError = true }
+        let action = LocalReloadRule.onBecomeActive(
+            page: page, serverPort: port,
+            contentProcessTerminated: contentProcessTerminated, showsUnreachableError: showsUnreachableError
+        )
+        contentProcessTerminated = false
+        switch action {
+        case .none: break
+        case .reload: webView.reload()
+        // Port taken by another app = new origin: reload the entry page.
+        case .loadEntry: webView.load(URLRequest(url: offline.entryURL))
+        case .restart: start()
         }
     }
 
@@ -219,6 +241,7 @@ final class WebViewModel: ObservableObject {
 
     func pageDidFinish() {
         state = .ready
+        retriedLocalLoad = false
         #if DEBUG
         DebugAutomation.run(on: self)
         #endif
@@ -226,6 +249,32 @@ final class WebViewModel: ObservableObject {
 
     func pageDidFail(_ error: AppError) {
         state = .failed(error)
+    }
+
+    /// Main-frame load error. In local mode, a connection error usually means the local
+    /// server was not listening yet (return from the background): restart it and retry once.
+    func pageDidFail(loading error: Error) {
+        guard mode == .local, LocalReloadRule.shouldRetry(error, alreadyRetried: retriedLocalLoad) else {
+            return pageDidFail(.serverUnreachable(error.localizedDescription))
+        }
+        retriedLocalLoad = true
+        Log.web.notice("Local page load failed, retrying once the server listens")
+        contentProcessTerminated = true
+        guard isActive else { return } // retried by appDidBecomeActive()
+        Task { await recoverLocalPage() }
+    }
+
+    /// The WebContent process was killed (memory pressure, often while in the background).
+    /// In local mode the reload waits for the local server, which does not listen in the background.
+    func webContentProcessDidTerminate() {
+        Log.web.notice("WebContent process terminated")
+        guard mode == .local else {
+            webView.reload()
+            return
+        }
+        contentProcessTerminated = true
+        guard isActive else { return } // reloaded by appDidBecomeActive()
+        Task { await recoverLocalPage() }
     }
 
     /// The server redirected to its login page: the session has expired.
