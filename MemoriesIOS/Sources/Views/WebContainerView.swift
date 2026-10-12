@@ -27,7 +27,14 @@ struct WebContainerView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             background.ignoresSafeArea()
-            MemoriesWebView(model: model)
+            VStack(spacing: 0) {
+                // Above the web view rather than over it: it must not hide the Memories header.
+                if model.showsUnverifiedUpdateBanner && model.state == .ready {
+                    UnverifiedUpdateBanner(dismiss: model.dismissUnverifiedUpdateBanner)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+                MemoriesWebView(model: model)
+            }
 
             switch model.state {
             case .loading:
@@ -56,6 +63,7 @@ struct WebContainerView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: model.toast)
         .animation(.easeInOut(duration: 0.2), value: model.showsBackButton)
+        .animation(.easeInOut(duration: 0.25), value: model.showsUnverifiedUpdateBanner)
         .onAppear {
             model.startIfNeeded()
         }

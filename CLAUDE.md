@@ -94,7 +94,8 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
    missing/unparseable/unverified manifest → `AppError.noSignedManifest`; a file that does not match its
    SHA-256 → `.webFilesCorrupted`; local server that cannot start → `.localServerUnavailable`
    (`AppError.from` maps `OfflineError`). In the background, a failed update check keeps the cached
-   snapshot: silently when offline, with one toast per session when the server's files do not verify
+   snapshot: silently when offline, with a persistent banner at the top (`UnverifiedUpdateBanner`, closable until
+   the next launch, hidden again after a verified update) when the server's files do not verify
    (`OfflineAppLoader.UpdateCheck.unverifiable`, e.g. a newer manifest format). The remote mode of the
    first MVP (session + `nx_auth` cookies, page loaded from the server with NativeX enabled) was removed
    after the maintainer's review (pulsejet/memories#998).
@@ -188,7 +189,7 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
   `test-scenario.sh <valid|unsigned|tampered|newformat|none> [--fresh] [--build]`, which signs the app in to it on
   the **iPhone 16** (never the user's simulator) and takes a screenshot in `build16/fake-nextcloud/`.
   Expected: `valid` → fake page; the others with `--fresh` → error screen, and no JS file requested in
-  `server.log` except for `tampered`; `valid --fresh` then `unsigned` (`WAIT=3`) → previous page kept + one toast.
+  `server.log` except for `tampered`; `valid --fresh` then `unsigned` (`WAIT=4`) → previous page kept + banner at the top.
 - **Local server outside the simulator**: `LocalServer/`, `Offline/{AssetManifest,Snapshot,SnapshotStore,ShellPage,CSSPathRewriter,OfflineError,Data+SHA256}`,
   `Network/{ServerURL,NextcloudModels}`, `Auth/Credentials`, `App/Log` compile with `swiftc` on macOS
   (harness + fake Nextcloud in Python + `curl`).

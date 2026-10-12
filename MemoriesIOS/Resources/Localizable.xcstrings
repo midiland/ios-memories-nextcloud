@@ -45,17 +45,6 @@
         }
       }
     },
-    "An update of Memories on your server could not be verified. The app keeps using the previous version." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Une mise à jour de Memories sur votre serveur n'a pas pu être vérifiée. L'app continue d'utiliser la version précédente."
-          }
-        }
-      }
-    },
     "Back" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -63,6 +52,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retour"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer"
           }
         }
       }
@@ -210,6 +209,16 @@
         }
       }
     },
+    "Memories update not verified" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise à jour de Memories non vérifiée"
+          }
+        }
+      }
+    },
     "Nextcloud Login Flow returned HTTP %lld. Check your reverse proxy configuration (overwriteprotocol)." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -347,6 +356,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En attente de validation…"
+          }
+        }
+      }
+    },
+    "Your server offers a new version of Memories that this app cannot verify. The previous version keeps working. Update the app, or contact the server administrator." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre serveur propose une nouvelle version de Memories que cette app ne peut pas vérifier. La version précédente continue de fonctionner. Mettez l'app à jour ou contactez l'administrateur du serveur."
           }
         }
       }

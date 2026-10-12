@@ -28,6 +28,9 @@ final class WebViewModel: ObservableObject {
     /// in native mode) and in the safe areas. `nil` = system background.
     @Published private(set) var themeColor: UIColor?
     @Published var toast: Toast?
+    /// The server offers a Memories update that does not verify: the app runs the previous version
+    /// (banner at the top of the screen, see `UnverifiedUpdateBanner`).
+    @Published private(set) var showsUnverifiedUpdateBanner = false
     /// Whether the native back button is visible (pages without a web navigation bar, see `BackNavigationRule`).
     @Published private(set) var showsBackButton = false
 
@@ -45,8 +48,8 @@ final class WebViewModel: ObservableObject {
     private let navigationHandler = WebNavigationHandler()
     private let offline: OfflineAppLoader
     private var hasStarted = false
-    /// The user was told once that a server update could not be verified.
-    private var warnedUnverifiableUpdate = false
+    /// The user closed the unverified-update banner: not shown again until the next launch.
+    private var unverifiedUpdateBannerDismissed = false
     /// Scene in the foreground (the local server only listens then).
     private var isActive = true
     /// The WebContent process died: reload once the local server listens again.
@@ -99,6 +102,12 @@ final class WebViewModel: ObservableObject {
             webView.observe(\.url, options: [.new]) { webView, _ in update(webView) },
             webView.observe(\.canGoBack, options: [.new]) { webView, _ in update(webView) },
         ]
+    }
+
+    /// Closes the unverified-update banner for this launch.
+    func dismissUnverifiedUpdateBanner() {
+        unverifiedUpdateBannerDismissed = true
+        showsUnverifiedUpdateBanner = false
     }
 
     /// Native back button: equivalent of Android's back button (`webview.goBack()`).
@@ -166,14 +175,13 @@ final class WebViewModel: ObservableObject {
             case .upToDate:
                 break
             case .updated:
+                showsUnverifiedUpdateBanner = false
                 webView.load(URLRequest(url: offline.entryURL))
                 nativeXToast(String(localized: "Memories has been updated"), long: false)
             case .unverifiable:
                 // The server moved to web files this app cannot verify (e.g. a newer manifest
-                // format): say it once, otherwise the old snapshot would silently drift from the server.
-                guard !warnedUnverifiableUpdate else { return }
-                warnedUnverifiableUpdate = true
-                nativeXToast(String(localized: "An update of Memories on your server could not be verified. The app keeps using the previous version."), long: true)
+                // format): keep saying it, otherwise the old snapshot would silently drift from the server.
+                showsUnverifiedUpdateBanner = !unverifiedUpdateBannerDismissed
             }
         } catch AppError.notAuthenticated {
             guard !Task.isCancelled else { return }
