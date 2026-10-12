@@ -274,6 +274,17 @@
         }
       }
     },
+    "The Memories web app files could not be verified: the server did not provide a validly signed manifest. For security, the app does not load the web interface directly from the server. The server may be running a newer version of Memories than this app supports." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les fichiers de l'application web Memories n'ont pas pu être vérifiés : le serveur n'a pas fourni de manifeste correctement signé. Pour des raisons de sécurité, l'application ne charge pas l'interface web directement depuis le serveur. Le serveur utilise peut-être une version de Memories plus récente que celle prise en charge par cette application."
+          }
+        }
+      }
+    },
     "Unexpected server response (HTTP %lld)." : {
       "extractionState" : "stale",
       "localizations" : {

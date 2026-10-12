@@ -25,6 +25,7 @@ struct ErrorView: View {
     private var iconName: String {
         switch error {
         case .serverUnreachable: return "wifi.exclamationmark"
+        case .noSignedManifest: return "lock.shield"
         case .memoriesNotInstalled, .serverTooOld: return "puzzlepiece.extension"
         case .notAuthenticated: return "person.crop.circle.badge.exclamationmark"
         default: return "exclamationmark.triangle"

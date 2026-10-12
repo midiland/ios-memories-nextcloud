@@ -4,8 +4,9 @@ import WebKit
 /// Owns the `WKWebView` and drives its lifecycle:
 /// - **local mode** (default): app served by the `127.0.0.1` server from an offline
 ///   snapshot → instant startup, works without network;
-/// - **remote mode** (fallback): page loaded directly from Nextcloud, if the server
-///   provides no signed manifest or the local server fails to start.
+/// - **remote mode** (fallback): page loaded directly from Nextcloud, if the local
+///   server fails to start. Without a verified manifest the server code is never
+///   loaded: the loader throws and the error screen is shown instead.
 /// Also hosts the NativeX bridge (theme, toasts, logout, reload).
 @MainActor
 final class WebViewModel: ObservableObject {
@@ -117,7 +118,7 @@ final class WebViewModel: ObservableObject {
         start()
     }
 
-    /// Loads the app: local mode if possible, otherwise remote fallback.
+    /// Loads the app: local mode if possible, otherwise remote fallback (local server failure).
     /// A new call cancels the previous load (retry, expired session, `nativex.reload`),
     /// so two loads never race to update the state or the web view.
     func start() {

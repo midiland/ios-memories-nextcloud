@@ -4,7 +4,10 @@ import WebKit
 /// Startup of the locally served app (equivalent of `AppStartupCoordinator.kt`):
 /// - snapshot already present → shown immediately, update checked in the background;
 /// - otherwise → snapshot downloaded (with progress), then shown;
-/// - server without a signed manifest, or failure → `nil`: the caller falls back to remote loading.
+/// - local server failure → `nil`: the caller falls back to remote loading.
+///
+/// The server is untrusted for code loading: without a manifest that parses and
+/// verifies, `AppError.noSignedManifest` is thrown instead of a remote fallback.
 @MainActor
 final class OfflineAppLoader {
     private let credentials: Credentials
@@ -41,8 +44,9 @@ final class OfflineAppLoader {
         server.router.browserURL(forPath: url.path, query: url.query)
     }
 
-    /// Prepares the local server and a snapshot. Returns the URL to load, or `nil` for the remote fallback.
-    /// Throws `AppError.notAuthenticated` / `.serverUnreachable` when no snapshot can help.
+    /// Prepares the local server and a snapshot. Returns the URL to load, or `nil` if the
+    /// local server cannot start (remote fallback). Throws `AppError` when the web files
+    /// cannot be verified or downloaded: the server code must not be loaded instead.
     func prepare(into cookieStore: WKHTTPCookieStore, progress: @escaping AssetSyncer.Progress) async throws -> URL? {
         do {
             try await server.ensureStarted()
@@ -57,13 +61,13 @@ final class OfflineAppLoader {
         }
 
         // First launch for this server: blocking download.
-        guard let manifest = try await fetchVerifiedManifest() else { return nil }
+        let manifest = try await fetchVerifiedManifest()
         let snapshot: Snapshot
         do {
             snapshot = try await AssetSyncer(credentials: credentials).sync(manifest, progress: progress)
         } catch {
             Log.offline.error("Snapshot download failed: \(String(describing: error), privacy: .public)")
-            return nil
+            throw AppError.from(error)
         }
         activate(snapshot)
         return entryURL
@@ -71,9 +75,9 @@ final class OfflineAppLoader {
 
     /// Checks the credentials and the web files version. If the server version changed,
     /// downloads the new snapshot and activates it. Returns `true` if the page must be reloaded.
-    /// Offline: no error (we keep running on the cached snapshot).
+    /// Offline, unverified manifest or failed download: no error (we keep running on the cached snapshot).
     func refreshInBackground() async throws -> Bool {
-        let manifest: AssetManifest?
+        let manifest: AssetManifest
         do {
             manifest = try await fetchVerifiedManifest()
         } catch AppError.notAuthenticated {
@@ -81,7 +85,7 @@ final class OfflineAppLoader {
         } catch {
             return false
         }
-        guard let manifest, manifest.key != current?.key else { return false }
+        guard manifest.key != current?.key else { return false }
         let snapshot: Snapshot
         do {
             snapshot = try await AssetSyncer(credentials: credentials).sync(manifest, progress: { _, _ in })
@@ -110,17 +114,14 @@ final class OfflineAppLoader {
 
     // MARK: - Private
 
-    /// Authenticated `describe?manifest=1`. `nil` if the server provides no valid manifest.
-    private func fetchVerifiedManifest() async throws -> AssetManifest? {
+    /// Authenticated `describe?manifest=1`. Throws `AppError.noSignedManifest` when the
+    /// server provides no manifest that parses and verifies: its code is untrusted.
+    private func fetchVerifiedManifest() async throws -> AssetManifest {
         let (describe, raw) = try await NextcloudClient().describeRaw(credentials.server, credentials: credentials, manifest: true)
         guard describe.uid != nil else { throw AppError.notAuthenticated }
-        guard let manifest = try? AssetManifest(raw: raw) else {
-            Log.offline.notice("No asset manifest: falling back to remote loading")
-            return nil
-        }
-        guard ManifestVerifier.verify(manifest) else {
-            Log.offline.error("Invalid manifest signature: falling back to remote loading")
-            return nil
+        guard let manifest = try? AssetManifest(raw: raw), ManifestVerifier.verify(manifest) else {
+            Log.offline.error("No valid signed manifest: refusing to load server code")
+            throw AppError.noSignedManifest
         }
         return manifest
     }

@@ -4,6 +4,7 @@ import Foundation
 enum AppError: LocalizedError, Equatable {
     case invalidURL
     case serverUnreachable(String)
+    case noSignedManifest
     case memoriesNotInstalled
     case serverTooOld(version: String)
     case unexpectedStatus(Int)
@@ -19,6 +20,8 @@ enum AppError: LocalizedError, Equatable {
             return String(localized: "Invalid server address.")
         case .serverUnreachable(let detail):
             return String(localized: "Server unreachable. Check the address and your connection.\n(\(detail))")
+        case .noSignedManifest:
+            return String(localized: "The Memories web app files could not be verified: the server did not provide a validly signed manifest. For security, the app does not load the web interface directly from the server. The server may be running a newer version of Memories than this app supports.")
         case .memoriesNotInstalled:
             return String(localized: "The Memories app is not installed or not enabled on this Nextcloud server.")
         case .serverTooOld(let version):

@@ -29,8 +29,9 @@ Memories and Nextcloud versions, and the steps to reproduce.
 - **Instant startup and offline shell**: the Memories web assets are downloaded once, verified
   (Ed25519-signed manifest, SHA-256 per file) and served from the device; the app opens immediately,
   even without network access, and updates itself in the background when the server is upgraded.
-- **Remote fallback**: servers without a signed manifest still work; the web interface is then loaded
-  directly from Nextcloud.
+- **No unsigned code**: the web interface is never loaded directly from the server. Without a validly
+  signed manifest (server too old, broken or newer than the app supports), the app shows an error
+  screen instead — like the Android app, the server is not trusted to serve executable code.
 - **Automatic session recovery**: expired sessions are renewed transparently; revoked credentials bring
   the user back to the login screen.
 - **Device photos in the timeline** (opt-in, read-only): photos of the iPhone (whole library or selected
@@ -56,7 +57,7 @@ Memories and Nextcloud versions, and the steps to reproduce.
 | Secure credential storage | ✅ Android Keystore | ✅ Keychain |
 | Self-signed certificates ("trust all") | ✅ | ❌ |
 | Offline shell from a signed asset snapshot | ✅ | ✅ |
-| Fallback to the remote web interface | — | ✅ |
+| Fallback to the remote web interface | — | — |
 | Native mode UI (mobile navigation, theme color) | ✅ | ✅ |
 | Back navigation | ✅ system back button | ✅ floating button + swipe |
 | Share photos, albums and links | ✅ | ✅ share sheet |
@@ -73,10 +74,10 @@ Memories and Nextcloud versions, and the steps to reproduce.
 ## Requirements
 
 - iOS 16 or later.
-- A Nextcloud server with the Memories app **9.0.0-rc.1 or later**.
-- The offline shell needs a Memories release that publishes a signed asset manifest
-  (`/apps/memories/api/describe?manifest=1`). With older servers the app falls back to loading the
-  web interface directly from the server.
+- A Nextcloud server with the Memories app **9.0.0-rc.1 or later**: the offline shell loads the web
+  assets listed in a signed manifest (`/apps/memories/api/describe?manifest=1`). The web interface is
+  never loaded directly from the server, so servers without a valid signed manifest (too old, broken,
+  or newer than the app supports) cannot be used.
 
 ## Building
 
@@ -129,8 +130,10 @@ To run on a device, select your development team under *Signing & Capabilities*.
 4. **NativeX bridge** — a user script defines `window.nativex` before the web app starts, which
    switches Memories to its native mode; calls are forwarded to Swift through WebKit message handlers.
 
-If the server does not provide a signed manifest, the app loads the web interface directly from
-Nextcloud instead (session cookies plus an `nx_auth` cookie understood by Memories in native mode).
+The web files are only ever loaded from a verified snapshot: if the server provides no validly
+signed manifest, the app refuses to run its code and shows an error screen instead. The only
+exception is a failure to start the local server itself, in which case the page is loaded directly
+from Nextcloud (session cookies plus an `nx_auth` cookie understood by Memories in native mode).
 
 A detailed analysis of the Android app and of the frontend's native API is available in
 [`docs/ANALYSIS.md`](docs/ANALYSIS.md).

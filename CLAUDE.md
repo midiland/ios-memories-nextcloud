@@ -89,11 +89,14 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
    - entry page loaded directly at `<webroot>/index.php/apps/memories/` (avoids a frontend redirect);
    - server CSS files use relative paths (`@import '../../dist/icons.css'`): rewritten on the fly
      from their original `href` (`CSSPathRewriter`; the Android app has the same bug).
-3. **Remote mode (fallback)** when there is no manifest, the signature is invalid, or the snapshot or
-   local server fails: `api/describe` with Basic auth through an ephemeral `URLSession` → Nextcloud
+3. **Remote mode (fallback)** when the local server fails to start: `api/describe` with Basic auth through an ephemeral `URLSession` → Nextcloud
    session cookies copied into `WKHTTPCookieStore` + `nx_auth` cookie (= Basic header, %-encoded, HttpOnly)
    → load `…/index.php/apps/memories/`. In native mode the server turns `nx_auth` into an
    `Authorization` header on every request (`Application::handleNativeHeaders`).
+   A missing, unparseable or unverified manifest is **refused** (`AppError.noSignedManifest` → error
+   screen), and a failed snapshot download is an error too: the server is untrusted for code loading
+   (same policy as Android — never load the web files directly from Nextcloud without a verified
+   signature). A failed update check in the background keeps the cached snapshot instead.
 4. **App mode (NativeX)**: `nativex.js` defines `window.nativex` ⇒ the frontend hides the Nextcloud
    header, shows the mobile header and bottom navigation, makes the page transparent and sends its
    color (`setThemeColor`), painted behind the WebView and in the safe areas.

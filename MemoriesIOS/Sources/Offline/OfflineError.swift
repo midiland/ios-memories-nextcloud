@@ -1,6 +1,6 @@
 import Foundation
 
-/// Offline-mode errors (all of them trigger a fallback to remote loading).
+/// Offline-mode errors (download and verification of the Memories web files).
 enum OfflineError: Error {
     case noManifest
     case integrity(String)
