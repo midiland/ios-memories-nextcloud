@@ -28,7 +28,8 @@ Memories and Nextcloud versions, and the steps to reproduce.
   People/Places/Tags…).
 - **Instant startup and offline shell**: the Memories web assets are downloaded once, verified
   (Ed25519-signed manifest, SHA-256 per file) and served from the device; the app opens immediately,
-  even without network access, and updates itself in the background when the server is upgraded.
+  even without network access, and updates itself in the background when the server is upgraded
+  (an update that cannot be verified is not installed: the app keeps the previous version and says so).
 - **No unsigned code**: the web interface is never loaded directly from the server. Without a validly
   signed manifest (server too old, broken or newer than the app supports), the app shows an error
   screen instead — like the Android app, the server is not trusted to serve executable code.
@@ -131,9 +132,8 @@ To run on a device, select your development team under *Signing & Capabilities*.
    switches Memories to its native mode; calls are forwarded to Swift through WebKit message handlers.
 
 The web files are only ever loaded from a verified snapshot: if the server provides no validly
-signed manifest, the app refuses to run its code and shows an error screen instead. The only
-exception is a failure to start the local server itself, in which case the page is loaded directly
-from Nextcloud (session cookies plus an `nx_auth` cookie understood by Memories in native mode).
+signed manifest, a downloaded file does not match it, or the local server cannot start, the app
+shows an error screen instead of running code served by Nextcloud.
 
 A detailed analysis of the Android app and of the frontend's native API is available in
 [`docs/ANALYSIS.md`](docs/ANALYSIS.md).

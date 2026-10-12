@@ -3,8 +3,7 @@ import WebKit
 /// Navigation and UI delegate for the web view (equivalent of `MemoriesWebViewClient`
 /// and `MemoriesWebChromeClient` on Android).
 ///
-/// - main-frame navigations follow `NavigationPolicy` (app pages stay, the rest opens in Safari,
-///   remote login page = expired session → re-bootstrap);
+/// - main-frame navigations follow `NavigationPolicy` (app pages stay, the rest opens in Safari);
 /// - network / HTTP errors on the main document → error screen.
 @MainActor
 final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
@@ -40,9 +39,6 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         case .external(let target):
             decisionHandler(.cancel)
             model.openExternally(target)
-        case .sessionLost:
-            decisionHandler(.cancel)
-            model.sessionLost()
         }
     }
 
@@ -55,12 +51,6 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
             return decisionHandler(.allow)
         }
         switch http.statusCode {
-        case 401:
-            decisionHandler(.cancel)
-            model?.sessionLost()
-        case 404 where model?.mode == .remote:
-            decisionHandler(.cancel)
-            model?.pageDidFail(.memoriesNotInstalled)
         case 400...:
             decisionHandler(.cancel)
             model?.pageDidFail(.unexpectedStatus(http.statusCode))
@@ -103,7 +93,6 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
         switch model.navigationPolicy.decide(url) {
         case .allow: webView.load(action.request)
         case .external(let target): model.openExternally(target)
-        case .sessionLost: model.sessionLost()
         }
         return nil
     }

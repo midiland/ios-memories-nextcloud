@@ -1,4 +1,5 @@
 import Foundation
+import WebKit
 
 /// Clears what an ended session leaves outside the Keychain (logout or revoked credentials):
 /// web view data, the locally served app and the relay's Nextcloud session cookies.
@@ -8,7 +9,9 @@ struct SessionTeardown {
     let server: LocalHTTPServer
 
     func run() {
-        WebSessionBootstrapper.clearWebsiteData()
+        WKWebsiteDataStore.default().removeData(
+            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), modifiedSince: .distantPast
+        ) {}
         server.router.config = nil
         HTTPCookieStorage.shared.removeCookies(since: .distantPast)
     }

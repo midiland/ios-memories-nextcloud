@@ -54,7 +54,7 @@ final class NativeXScriptTests: XCTestCase {
     }
 
     func testBridgeRoutesAreDivertedOnTheDefaultPort() {
-        // Remote mode: the frontend's BASE_URL is `http://127.0.0.1` (port 80).
+        // Without a port: the frontend's default BASE_URL when the page is not served from 127.0.0.1.
         XCTAssertEqual(fetch("http://127.0.0.1/api/days"), .bridge)
         XCTAssertEqual(xhr("http://localhost/api/share/url/x"), .bridge)
     }

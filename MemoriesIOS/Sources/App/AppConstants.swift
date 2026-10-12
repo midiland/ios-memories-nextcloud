@@ -17,7 +17,7 @@ enum AppConstants {
 
     /// Suffix appended to the User-Agent of the WebView and native requests.
     /// `MemoriesNative/…` switches the server into native app mode (`Util::callerIsNative`):
-    /// transparent template without sidebar, no preloading, `nx_auth` cookie accepted.
+    /// transparent template without sidebar, no preloading.
     static var userAgentSuffix: String { "MemoriesNative/\(nativeXVersion) MemoriesIOS/\(appVersion)" }
 
     /// Login Flow v2 polling interval and max duration (same as Android: 3 s / 10 min).

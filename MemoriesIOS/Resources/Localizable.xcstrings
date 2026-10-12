@@ -22,6 +22,17 @@
         }
       }
     },
+    "A Memories file downloaded from the server does not match its signature, so the app did not load it. Try again later, or contact the server administrator." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un fichier de Memories téléchargé depuis le serveur ne correspond pas à sa signature, l'app ne l'a donc pas chargé. Réessayez plus tard ou contactez l'administrateur du serveur."
+          }
+        }
+      }
+    },
     "All photos" : {
       "comment" : "Device photo source in the web settings: the whole photo library",
       "extractionState" : "stale",
@@ -30,6 +41,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toutes les photos"
+          }
+        }
+      }
+    },
+    "An update of Memories on your server could not be verified. The app keeps using the previous version." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une mise à jour de Memories sur votre serveur n'a pas pu être vérifiée. L'app continue d'utiliser la version précédente."
           }
         }
       }
@@ -263,6 +285,17 @@
         }
       }
     },
+    "The app could not start its internal web server. Try again, or restart the app." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'app n'a pas pu démarrer son serveur web interne. Réessayez ou redémarrez l'app."
+          }
+        }
+      }
+    },
     "The Memories app is not installed or not enabled on this Nextcloud server." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -274,13 +307,13 @@
         }
       }
     },
-    "The Memories web app files could not be verified: the server did not provide a validly signed manifest. For security, the app does not load the web interface directly from the server. The server may be running a newer version of Memories than this app supports." : {
+    "The Memories files sent by the server could not be verified, so the app did not load them. Update the app, or contact the server administrator." : {
       "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les fichiers de l'application web Memories n'ont pas pu être vérifiés : le serveur n'a pas fourni de manifeste correctement signé. Pour des raisons de sécurité, l'application ne charge pas l'interface web directement depuis le serveur. Le serveur utilise peut-être une version de Memories plus récente que celle prise en charge par cette application."
+            "value" : "Les fichiers de Memories envoyés par le serveur n'ont pas pu être vérifiés, l'app ne les a donc pas chargés. Mettez l'app à jour ou contactez l'administrateur du serveur."
           }
         }
       }

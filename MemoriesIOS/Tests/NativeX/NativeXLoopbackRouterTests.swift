@@ -13,7 +13,7 @@ final class NativeXLoopbackRouterTests: XCTestCase {
             downloader: AuthenticatedDownloader(credentials: Fixtures.credentials),
             presentShareSheet: { [unowned self] items in presented.append(items) }
         )
-        // No timeline attached (remote mode, or before the first load): no device photos.
+        // No timeline attached (before the first load): no device photos.
         router = NativeXLoopbackRouter(share: share, photos: NativeXPhotoService(library: PhotoLibrary()))
     }
 

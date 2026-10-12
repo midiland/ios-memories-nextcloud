@@ -64,7 +64,7 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 | `Network/` | `ServerURL` (input normalization → `…/index.php/apps/memories/`), `NextcloudClient` (describe, Login Flow v2, revocation), `AuthenticatedDownloader`, `URLRequest(url:authorizedFor:)` (credentials only for the account's host), models, `SemanticVersion` |
 | `Offline/` | `AssetManifest` (describe `?manifest=1`), `ManifestVerifier` (Ed25519 via CryptoKit), `SnapshotStore` (Application Support/offline), `AssetSyncer` (SHA-256, 8 in parallel, reuse), `ShellPage` (local HTML), `CSSPathRewriter`, `OfflineAppLoader` (orchestration; answers the web layer's questions about the local server) |
 | `LocalServer/` | Custom HTTP/1.1 server on Network.framework: `LocalHTTPServer` (127.0.0.1:62079), `HTTPConnection`, `HTTPTypes`, `LocalRouter` (routing modeled on `ServerRouter.kt`), `StaticFiles`, `UpstreamProxy` (streaming relay to Nextcloud) |
-| `Web/` | `WebViewModel` (owns the WKWebView), `WebViewFactory` (config), `WebNavigationHandler` (delegates), `NavigationPolicy` (pure navigation rules), `WebSessionBootstrapper` (cookies, remote mode), `BackNavigationRule`, `MemoriesWebView` (UIViewRepresentable), `DebugAutomation` (Debug only) |
+| `Web/` | `WebViewModel` (owns the WKWebView), `WebViewFactory` (config), `WebNavigationHandler` (delegates), `NavigationPolicy` (pure navigation rules), `BackNavigationRule`, `MemoriesWebView` (UIViewRepresentable), `DebugAutomation` (Debug only) |
 | `Views/` | `LoginView`, `SafariView`, `WebContainerView` (themed background + toasts), `ErrorView`, `ToastView`, `BackButton`, `DownloadProgressView`, `SharePresenter` |
 | `Photos/` | Device photos (PhotoKit, read-only): `LocalTimeline` (actor answering the local timeline routes, implements `LocalMediaProvider`), `PhotoLibrary` (permission, folders = library + albums, assets, original file name/size), `PhotoMatcher` (pure: device ↔ server deduplication), `PhotoIDs` (auid/buid/dayid/fileid like the server), `ServerDayClient` (server day photos, cached), `RemoteCopyStore` (known matches per account), `LocalImageRenderer` (JPEG), `LocalPhotoSettings`, models |
 | `NativeX/` | `NativeXController` (bridge), `NativeXPhotoService` (device photo settings, state, routes), `NativeXHost` (implemented by `WebViewModel`), `NativeXLoopbackRouter` (`127.0.0.1` routes), `NativeXShareService` (downloader + share sheet injected), `NativeXMethod`, `NativeXArguments`, `NativeXResponse`, `WeakScriptMessageProxy` |
@@ -89,14 +89,15 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
    - entry page loaded directly at `<webroot>/index.php/apps/memories/` (avoids a frontend redirect);
    - server CSS files use relative paths (`@import '../../dist/icons.css'`): rewritten on the fly
      from their original `href` (`CSSPathRewriter`; the Android app has the same bug).
-3. **Remote mode (fallback)** when the local server fails to start: `api/describe` with Basic auth through an ephemeral `URLSession` → Nextcloud
-   session cookies copied into `WKHTTPCookieStore` + `nx_auth` cookie (= Basic header, %-encoded, HttpOnly)
-   → load `…/index.php/apps/memories/`. In native mode the server turns `nx_auth` into an
-   `Authorization` header on every request (`Application::handleNativeHeaders`).
-   A missing, unparseable or unverified manifest is **refused** (`AppError.noSignedManifest` → error
-   screen), and a failed snapshot download is an error too: the server is untrusted for code loading
-   (same policy as Android — never load the web files directly from Nextcloud without a verified
-   signature). A failed update check in the background keeps the cached snapshot instead.
+3. **No remote loading**: the server is untrusted for code loading (same policy as Android): the web files
+   are only ever served from a verified snapshot, never loaded from Nextcloud. Error screens instead:
+   missing/unparseable/unverified manifest → `AppError.noSignedManifest`; a file that does not match its
+   SHA-256 → `.webFilesCorrupted`; local server that cannot start → `.localServerUnavailable`
+   (`AppError.from` maps `OfflineError`). In the background, a failed update check keeps the cached
+   snapshot: silently when offline, with one toast per session when the server's files do not verify
+   (`OfflineAppLoader.UpdateCheck.unverifiable`, e.g. a newer manifest format). The remote mode of the
+   first MVP (session + `nx_auth` cookies, page loaded from the server with NativeX enabled) was removed
+   after the maintainer's review (pulsejet/memories#998).
 4. **App mode (NativeX)**: `nativex.js` defines `window.nativex` ⇒ the frontend hides the Nextcloud
    header, shows the mobile header and bottom navigation, makes the page transparent and sends its
    color (`setThemeColor`), painted behind the WebView and in the safe areas.
@@ -113,8 +114,9 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
    already exist on Nextcloud: same `auid`/`buid`, or same capture second (or wall clock read as UTC) +
    aspect ratio, one-to-one — covers the HEIC → JPEG conversion and renaming of the Nextcloud app
    (verified on the simulator). Library changes → `nativex:db:updated` + `memories:timeline:soft-refresh`.
-5. **Expired session** (remote mode; redirect to `/login` or 401): automatic re-bootstrap, gives up
-   if it loops within 30 s. Authenticated `describe` returning 401 or `uid == null` ⇒ credentials erased, back to login.
+5. **Sessions**: the relay sends Basic auth on every request, so an expired Nextcloud session is renewed
+   transparently. Authenticated `describe` (startup or background check) returning 401 or `uid == null`
+   ⇒ credentials erased, back to login.
 6. **Logout**: Settings > Account in the web UI (`nativex.logout`) or the error screen → app password
    revoked (`DELETE /ocs/v2.php/core/apppassword`), Keychain + WebView data + relay cookies +
    local server configuration cleared (snapshots stay on disk).
@@ -125,15 +127,14 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 - **Local HTTP server on 127.0.0.1** (like Android) rather than `WKURLSchemeHandler`: the frontend calls
   the bridge on a hard-coded `http://127.0.0.1` (`src/native/api.ts`), `WKURLSchemeHandler` cannot
   intercept http/https, and a loopback origin is a secure context where media playback works.
-  The first MVP loaded the remote server directly; it is kept as the fallback mode.
+  The first MVP loaded the remote server directly; that mode was removed (unsigned code with NativeX).
 - **User-Agent** suffix: `Version/x.y Mobile/15E148 Safari/604.1 MemoriesNative/1.15 MemoriesIOS/<v>`.
   - `Safari/…` avoids Nextcloud's "unsupported browser" page.
   - `MemoriesNative/<v>` enables native mode on the server (`Util::callerIsNative`); `<v>` must stay
     ≥ `BinExt::NX_VER_MIN` (1.1), otherwise the server shows its "app too old" page. Aligned with Android (1.15).
   - `MemoriesNative` and `window.nativex` go together: never enable one without the other.
 - **127.0.0.1 bridge handled in JS**: `fetch`/`XMLHttpRequest` interception, text responses only. It does not
-  cover `<img>` and workers: device photo images are served by the local server, so device photos only work
-  in local mode (in remote mode `BASE_URL` is `http://127.0.0.1` on port 80).
+  cover `<img>` and workers: device photo images are served by the local server.
 - **Device photo deduplication by metadata, not content hashes**: the server exposes no file hash and a
   JPEG conversion is not reproducible byte for byte. `fileid` = stable hash of `localIdentifier` in
   `[2^52, 2^53)`. File size comes from `PHAssetResource`'s undocumented `fileSize` key (checked with

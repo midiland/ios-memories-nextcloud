@@ -1,12 +1,10 @@
 import UIKit
 import WebKit
 
-/// Owns the `WKWebView` and drives its lifecycle:
-/// - **local mode** (default): app served by the `127.0.0.1` server from an offline
-///   snapshot → instant startup, works without network;
-/// - **remote mode** (fallback): page loaded directly from Nextcloud, if the local
-///   server fails to start. Without a verified manifest the server code is never
-///   loaded: the loader throws and the error screen is shown instead.
+/// Owns the `WKWebView` and drives its lifecycle: the app is served by the `127.0.0.1` server
+/// from a verified offline snapshot (instant startup, works without network). The web files are
+/// never loaded from the server itself: if no verified snapshot can be served, the error screen
+/// is shown instead.
 /// Also hosts the NativeX bridge (theme, toasts, logout, reload).
 @MainActor
 final class WebViewModel: ObservableObject {
@@ -35,7 +33,6 @@ final class WebViewModel: ObservableObject {
 
     let credentials: Credentials
     let webView: WKWebView
-    private(set) var mode: NavigationPolicy.Mode = .local
 
     /// Called when the server permanently rejects the credentials.
     let onSessionRevoked: () -> Void
@@ -43,12 +40,13 @@ final class WebViewModel: ObservableObject {
     let onLogout: () -> Void
 
     private let nativeX: NativeXController
-    /// Device photos shown in the timeline (local mode only).
+    /// Device photos shown in the timeline.
     private let localPhotos: LocalTimeline
     private let navigationHandler = WebNavigationHandler()
     private let offline: OfflineAppLoader
-    private var lastBootstrap: Date?
     private var hasStarted = false
+    /// The user was told once that a server update could not be verified.
+    private var warnedUnverifiableUpdate = false
     /// Scene in the foreground (the local server only listens then).
     private var isActive = true
     /// The WebContent process died: reload once the local server listens again.
@@ -118,15 +116,13 @@ final class WebViewModel: ObservableObject {
         start()
     }
 
-    /// Loads the app: local mode if possible, otherwise remote fallback (local server failure).
-    /// A new call cancels the previous load (retry, expired session, `nativex.reload`),
-    /// so two loads never race to update the state or the web view.
+    /// Loads the app from the local server. A new call cancels the previous load
+    /// (retry, `nativex.reload`), so two loads never race to update the state or the web view.
     func start() {
         loadTask?.cancel()
         refreshTask?.cancel()
         hasStarted = true
         state = .loading
-        lastBootstrap = Date()
         loadTask = Task { [weak self] in await self?.load() }
     }
 
@@ -144,17 +140,12 @@ final class WebViewModel: ObservableObject {
             }
             let localURL = try await offline.prepare(into: cookieStore, progress: progress)
             try Task.checkCancellation()
-            if let localURL {
-                mode = .local
-                nativeX.photos.timeline = localPhotos
-                state = .loading
-                // Like Android after signing in: offer device photos (and the iOS prompt) once.
-                let url = nativeX.photos.takeSetupOffer() ? offline.setupURL : localURL
-                webView.load(URLRequest(url: url))
-                refreshTask = Task { [weak self] in await self?.refreshInBackground() }
-            } else {
-                try await startRemote()
-            }
+            nativeX.photos.timeline = localPhotos
+            state = .loading
+            // Like Android after signing in: offer device photos (and the iOS prompt) once.
+            let url = nativeX.photos.takeSetupOffer() ? offline.setupURL : localURL
+            webView.load(URLRequest(url: url))
+            refreshTask = Task { [weak self] in await self?.refreshInBackground() }
         } catch is CancellationError {
             // Superseded by a newer load.
         } catch AppError.notAuthenticated {
@@ -166,24 +157,24 @@ final class WebViewModel: ObservableObject {
         }
     }
 
-    /// Remote mode (step 2a): Nextcloud session + `nx_auth` cookie, page loaded from the server.
-    private func startRemote() async throws {
-        mode = .remote
-        nativeX.photos.timeline = nil
-        try await WebSessionBootstrapper.bootstrap(credentials, into: cookieStore)
-        try Task.checkCancellation()
-        var request = URLRequest(url: credentials.server.memoriesURL)
-        request.setValue(credentials.basicAuthHeader, forHTTPHeaderField: "Authorization")
-        webView.load(request)
-    }
-
     /// Checks credentials and updates while the app runs on the cached snapshot.
     private func refreshInBackground() async {
         do {
-            let updated = try await offline.refreshInBackground()
-            guard updated, !Task.isCancelled else { return }
-            webView.load(URLRequest(url: offline.entryURL))
-            nativeXToast(String(localized: "Memories has been updated"), long: false)
+            let check = try await offline.refreshInBackground()
+            guard !Task.isCancelled else { return }
+            switch check {
+            case .upToDate:
+                break
+            case .updated:
+                webView.load(URLRequest(url: offline.entryURL))
+                nativeXToast(String(localized: "Memories has been updated"), long: false)
+            case .unverifiable:
+                // The server moved to web files this app cannot verify (e.g. a newer manifest
+                // format): say it once, otherwise the old snapshot would silently drift from the server.
+                guard !warnedUnverifiableUpdate else { return }
+                warnedUnverifiableUpdate = true
+                nativeXToast(String(localized: "An update of Memories on your server could not be verified. The app keeps using the previous version."), long: true)
+            }
         } catch AppError.notAuthenticated {
             guard !Task.isCancelled else { return }
             onSessionRevoked()
@@ -195,7 +186,7 @@ final class WebViewModel: ObservableObject {
     /// In the background: closes the local server's socket before iOS reclaims it.
     func appDidEnterBackground() {
         isActive = false
-        guard hasStarted, mode == .local else { return }
+        guard hasStarted else { return }
         offline.suspendServer()
     }
 
@@ -203,13 +194,13 @@ final class WebViewModel: ObservableObject {
     /// reloads what the background broke (see `LocalReloadRule`).
     func appDidBecomeActive() {
         isActive = true
-        guard hasStarted, mode == .local else { return }
+        guard hasStarted else { return }
         Task { await recoverLocalPage() }
     }
 
     /// Restarts the local server if needed, then reloads the page if it was lost.
     private func recoverLocalPage() async {
-        guard let port = await offline.ensureServerRunning(), isActive, mode == .local else { return }
+        guard let port = await offline.ensureServerRunning(), isActive else { return }
         let page = webView.url.flatMap { offline.isLocal($0) ? $0 : nil }
         var showsUnreachableError = false
         if case .failed(.serverUnreachable) = state { showsUnreachableError = true }
@@ -229,12 +220,10 @@ final class WebViewModel: ObservableObject {
 
     // MARK: - Navigation events (called by WebNavigationHandler)
 
-    /// Navigation rules for the current mode.
+    /// Navigation rules (only local-server pages stay in the web view).
     var navigationPolicy: NavigationPolicy {
         let offline = offline
         return NavigationPolicy(
-            mode: mode,
-            serverHost: credentials.server.host,
             isLocal: { offline.isLocal($0) },
             serverPage: { offline.serverPage(for: $0) }
         )
@@ -252,10 +241,10 @@ final class WebViewModel: ObservableObject {
         state = .failed(error)
     }
 
-    /// Main-frame load error. In local mode, a connection error usually means the local
-    /// server was not listening yet (return from the background): restart it and retry once.
+    /// Main-frame load error. A connection error usually means the local server was not
+    /// listening yet (return from the background): restart it and retry once.
     func pageDidFail(loading error: Error) {
-        guard mode == .local, LocalReloadRule.shouldRetry(error, alreadyRetried: retriedLocalLoad) else {
+        guard LocalReloadRule.shouldRetry(error, alreadyRetried: retriedLocalLoad) else {
             return pageDidFail(.serverUnreachable(error.localizedDescription))
         }
         retriedLocalLoad = true
@@ -266,26 +255,12 @@ final class WebViewModel: ObservableObject {
     }
 
     /// The WebContent process was killed (memory pressure, often while in the background).
-    /// In local mode the reload waits for the local server, which does not listen in the background.
+    /// The reload waits for the local server, which does not listen in the background.
     func webContentProcessDidTerminate() {
         Log.web.notice("WebContent process terminated")
-        guard mode == .local else {
-            webView.reload()
-            return
-        }
         contentProcessTerminated = true
         guard isActive else { return } // reloaded by appDidBecomeActive()
         Task { await recoverLocalPage() }
-    }
-
-    /// The server redirected to its login page: the session has expired.
-    /// Re-bootstrap once; if it loops again within 30 s, give up.
-    func sessionLost() {
-        if let last = lastBootstrap, Date().timeIntervalSince(last) < 30 {
-            state = .failed(.notAuthenticated)
-        } else {
-            start()
-        }
     }
 
     /// Opens an external link in the default app (Safari…).

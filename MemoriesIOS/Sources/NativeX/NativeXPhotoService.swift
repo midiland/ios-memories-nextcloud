@@ -10,7 +10,7 @@ import Photos
 final class NativeXPhotoService {
     /// Runs scripts in the page (state updates, timeline refresh events).
     weak var host: NativeXHost?
-    /// `nil` in remote mode: no device photos.
+    /// `nil` until the app is loaded from the local server: no device photos before that.
     var timeline: LocalTimeline?
 
     private let library: PhotoLibrary

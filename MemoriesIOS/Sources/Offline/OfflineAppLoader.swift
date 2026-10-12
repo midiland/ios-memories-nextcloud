@@ -3,13 +3,22 @@ import WebKit
 
 /// Startup of the locally served app (equivalent of `AppStartupCoordinator.kt`):
 /// - snapshot already present → shown immediately, update checked in the background;
-/// - otherwise → snapshot downloaded (with progress), then shown;
-/// - local server failure → `nil`: the caller falls back to remote loading.
+/// - otherwise → snapshot downloaded (with progress), then shown.
 ///
-/// The server is untrusted for code loading: without a manifest that parses and
-/// verifies, `AppError.noSignedManifest` is thrown instead of a remote fallback.
+/// The server is untrusted for code loading: the web files only ever come from a snapshot
+/// whose manifest parses and verifies. There is no fallback to loading them from the server.
 @MainActor
 final class OfflineAppLoader {
+    /// Outcome of the background update check.
+    enum UpdateCheck: Equatable {
+        /// Same web files as the running snapshot, or the server could not be reached.
+        case upToDate
+        /// A new verified snapshot is active: the page must be reloaded.
+        case updated
+        /// The server offers web files that do not verify: the app keeps the previous snapshot.
+        case unverifiable
+    }
+
     private let credentials: Credentials
     private let server: LocalHTTPServer
     private let media: LocalMediaProvider?
@@ -44,14 +53,14 @@ final class OfflineAppLoader {
         server.router.browserURL(forPath: url.path, query: url.query)
     }
 
-    /// Prepares the local server and a snapshot. Returns the URL to load, or `nil` if the
-    /// local server cannot start (remote fallback). Throws `AppError` when the web files
-    /// cannot be verified or downloaded: the server code must not be loaded instead.
-    func prepare(into cookieStore: WKHTTPCookieStore, progress: @escaping AssetSyncer.Progress) async throws -> URL? {
+    /// Prepares the local server and a snapshot, and returns the URL to load. Throws `AppError`
+    /// when the local server cannot start or the web files cannot be verified or downloaded.
+    func prepare(into cookieStore: WKHTTPCookieStore, progress: @escaping AssetSyncer.Progress) async throws -> URL {
         do {
             try await server.ensureStarted()
         } catch {
-            return nil
+            Log.localServer.error("Start failed: \(String(describing: error), privacy: .public)")
+            throw AppError.localServerUnavailable
         }
         await installAccessCookie(into: cookieStore)
 
@@ -74,27 +83,36 @@ final class OfflineAppLoader {
     }
 
     /// Checks the credentials and the web files version. If the server version changed,
-    /// downloads the new snapshot and activates it. Returns `true` if the page must be reloaded.
-    /// Offline, unverified manifest or failed download: no error (we keep running on the cached snapshot).
-    func refreshInBackground() async throws -> Bool {
+    /// downloads the new snapshot and activates it. The app keeps running on the cached
+    /// snapshot in every other case; only revoked credentials are thrown.
+    func refreshInBackground() async throws -> UpdateCheck {
         let manifest: AssetManifest
         do {
             manifest = try await fetchVerifiedManifest()
         } catch AppError.notAuthenticated {
             throw AppError.notAuthenticated
         } catch {
-            return false
+            return Self.updateCheck(after: error)
         }
-        guard manifest.key != current?.key else { return false }
+        guard manifest.key != current?.key else { return .upToDate }
         let snapshot: Snapshot
         do {
             snapshot = try await AssetSyncer(credentials: credentials).sync(manifest, progress: { _, _ in })
         } catch {
             Log.offline.error("Snapshot update failed: \(String(describing: error), privacy: .public)")
-            return false
+            return Self.updateCheck(after: error)
         }
         activate(snapshot)
-        return true
+        return .updated
+    }
+
+    /// A failed update check is only worth telling the user when the server's web files do not
+    /// verify: being offline or a transient network error just means trying again next time.
+    static func updateCheck(after error: Error) -> UpdateCheck {
+        switch AppError.from(error) {
+        case .noSignedManifest, .webFilesCorrupted: return .unverifiable
+        default: return .upToDate
+        }
     }
 
     /// Stops listening in the background: iOS would reclaim the socket of the suspended app.

@@ -3,26 +3,19 @@ import Foundation
 /// Minimal HTTP client for the Nextcloud endpoints the app needs:
 /// Memories' `api/describe` and Login Flow v2.
 ///
-/// Each instance has its own in-memory cookie storage (ephemeral session):
-/// a Basic-authenticated request stores the Nextcloud session cookies there,
-/// which are then copied into the WebView (see `WebSessionBootstrapper`).
+/// Each instance uses an ephemeral session: nothing it receives (cookies, cache) outlives it.
 final class NextcloudClient {
     private let session: URLSession
-    private let cookieStorage: HTTPCookieStorage
 
     init() {
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 15
-        config.httpCookieAcceptPolicy = .always
-        config.httpShouldSetCookies = true
-        cookieStorage = config.httpCookieStorage ?? HTTPCookieStorage()
         session = URLSession(configuration: config)
     }
 
     // MARK: - api/describe
 
-    /// Queries `api/describe`. With `credentials`, the request is Basic-authenticated
-    /// and opens a server-side session (cookies available via `cookies(for:)`).
+    /// Queries `api/describe`. With `credentials`, the request is Basic-authenticated.
     ///
     /// Errors: server unreachable, Memories missing (404 or non-JSON response),
     /// credentials rejected (401), version too old.
@@ -104,16 +97,6 @@ final class NextcloudClient {
         request.setValue("true", forHTTPHeaderField: "OCS-APIREQUEST")
         request.setValue(credentials.basicAuthHeader, forHTTPHeaderField: "Authorization")
         _ = try? await send(request)
-    }
-
-    // MARK: - Cookies
-
-    /// Cookies received for the server host (Nextcloud session after an authenticated `describe`).
-    func cookies(for server: ServerURL) -> [HTTPCookie] {
-        (cookieStorage.cookies ?? []).filter { cookie in
-            let domain = cookie.domain.hasPrefix(".") ? String(cookie.domain.dropFirst()) : cookie.domain
-            return server.host == domain || server.host.hasSuffix("." + domain)
-        }
     }
 
     // MARK: - Private
