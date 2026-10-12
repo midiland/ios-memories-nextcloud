@@ -183,6 +183,12 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
   the prompt needs a tap. Add photos with `xcrun simctl addmedia` or drag and drop. `log stream` stops when
   the app is reinstalled: restart it.
   Do not relaunch the app while the user is using it in the simulator.
+- **Code-loading checks on the simulator** (`tools/fake-nextcloud/`): a fake Nextcloud in Node (`server.mjs`,
+  port 18090, manifest signed with the development key, so Debug builds only) and
+  `test-scenario.sh <valid|unsigned|tampered|newformat|none> [--fresh] [--build]`, which signs the app in to it on
+  the **iPhone 16** (never the user's simulator) and takes a screenshot in `build16/fake-nextcloud/`.
+  Expected: `valid` → fake page; the others with `--fresh` → error screen, and no JS file requested in
+  `server.log` except for `tampered`; `valid --fresh` then `unsigned` (`WAIT=3`) → previous page kept + one toast.
 - **Local server outside the simulator**: `LocalServer/`, `Offline/{AssetManifest,Snapshot,SnapshotStore,ShellPage,CSSPathRewriter,OfflineError,Data+SHA256}`,
   `Network/{ServerURL,NextcloudModels}`, `Auth/Credentials`, `App/Log` compile with `swiftc` on macOS
   (harness + fake Nextcloud in Python + `curl`).
