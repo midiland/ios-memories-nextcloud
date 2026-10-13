@@ -62,7 +62,7 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 | `App/` | `MemoriesApp` (@main, composition root: the only user of `LocalHTTPServer.shared`), `RootView` (login ↔ WebView), `SessionTeardown` (clears web data + local server on logout), `AppConstants`, `AppError`, `Log` |
 | `Auth/` | `Credentials`, `CredentialStore` (Keychain), `LoginFlowV2`, `SessionStore` (global state, ObservableObject; cleanup injected) |
 | `Network/` | `ServerURL` (input normalization → `…/index.php/apps/memories/`), `NextcloudClient` (describe, Login Flow v2, revocation), `AuthenticatedDownloader`, `URLRequest(url:authorizedFor:)` (credentials only for the account's host), models, `SemanticVersion` |
-| `Offline/` | `AssetManifest` (describe `?manifest=1`), `ManifestVerifier` (Ed25519 via CryptoKit), `SnapshotStore` (Application Support/offline), `AssetSyncer` (SHA-256, 8 in parallel, reuse), `ShellPage` (local HTML), `CSSPathRewriter`, `OfflineAppLoader` (orchestration; answers the web layer's questions about the local server) |
+| `Offline/` | `AssetManifest` (describe `?manifest=1`), `DSSEEnvelope` + `TUFTargets` (Memories 10 manifest format), `ManifestVerifier` (Ed25519 via CryptoKit, both formats), `ManifestPin` + `ManifestPinStore` (rollback protection per account), `SnapshotStore` (Application Support/offline), `AssetSyncer` (SHA-256 + TUF length, 8 in parallel, reuse), `ShellPage` (local HTML), `CSSPathRewriter`, `OfflineAppLoader` (orchestration; answers the web layer's questions about the local server) |
 | `LocalServer/` | Custom HTTP/1.1 server on Network.framework: `LocalHTTPServer` (127.0.0.1:62079), `HTTPConnection`, `HTTPTypes`, `LocalRouter` (routing modeled on `ServerRouter.kt`), `StaticFiles`, `UpstreamProxy` (streaming relay to Nextcloud) |
 | `Web/` | `WebViewModel` (owns the WKWebView), `WebViewFactory` (config), `WebNavigationHandler` (delegates), `NavigationPolicy` (pure navigation rules), `BackNavigationRule`, `MemoriesWebView` (UIViewRepresentable), `DebugAutomation` (Debug only) |
 | `Views/` | `LoginView`, `SafariView`, `WebContainerView` (themed background + toasts), `ErrorView`, `ToastView`, `BackButton`, `DownloadProgressView`, `SharePresenter` |
@@ -186,13 +186,22 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
   Do not relaunch the app while the user is using it in the simulator.
 - **Code-loading checks on the simulator** (`tools/fake-nextcloud/`): a fake Nextcloud in Node (`server.mjs`,
   port 18090, manifest signed with the development key, so Debug builds only) and
-  `test-scenario.sh <valid|unsigned|tampered|newformat|none> [--fresh] [--build]`, which signs the app in to it on
+  `test-scenario.sh <scenario> [--fresh] [--build]`, which signs the app in to it on
   the **iPhone 16** (never the user's simulator) and takes a screenshot in `build16/fake-nextcloud/`.
-  Expected: `valid` → fake page; the others with `--fresh` → error screen, and no JS file requested in
-  `server.log` except for `tampered`; `valid --fresh` then `unsigned` (`WAIT=4`) → previous page kept + banner at the top.
-- **Local server outside the simulator**: `LocalServer/`, `Offline/{AssetManifest,Snapshot,SnapshotStore,ShellPage,CSSPathRewriter,OfflineError,Data+SHA256}`,
+  Scenarios: Memories 9 `valid`, `unsigned`, `tampered`; Memories 10 `dsse`, `dsse-expired`, `dsse-tampered`,
+  `dsse-old` (lower TUF version); `none`. Expected with `--fresh`: `valid`, `dsse`, `dsse-old` → fake page; the others →
+  error screen, and no JS file requested in `server.log` except for the `*tampered` ones. With `WAIT=4` after a
+  `--fresh` run: `valid` then `unsigned`, `dsse` then `valid` or `dsse-old` → previous page kept + banner at the top;
+  `valid` then `dsse` → updated to the `dsse` page (v9 → v10 server upgrade).
+- **Local server outside the simulator**: `LocalServer/`, `Offline/{AssetManifest,DSSEEnvelope,TUFTargets,Snapshot,SnapshotStore,ShellPage,CSSPathRewriter,OfflineError,Data+SHA256}`,
   `Network/{ServerURL,NextcloudModels}`, `Auth/Credentials`, `App/Log` compile with `swiftc` on macOS
   (harness + fake Nextcloud in Python + `curl`).
+- **Manifest formats**: `jsManifest` is a base64 string + `jsManifestSig` on Memories 9, a DSSE envelope
+  (`application/vnd.tuf+json`, one signature over the DSSE pre-auth encoding, TUF targets with `expires` and
+  `version`) on Memories 10. The format is recognized by the shape of `jsManifest`, never by the unsigned `version`.
+  Once a DSSE manifest is accepted for an account, Memories 9 manifests and lower TUF versions are refused
+  (`ManifestPin`, cleared on logout). `DSSEManifestTests` verifies the real envelope of the 10.0.0 release
+  (`Tests/Support/memories-10.0.0-manifest.dsse.json`, production key).
 - **Signature**: a manifest signed with the default seed of `webpack.manifest-sign-plugin.ts`
   must be accepted in Debug and rejected in Release (covered by `ManifestVerifierTests`).
 - **Bridge JS**: `NativeXScriptTests` runs the real `nativex.js` in JavaScriptCore with a fake page

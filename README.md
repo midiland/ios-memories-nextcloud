@@ -27,7 +27,7 @@ Memories and Nextcloud versions, and the steps to reproduce.
   web UI relies on a system back button (On this day, Favorites, Videos, Archive, Map, Folders, Search,
   People/Places/Tags…).
 - **Instant startup and offline shell**: the Memories web assets are downloaded once, verified
-  (Ed25519-signed manifest, SHA-256 per file) and served from the device; the app opens immediately,
+  (Ed25519-signed manifest, SHA-256 per file, protection against replaying older signed versions) and served from the device; the app opens immediately,
   even without network access, and updates itself in the background when the server is upgraded
   (an update that cannot be verified is not installed: the app keeps the previous version and says so).
 - **No unsigned code**: the web interface is never loaded directly from the server. Without a validly
@@ -75,8 +75,9 @@ Memories and Nextcloud versions, and the steps to reproduce.
 ## Requirements
 
 - iOS 16 or later.
-- A Nextcloud server with the Memories app **9.0.0-rc.1 or later**: the offline shell loads the web
-  assets listed in a signed manifest (`/apps/memories/api/describe?manifest=1`). The web interface is
+- A Nextcloud server with the Memories app **9.0.0-rc.1 or later** (Memories 9 and 10 are supported): the
+  offline shell loads the web assets listed in a signed manifest (`/apps/memories/api/describe?manifest=1`;
+  a DSSE envelope over TUF targets since Memories 10). The web interface is
   never loaded directly from the server, so servers without a valid signed manifest (too old, broken,
   or newer than the app supports) cannot be used.
 
