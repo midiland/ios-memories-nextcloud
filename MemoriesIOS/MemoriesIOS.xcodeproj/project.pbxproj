@@ -140,7 +140,7 @@
 		02AC5D918ACF48BEF007FC3D /* LocalHTTPServerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalHTTPServerTests.swift; sourceTree = "<group>"; };
 		09C18C38E8EA70E5C09C47C5 /* NativeXMethod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXMethod.swift; sourceTree = "<group>"; };
 		0BAF48A1102A5E5C47A366B0 /* NavigationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationPolicy.swift; sourceTree = "<group>"; };
-		0C209FB55BFAA8E96027D1BC /* Memories.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Memories.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0C209FB55BFAA8E96027D1BC /* Memories.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Memories.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DCE51A11A078EEDA410F981 /* LocalFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFolder.swift; sourceTree = "<group>"; };
 		10E8BEE182634C3C7239875F /* PhotoIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoIDs.swift; sourceTree = "<group>"; };
 		12DE8CF992978EC7BF336714 /* ShellPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellPage.swift; sourceTree = "<group>"; };
@@ -864,6 +864,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1000007;
 				DEVELOPMENT_TEAM = 53LB2CD33L;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
@@ -907,6 +908,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1000007;
 				DEVELOPMENT_TEAM = 53LB2CD33L;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Info.plist;
