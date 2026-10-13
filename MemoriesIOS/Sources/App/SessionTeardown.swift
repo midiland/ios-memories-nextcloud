@@ -2,7 +2,8 @@ import Foundation
 import WebKit
 
 /// Clears what an ended session leaves outside the Keychain (logout or revoked credentials):
-/// web view data, the locally served app and the relay's Nextcloud session cookies.
+/// web view data, the locally served app, the relay's Nextcloud session cookies and the
+/// manifest rollback pins (`ManifestPin`).
 /// Offline snapshots stay on disk.
 @MainActor
 struct SessionTeardown {
@@ -14,5 +15,6 @@ struct SessionTeardown {
         ) {}
         server.router.config = nil
         HTTPCookieStorage.shared.removeCookies(since: .distantPast)
+        ManifestPinStore().removeAll()
     }
 }

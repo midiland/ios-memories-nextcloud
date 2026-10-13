@@ -23,6 +23,7 @@ final class OfflineAppLoader {
     private let server: LocalHTTPServer
     private let media: LocalMediaProvider?
     private let store = SnapshotStore()
+    private let pins = ManifestPinStore()
     private(set) var current: Snapshot?
 
     init(credentials: Credentials, server: LocalHTTPServer, media: LocalMediaProvider? = nil) {
@@ -133,7 +134,8 @@ final class OfflineAppLoader {
     // MARK: - Private
 
     /// Authenticated `describe?manifest=1`. Throws `AppError.noSignedManifest` when the
-    /// server provides no manifest that parses and verifies: its code is untrusted.
+    /// server provides no manifest that parses and verifies, or an older one than already
+    /// accepted for this account (`ManifestPin`): its code is untrusted.
     private func fetchVerifiedManifest() async throws -> AssetManifest {
         let (describe, raw) = try await NextcloudClient().describeRaw(credentials.server, credentials: credentials, manifest: true)
         guard describe.uid != nil else { throw AppError.notAuthenticated }
@@ -141,6 +143,12 @@ final class OfflineAppLoader {
             Log.offline.error("No valid signed manifest: refusing to load server code")
             throw AppError.noSignedManifest
         }
+        let pin = pins.pin(for: credentials)
+        guard ManifestPin.allows(manifest, after: pin) else {
+            Log.offline.error("Manifest older than the one already accepted: refusing a rollback")
+            throw AppError.noSignedManifest
+        }
+        pins.save(ManifestPin.updated(pin, accepting: manifest), for: credentials)
         return manifest
     }
 

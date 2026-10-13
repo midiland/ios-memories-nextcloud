@@ -1,7 +1,7 @@
 import Foundation
 
 /// Downloads a complete snapshot (equivalent of `AssetSyncCoordinator.syncBlocking`):
-/// - JS verified by SHA-256 (the manifest itself is signed);
+/// - JS verified by SHA-256, and by size for Memories 10 (the manifest itself is signed);
 /// - unchanged files copied from the previous snapshot;
 /// - at most 8 parallel downloads;
 /// - `.ready` marker written last, then old snapshots are cleaned up.
@@ -16,6 +16,8 @@ struct AssetSyncer {
         let url: URL
         let destination: URL
         let sha256: String?
+        /// Expected size in bytes, when the manifest gives one (Memories 10).
+        let length: Int?
     }
 
     /// Downloads (if needed) the snapshot described by `manifest` and returns it ready to serve.
@@ -57,7 +59,7 @@ struct AssetSyncer {
                (try? fileManager.copyItem(at: previous.jsDirectory.appendingPathComponent(asset.name), to: destination)) != nil {
                 continue
             }
-            tasks.append(DownloadItem(url: try absoluteURL(asset.href), destination: destination, sha256: asset.sha256))
+            tasks.append(DownloadItem(url: try absoluteURL(asset.href), destination: destination, sha256: asset.sha256, length: asset.length))
         }
         for asset in manifest.css {
             let destination = target.cssDirectory.appendingPathComponent(asset.name)
@@ -65,7 +67,7 @@ struct AssetSyncer {
                (try? fileManager.copyItem(at: previous.cssDirectory.appendingPathComponent(asset.name), to: destination)) != nil {
                 continue
             }
-            tasks.append(DownloadItem(url: try absoluteURL(asset.href), destination: destination, sha256: nil))
+            tasks.append(DownloadItem(url: try absoluteURL(asset.href), destination: destination, sha256: nil, length: nil))
         }
         return tasks
     }
@@ -96,13 +98,16 @@ struct AssetSyncer {
         }
     }
 
-    /// Downloads a file, checks its SHA-256 if any, and writes it atomically.
+    /// Downloads a file, checks its size and SHA-256 if known, and writes it atomically.
     private func fetch(_ task: DownloadItem) async throws {
         let request = URLRequest(url: task.url, authorizedFor: credentials)
         let (data, response) = try await URLSession.shared.data(for: request)
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else { throw OfflineError.download(task.url.lastPathComponent, status) }
 
+        if let length = task.length, data.count != length {
+            throw OfflineError.integrity(task.destination.lastPathComponent)
+        }
         if let expected = task.sha256 {
             guard data.sha256Hex.caseInsensitiveCompare(expected) == .orderedSame else {
                 throw OfflineError.integrity(task.destination.lastPathComponent)

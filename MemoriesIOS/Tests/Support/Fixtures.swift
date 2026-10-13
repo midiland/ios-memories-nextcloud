@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import XCTest
 @testable import Memories
 
 /// Shared test data.
@@ -49,6 +50,60 @@ enum Fixtures {
         return try JSONSerialization.data(withJSONObject: object)
     }
 
+    /// TUF targets of a Memories 10 manifest: `{ name: { length, hashes: { sha256 }, custom: { href } } }`.
+    static let tufTargets: [String: Any] = [
+        "memories-main.js": [
+            "length": 12, "hashes": ["sha256": "aa"],
+            "custom": ["href": "/nextcloud/apps/memories/js/memories-main.js?v=aa"],
+        ],
+        "memories-l10n.js": [
+            "length": 34, "hashes": ["sha256": "bb"],
+            "custom": ["href": "/nextcloud/apps/memories/js/memories-l10n.js?v=bb"],
+        ],
+        "no-length.js": ["hashes": ["sha256": "cc"], "custom": ["href": "/nextcloud/apps/memories/js/no-length.js"]],
+    ]
+
+    /// Raw `describe?manifest=1` response of Memories 10: a DSSE envelope over TUF targets, signed
+    /// with `signingSeed` over the pre-auth encoding of `payloadType` (`signatures` copies of the signature).
+    static func dsseDescribe(
+        targets: [String: Any] = tufTargets,
+        version: Int = 1_791_782_417,
+        expires: String = "2099-01-01T00:00:00Z",
+        payloadType: String = DSSEEnvelope.tufPayloadType,
+        signingSeed: Data = developmentSeed,
+        signatures: Int = 1
+    ) throws -> Data {
+        let payload = try JSONSerialization.data(withJSONObject: [
+            "_type": "targets", "spec_version": "1.0.0", "version": version, "expires": expires, "targets": targets,
+        ], options: .sortedKeys)
+        let key = try Curve25519.Signing.PrivateKey(rawRepresentation: signingSeed)
+        let signature = try key.signature(for: DSSEEnvelope.preAuthEncoding(payloadType: payloadType, payload: payload))
+        return try envelopeDescribe([
+            "payload": payload.base64EncodedString(),
+            "payloadType": payloadType,
+            "signatures": Array(repeating: ["keyid": "test", "sig": signature.base64EncodedString()], count: signatures),
+        ])
+    }
+
+    /// Raw `describe?manifest=1` response carrying `envelope` as its `jsManifest`.
+    static func envelopeDescribe(_ envelope: Any) throws -> Data {
+        try JSONSerialization.data(withJSONObject: [
+            "version": "10.0.0",
+            "baseUrl": "https://cloud.example.com/nextcloud/index.php/apps/memories/",
+            "loginFlowUrl": "https://cloud.example.com/nextcloud/index.php/login/v2",
+            "uid": "alice",
+            "jsManifest": envelope,
+            "cssManifest": cssManifest,
+        ])
+    }
+
+    /// Envelope published by the Memories 10.0.0 release (`js/memories-manifest.dsse.json`),
+    /// signed with the production key.
+    static func releaseEnvelope() throws -> Any {
+        let url = try XCTUnwrap(Bundle(for: BundleToken.self).url(forResource: "memories-10.0.0-manifest.dsse", withExtension: "json"))
+        return try JSONSerialization.jsonObject(with: Data(contentsOf: url))
+    }
+
     /// New empty temporary directory, removed by the caller.
     static func temporaryDirectory() throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
@@ -69,6 +124,8 @@ enum Fixtures {
         )
     }
 }
+
+private final class BundleToken {}
 
 extension HTTPResponse {
     /// Body of a `.data` response as UTF-8 text.
