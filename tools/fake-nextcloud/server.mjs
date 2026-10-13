@@ -1,24 +1,29 @@
 // Fake Nextcloud + Memories server for testing the iOS app's code-loading checks on a simulator.
 //
 // Serves just enough for the app: `api/describe` (with the asset manifest) and the web files of
-// a tiny fake Memories frontend. The manifest is signed with the development key of
-// `webpack.manifest-sign-plugin.ts`, which Debug builds accept (Release builds must reject it).
+// a tiny fake Memories frontend. Manifests are signed with the development key of
+// `webpack.manifest-sign-plugin.ts`, which Debug builds accept (Release builds must reject it),
+// in the Memories 9 format (base64 manifest + jsManifestSig) or the Memories 10 one (DSSE + TUF).
 //
 //   node tools/fake-nextcloud/server.mjs            # listens on http://localhost:18090
 //   curl -s localhost:18090/__scenario/unsigned     # switch scenario at runtime
 //
 // Scenarios (what `describe?manifest=1` returns):
-//   valid      signed manifest, files match                → the fake page loads
-//   unsigned   manifest without signature                  → "could not be verified" error
-//   tampered   signed manifest, memories-main.js modified  → "does not match its signature" error
-//   newformat  DSSE envelope (format of Memories master)   → "could not be verified" error
-//   none       no manifest at all                          → "could not be verified" error
+//   valid          Memories 9 signed manifest, files match      → the fake page loads
+//   unsigned       Memories 9 manifest without signature        → "could not be verified" error
+//   tampered       Memories 9, memories-main.js modified        → "does not match its signature" error
+//   dsse           Memories 10 DSSE envelope, files match       → the fake page loads
+//   dsse-expired   DSSE envelope, TUF targets expired           → "could not be verified" error
+//   dsse-tampered  DSSE envelope, memories-main.js modified     → "does not match its signature" error
+//   dsse-old       DSSE envelope, lower TUF version than `dsse` → page loads on a fresh install;
+//                  after `dsse`, refused as a rollback (banner), like `valid` after `dsse`
+//   none           no manifest at all                           → "could not be verified" error
 import { createHash, createPrivateKey, sign } from 'node:crypto';
 import { createServer } from 'node:http';
 
 const PORT = Number(process.env.PORT ?? 18090);
 const ORIGIN = `http://localhost:${PORT}`;
-const SCENARIOS = ['valid', 'unsigned', 'tampered', 'newformat', 'none'];
+const SCENARIOS = ['valid', 'unsigned', 'tampered', 'dsse', 'dsse-expired', 'dsse-tampered', 'dsse-old', 'none'];
 let scenario = process.env.SCENARIO ?? 'valid';
 
 // Development signing key: the public default seed of webpack.manifest-sign-plugin.ts.
@@ -51,6 +56,32 @@ function manifestFields(name) {
   return fields;
 }
 
+/** Memories 10 manifest: DSSE envelope over TUF targets, signed over the DSSE pre-auth encoding. */
+function dsseFields(name) {
+  const targets = {};
+  for (const [file, body] of Object.entries(files)) {
+    const bytes = Buffer.from(body(name));
+    targets[file] = {
+      length: bytes.length,
+      hashes: { sha256: sha256(bytes) },
+      custom: { href: `/apps/memories/js/${file}?v=${name}` },
+    };
+  }
+  const expires = name === 'dsse-expired' ? '2020-01-01T00:00:00Z' : '2099-01-01T00:00:00Z';
+  const version = name === 'dsse-old' ? 1000 : 2000;
+  const payload = Buffer.from(JSON.stringify({ _type: 'targets', spec_version: '1.0.0', version, expires, targets }));
+  const type = 'application/vnd.tuf+json';
+  const pae = Buffer.concat([
+    Buffer.from(`DSSEv1 ${Buffer.byteLength(type)} ${type} ${payload.length} `),
+    payload,
+  ]);
+  const sig = sign(null, pae, devKey).toString('base64');
+  return {
+    cssManifest: [],
+    jsManifest: { payload: payload.toString('base64'), payloadType: type, signatures: [{ keyid: 'dev', sig }] },
+  };
+}
+
 function describe(url, authorized) {
   const body = {
     version: '9.0.1',
@@ -62,8 +93,11 @@ function describe(url, authorized) {
   switch (scenario) {
     case 'none':
       return body;
-    case 'newformat':
-      return { ...body, cssManifest: [], jsManifest: { payloadType: 'application/vnd.tuf+json', payload: 'e30=', signatures: [{ sig: 'AA==' }] } };
+    case 'dsse':
+    case 'dsse-expired':
+    case 'dsse-tampered':
+    case 'dsse-old':
+      return { ...body, version: '10.0.0', ...dsseFields(scenario) };
     default:
       return { ...body, ...manifestFields(scenario) };
   }
@@ -91,7 +125,7 @@ createServer((req, res) => {
   const file = path.match(/^\/apps\/memories\/js\/([\w.-]+)$/)?.[1];
   if (file && files[file]) {
     const name = url.searchParams.get('v') ?? scenario;
-    const body = scenario === 'tampered' && file === 'memories-main.js' ? `${files[file](name)}// modified\n` : files[file](name);
+    const body = ['tampered', 'dsse-tampered'].includes(scenario) && file === 'memories-main.js' ? `${files[file](name)}// modified\n` : files[file](name);
     return send(res, 200, 'text/javascript', body);
   }
   // Anything the fake frontend could relay (config, days…): empty JSON.
