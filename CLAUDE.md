@@ -62,7 +62,7 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 | `App/` | `MemoriesApp` (@main, composition root: the only user of `LocalHTTPServer.shared`), `RootView` (login ↔ WebView), `SessionTeardown` (clears web data + local server on logout), `AppConstants`, `AppError`, `Log` |
 | `Auth/` | `Credentials`, `CredentialStore` (Keychain), `LoginFlowV2`, `SessionStore` (global state, ObservableObject; cleanup injected) |
 | `Network/` | `ServerURL` (input normalization → `…/index.php/apps/memories/`), `NextcloudClient` (describe, Login Flow v2, revocation), `AuthenticatedDownloader`, `URLRequest(url:authorizedFor:)` (credentials only for the account's host), models, `SemanticVersion` |
-| `Offline/` | `AssetManifest` (describe `?manifest=1`), `DSSEEnvelope` + `TUFTargets` (Memories 10 manifest format), `ManifestVerifier` (Ed25519 via CryptoKit, both formats), `ManifestPin` + `ManifestPinStore` (rollback protection per account), `SnapshotStore` (Application Support/offline), `AssetSyncer` (SHA-256 + TUF length, 8 in parallel, reuse), `ShellPage` (local HTML), `CSSPathRewriter`, `OfflineAppLoader` (orchestration; answers the web layer's questions about the local server) |
+| `Offline/` | `AssetManifest` (describe `?manifest=1`), `DSSEEnvelope` + `TUFTargets` (Memories 10 manifest format), `ManifestVerifier` (Ed25519 via CryptoKit, both formats), `ManifestPin` + `ManifestPinStore` (rollback protection per account), `SnapshotStore` (Application Support/offline), `AppWebPath` (real folder of the app's static files, read from `_oc_appswebroots`: the manifest hrefs always say `/apps/memories/js/`, which 404s for apps in `custom_apps` (AIO, Docker image) or under a web root), `AssetSyncer` (SHA-256 + TUF length, 8 in parallel, reuse), `ShellPage` (local HTML), `CSSPathRewriter`, `OfflineAppLoader` (orchestration; answers the web layer's questions about the local server) |
 | `LocalServer/` | Custom HTTP/1.1 server on Network.framework: `LocalHTTPServer` (127.0.0.1:62079), `HTTPConnection`, `HTTPTypes`, `LocalRouter` (routing modeled on `ServerRouter.kt`), `StaticFiles`, `UpstreamProxy` (streaming relay to Nextcloud) |
 | `Web/` | `WebViewModel` (owns the WKWebView), `WebViewFactory` (config), `WebNavigationHandler` (delegates), `NavigationPolicy` (pure navigation rules), `BackNavigationRule`, `MemoriesWebView` (UIViewRepresentable), `DebugAutomation` (Debug only) |
 | `Views/` | `LoginView`, `SafariView`, `WebContainerView` (themed background + toasts), `ErrorView`, `ToastView`, `BackButton`, `DownloadProgressView`, `SharePresenter` |
@@ -193,7 +193,12 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
   error screen, and no JS file requested in `server.log` except for the `*tampered` ones. With `WAIT=4` after a
   `--fresh` run: `valid` then `unsigned`, `dsse` then `valid` or `dsse-old` → previous page kept + banner at the top;
   `valid` then `dsse` → updated to the `dsse` page (v9 → v10 server upgrade).
-- **Local server outside the simulator**: `LocalServer/`, `Offline/{AssetManifest,DSSEEnvelope,TUFTargets,Snapshot,SnapshotStore,ShellPage,CSSPathRewriter,OfflineError,Data+SHA256}`,
+- **Real Nextcloud in Docker** (when the user has Docker running): `docker run -d --name mx-nc-test -p 18091:80
+  -e SQLITE_DATABASE=nc -e NEXTCLOUD_ADMIN_USER=tester -e NEXTCLOUD_ADMIN_PASSWORD=… -e NEXTCLOUD_TRUSTED_DOMAINS=localhost
+  nextcloud:34-apache`, then extract a Memories release tarball into `/var/www/html/custom_apps` and
+  `occ app:enable memories` (as `www-data`). Apps there are served under `/custom_apps/`, like on Nextcloud AIO.
+  Sign the **iPhone 16** in with `SIMCTL_CHILD_MX_SERVER=http://localhost:18091` and an app password.
+- **Local server outside the simulator**: `LocalServer/`, `Offline/{AppWebPath,AssetManifest,DSSEEnvelope,TUFTargets,Snapshot,SnapshotStore,ShellPage,CSSPathRewriter,OfflineError,Data+SHA256}`,
   `Network/{ServerURL,NextcloudModels}`, `Auth/Credentials`, `App/Log` compile with `swiftc` on macOS
   (harness + fake Nextcloud in Python + `curl`).
 - **Manifest formats**: `jsManifest` is a base64 string + `jsManifestSig` on Memories 9, a DSSE envelope

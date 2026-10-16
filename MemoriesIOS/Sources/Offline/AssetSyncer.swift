@@ -30,7 +30,8 @@ struct AssetSyncer {
         try store.prepareEmptyDirectory(directory)
         let target = Snapshot(directory: directory, manifest: manifest)
 
-        let tasks = try planDownloads(manifest, into: target, reusing: previous)
+        let webPath = await resolveAppWebPath()
+        let tasks = try planDownloads(manifest, into: target, reusing: previous, webPath: webPath)
         await progress(0, tasks.count)
         try await download(tasks, progress: progress)
 
@@ -43,7 +44,7 @@ struct AssetSyncer {
 
     /// Lists the files to download; copies over those that have not changed.
     private func planDownloads(
-        _ manifest: AssetManifest, into target: Snapshot, reusing previous: Snapshot?
+        _ manifest: AssetManifest, into target: Snapshot, reusing previous: Snapshot?, webPath: AppWebPath
     ) throws -> [DownloadItem] {
         let fileManager = FileManager.default
         let previousHashes = Dictionary(
@@ -59,7 +60,10 @@ struct AssetSyncer {
                (try? fileManager.copyItem(at: previous.jsDirectory.appendingPathComponent(asset.name), to: destination)) != nil {
                 continue
             }
-            tasks.append(DownloadItem(url: try absoluteURL(asset.href), destination: destination, sha256: asset.sha256, length: asset.length))
+            tasks.append(DownloadItem(
+                url: try absoluteURL(webPath.resolve(asset.href)), destination: destination,
+                sha256: asset.sha256, length: asset.length
+            ))
         }
         for asset in manifest.css {
             let destination = target.cssDirectory.appendingPathComponent(asset.name)
@@ -79,6 +83,32 @@ struct AssetSyncer {
             : credentials.server.origin.absoluteString + href
         guard let url = URL(string: text) else { throw OfflineError.download(href, 0) }
         return url
+    }
+
+    /// Real location of the app's static files, read from the server's Memories page
+    /// (see `AppWebPath`). Falls back to the standard `apps` folder if the page cannot be read.
+    private func resolveAppWebPath() async -> AppWebPath {
+        let fallback = AppWebPath(webRoot: credentials.server.webRoot)
+        guard let url = URL(string: credentials.server.origin.absoluteString + credentials.server.appPath + "/") else {
+            return fallback
+        }
+        do {
+            let (data, response) = try await URLSession.shared.data(for: URLRequest(url: url, authorizedFor: credentials))
+            guard (response as? HTTPURLResponse)?.statusCode == 200,
+                  let html = String(data: data, encoding: .utf8),
+                  let webPath = AppWebPath(pageHTML: html)
+            else {
+                Log.offline.error("Memories web path not found in its page: using \(fallback.root, privacy: .public)")
+                return fallback
+            }
+            if webPath != fallback {
+                Log.offline.info("Memories files served from \(webPath.root, privacy: .public)")
+            }
+            return webPath
+        } catch {
+            Log.offline.error("Memories page unavailable: \(String(describing: error), privacy: .public)")
+            return fallback
+        }
     }
 
     // MARK: - Download
