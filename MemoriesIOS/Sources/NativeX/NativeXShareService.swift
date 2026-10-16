@@ -3,8 +3,8 @@ import Foundation
 /// Downloads and sharing requested by the web UI
 /// (`downloadFromUrl`, `setShareBlobs` + `/api/share/blobs`, `/api/share/url`).
 ///
-/// Android saves to "Downloads" with a notification; on iOS we go through
-/// the share sheet (which offers "Save Image" / "Save to Files").
+/// Android saves downloads to "Downloads" with a notification; on iOS photos and videos (also
+/// those of an album ZIP) are saved to Photos, other files go through the share sheet.
 @MainActor
 final class NativeXShareService {
     /// Object staged by `setShareBlobs` (JSON `[{ auid, href }]`).
@@ -16,12 +16,18 @@ final class NativeXShareService {
     /// Receives the toasts (download started / failed).
     weak var host: NativeXHost?
     private let downloader: AuthenticatedDownloader
+    private let photoLibrary: PhotoLibrary
     /// Shows the share sheet for files or links.
     private let presentShareSheet: @MainActor ([Any]) -> Void
     private var stagedBlobs: [Blob] = []
 
-    init(downloader: AuthenticatedDownloader, presentShareSheet: @escaping @MainActor ([Any]) -> Void) {
+    init(
+        downloader: AuthenticatedDownloader,
+        photoLibrary: PhotoLibrary,
+        presentShareSheet: @escaping @MainActor ([Any]) -> Void
+    ) {
         self.downloader = downloader
+        self.photoLibrary = photoLibrary
         self.presentShareSheet = presentShareSheet
     }
 
@@ -59,8 +65,8 @@ final class NativeXShareService {
         presentShareSheet([url])
     }
 
-    /// `nativex.downloadFromUrl(url, filename, title)`: background download,
-    /// then share sheet; toast on failure.
+    /// `nativex.downloadFromUrl(url, filename, title)`: background download, then Photos (album
+    /// named `title`) or the share sheet; toast with the result.
     func download(urlString: String?, filename: String?, title: String?) {
         guard let urlString, let url = URL(string: urlString), let host else { return }
         if let title, !title.isEmpty {
@@ -73,10 +79,50 @@ final class NativeXShareService {
         Task {
             do {
                 let file = try await downloader.download(url, preferredName: name)
-                presentShareSheet([file])
+                await saveOrShare(file, album: title)
             } catch {
                 self.host?.nativeXToast(String(localized: "Download failed: \(error.localizedDescription)"), long: true)
             }
         }
+    }
+
+    /// Photos and videos (also inside an album ZIP) go to the photo library, like Android saves
+    /// them to Downloads; other files, or no access to Photos, open the share sheet.
+    private func saveOrShare(_ file: URL, album: String?) async {
+        let folder = file.deletingLastPathComponent()
+        let media = await Task.detached { Self.mediaFiles(in: file, folder: folder) }.value
+        guard !media.isEmpty, await PhotosAccessPrompt.requestAccess() else {
+            presentShareSheet([file])
+            return
+        }
+        let result = await PhotosSaver(library: photoLibrary).save(media, album: album)
+        try? FileManager.default.removeItem(at: folder)
+        host?.nativeXToast(Self.message(for: result), long: result.failed > 0)
+    }
+
+    /// The downloaded file itself, or the photos and videos of a ZIP (extracted next to it).
+    private nonisolated static func mediaFiles(in file: URL, folder: URL) -> [MediaFile] {
+        guard ZipExtractor.isZip(file) else { return MediaFile(url: file).map { [$0] } ?? [] }
+        let extracted = folder.appendingPathComponent("extracted", isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(at: extracted, withIntermediateDirectories: true)
+            return try ZipExtractor.extract(file, into: extracted).compactMap(MediaFile.init(url:))
+        } catch {
+            Log.nativex.error("ZIP extraction failed: \(String(describing: error), privacy: .public)")
+            return []
+        }
+    }
+
+    static func message(for result: PhotosSaver.Result) -> String {
+        if result.failed > 0 {
+            return String(localized: "\(result.failed) files could not be saved to Photos")
+        }
+        if result.saved == 0 {
+            return String(localized: "Already in Photos")
+        }
+        if result.alreadyInPhotos > 0 {
+            return String(localized: "Saved to Photos (\(result.saved)), already there: \(result.alreadyInPhotos)")
+        }
+        return String(localized: "Saved to Photos (\(result.saved))")
     }
 }

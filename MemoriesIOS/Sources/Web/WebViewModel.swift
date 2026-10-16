@@ -78,6 +78,7 @@ final class WebViewModel: ObservableObject {
                 downloader: AuthenticatedDownloader(credentials: credentials) { [weak server] in
                     server.map { LocalServerAccess(port: $0.port, secret: $0.secret) }
                 },
+                photoLibrary: library,
                 presentShareSheet: SharePresenter.present
             ),
             photos: NativeXPhotoService(library: library)

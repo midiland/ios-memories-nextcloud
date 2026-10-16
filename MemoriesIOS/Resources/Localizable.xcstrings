@@ -22,6 +22,17 @@
         }
       }
     },
+    "%lld files could not be saved to Photos" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fichiers n'ont pas pu être enregistrés dans Photos"
+          }
+        }
+      }
+    },
     "A Memories file downloaded from the server does not match its signature, so the app did not load it. Try again later, or contact the server administrator." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -45,6 +56,17 @@
         }
       }
     },
+    "Already in Photos" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déjà dans Photos"
+          }
+        }
+      }
+    },
     "Back" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -52,6 +74,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retour"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler"
           }
         }
       }
@@ -95,6 +128,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Connexion…"
+          }
+        }
+      }
+    },
+    "Continue" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer"
           }
         }
       }
@@ -210,6 +254,17 @@
         }
       }
     },
+    "Memories saves your downloads to your photo library. Full access lets it skip the photos you already have, so nothing is duplicated, and recreate your albums." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Memories enregistre vos téléchargements dans votre photothèque. L'accès complet lui permet d'ignorer les photos que vous avez déjà, pour éviter les doublons, et de recréer vos albums."
+          }
+        }
+      }
+    },
     "Memories update not verified" : {
       "localizations" : {
         "fr" : {
@@ -231,6 +286,39 @@
         }
       }
     },
+    "No access to Photos" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas d'accès à Photos"
+          }
+        }
+      }
+    },
+    "Not now" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus tard"
+          }
+        }
+      }
+    },
+    "Open Settings" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Réglages"
+          }
+        }
+      }
+    },
     "Preparing Memories…" : {
       "localizations" : {
         "fr" : {
@@ -248,6 +336,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réessayer"
+          }
+        }
+      }
+    },
+    "Save to Photos" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer dans Photos"
+          }
+        }
+      }
+    },
+    "Saved to Photos (%lld)" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrés dans Photos (%lld)"
+          }
+        }
+      }
+    },
+    "Saved to Photos (%lld), already there: %lld" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrés dans Photos (%1$lld), déjà présents : %2$lld"
           }
         }
       }
@@ -324,6 +445,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les fichiers de Memories envoyés par le serveur n'ont pas pu être vérifiés, l'app ne les a donc pas chargés. Mettez l'app à jour ou contactez l'administrateur du serveur."
+          }
+        }
+      }
+    },
+    "To save your downloads to Photos, allow Memories to access your photo library in Settings." : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour enregistrer vos téléchargements dans Photos, autorisez Memories à accéder à votre photothèque dans Réglages."
           }
         }
       }

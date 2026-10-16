@@ -74,6 +74,17 @@ final class PhotoLibrary: NSObject, PHPhotoLibraryChangeObserver, @unchecked Sen
     }
 
     /// Original file of each asset (name, size, type). Assets without a resource are omitted.
+    /// Photos and videos created in `interval`, whatever their album (used to skip downloads
+    /// already in the library).
+    func assets(createdIn interval: DateInterval) -> [LocalAsset] {
+        guard Self.isAuthorized else { return [] }
+        let options = PHFetchOptions()
+        options.predicate = NSPredicate(
+            format: "creationDate >= %@ AND creationDate <= %@", interval.start as NSDate, interval.end as NSDate
+        )
+        return Self.convert(PHAsset.fetchAssets(with: options))
+    }
+
     func resources(for localIdentifiers: [String]) -> [String: LocalResource] {
         guard Self.isAuthorized, !localIdentifiers.isEmpty else { return [:] }
         var result: [String: LocalResource] = [:]

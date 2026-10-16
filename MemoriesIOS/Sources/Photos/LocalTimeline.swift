@@ -150,23 +150,13 @@ actor LocalTimeline: LocalMediaProvider {
     }
 
     private func candidate(_ asset: LocalAsset) -> PhotoMatcher.Candidate {
-        let ids = identifiers(asset)
-        return PhotoMatcher.Candidate(
-            id: asset.localIdentifier,
-            epoch: asset.epoch,
-            wallClockEpoch: PhotoIDs.wallClockEpoch(asset.creationDate, in: timeZone()),
-            width: asset.width,
-            height: asset.height,
-            isVideo: asset.isVideo,
-            auid: ids.auid,
-            buid: ids.buid
-        )
+        PhotoMatcher.Candidate(asset, resource: resources[asset.localIdentifier], timeZone: timeZone())
     }
 
-    /// `auid`/`buid` from the original file; without a known size they cannot match the server's.
+    /// `auid`/`buid` from the original file, as in `candidate(_:)`.
     private func identifiers(_ asset: LocalAsset) -> (auid: String?, buid: String?) {
-        guard let resource = resources[asset.localIdentifier], let size = resource.size else { return (nil, nil) }
-        return (PhotoIDs.auid(epoch: asset.epoch, size: size), PhotoIDs.buid(basename: resource.basename, size: size))
+        let candidate = candidate(asset)
+        return (candidate.auid, candidate.buid)
     }
 
     /// Photo object expected by the frontend (`IPhoto`, like `PhotoMapper.toJson` on Android).

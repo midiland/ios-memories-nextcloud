@@ -98,4 +98,17 @@ final class PhotoMatcherTests: XCTestCase {
         let photos = [server(1, w: 1920, h: 1440), server(2)]
         XCTAssertEqual(PhotoMatcher.match(locals, against: photos).matched, ["a", "b"])
     }
+
+    // MARK: - Server side (downloads saved to Photos)
+
+    func testReportsWhichServerPhotosHaveADeviceCopy() {
+        let locals = [local("a", size: 2_000_000), local("b", epoch: epoch + 60)]
+        let photos = [server(1, size: 2_000_000), server(2, epoch: epoch + 60, size: 5), server(3, epoch: epoch + 3_600)]
+        XCTAssertEqual(PhotoMatcher.match(locals, against: photos).matchedServer, [1, 2])
+    }
+
+    func testBurstReportsOnlyTheClaimedServerPhotos() {
+        // One device photo, two server photos in the same second: only one is already on the device.
+        XCTAssertEqual(PhotoMatcher.match([local("a")], against: [server(1), server(2)]).matchedServer.count, 1)
+    }
 }

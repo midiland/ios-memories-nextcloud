@@ -18,7 +18,7 @@ enum SharePresenter {
     }
 
     /// Topmost visible view controller in the key window.
-    private static func topViewController() -> UIViewController? {
+    static func topViewController() -> UIViewController? {
         let window = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .flatMap(\.windows)

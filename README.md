@@ -38,8 +38,11 @@ Memories and Nextcloud versions, and the steps to reproduce.
 - **Device photos in the timeline** (opt-in, read-only): photos of the iPhone (whole library or selected
   albums) that are not on Nextcloud yet appear next to the server ones, with a "device" badge. Photos
   already uploaded are not shown twice, even when the Nextcloud app converted them to JPEG or renamed them.
-- **Native integrations**: iOS share sheet for photos, albums and links, downloads (then share sheet),
-  native toasts and haptic feedback.
+- **Downloads saved to Photos**: downloaded photos and videos go straight to the photo library; an album
+  download is extracted and recreated as an album in Photos, skipping the photos you already have (full
+  photo library access, explained before iOS asks for it).
+- **Native integrations**: iOS share sheet for photos and links (and for downloaded files that are not
+  photos or videos), native toasts and haptic feedback.
 - **English and French** user interface (follows the iOS language setting).
 
 ### Not implemented yet on iOS
@@ -62,7 +65,8 @@ Memories and Nextcloud versions, and the steps to reproduce.
 | Native mode UI (mobile navigation, theme color) | ✅ | ✅ |
 | Back navigation | ✅ system back button | ✅ floating button + swipe |
 | Share photos, albums and links | ✅ | ✅ share sheet |
-| Download files | ✅ background download + notification | ✅ download, then share sheet |
+| Download files | ✅ background download + notification | ✅ download, then Photos (or share sheet) |
+| Album download | ✅ ZIP extracted to Downloads | ✅ ZIP extracted to Photos, album recreated, no duplicates |
 | Touch feedback | ✅ click sound | ✅ haptics |
 | Native video player | ✅ ExoPlayer | ❌ web player |
 | Device photos in the timeline | ✅ MediaStore | ✅ PhotoKit (read-only) |

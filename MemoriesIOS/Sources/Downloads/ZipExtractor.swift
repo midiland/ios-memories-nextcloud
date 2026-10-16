@@ -1,0 +1,52 @@
+import Foundation
+
+/// Extracts the ZIP the server sends for an album or a multiple selection
+/// (`DownloadController::multiple`, ZipStreamer with ZIP64), like `InAppDownloader.unzipPublic` on Android.
+enum ZipExtractor {
+    /// Whether the file starts with a ZIP local file header (`PK\u{3}\u{4}`), whatever its name.
+    static func isZip(_ url: URL) -> Bool {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return false }
+        defer { try? handle.close() }
+        return (try? handle.read(upToCount: 4)) == Data([0x50, 0x4B, 0x03, 0x04])
+    }
+
+    /// Extracts every file entry into `folder` (flat) and returns the extracted files.
+    /// Entry names are reduced to a safe base name (no Zip Slip), duplicates get a suffix.
+    static func extract(_ zip: URL, into folder: URL) throws -> [URL] {
+        let archive = try ZipArchive(url: zip)
+        var used = Set<String>()
+        var files: [URL] = []
+        for entry in archive.entries where !entry.isDirectory {
+            guard let name = safeName(entry.path) else { continue }
+            let destination = folder.appendingPathComponent(uniqueName(name, taken: &used))
+            try archive.extract(entry, to: destination)
+            files.append(destination)
+        }
+        return files
+    }
+
+    /// Base name of an entry path; `nil` for metadata (`__MACOSX/…`, `.DS_Store`) and empty names.
+    static func safeName(_ path: String) -> String? {
+        guard !path.hasSuffix("/"), !path.hasSuffix("\\") else { return nil }
+        let components = path.split(whereSeparator: { $0 == "/" || $0 == "\\" })
+        guard !components.contains("__MACOSX"), let last = components.last else { return nil }
+        let name = last.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty, !name.hasPrefix("."), name != ".." else { return nil }
+        return name
+    }
+
+    /// `name`, or `name (2).ext`, `name (3).ext`… if already taken (case-insensitive file systems).
+    static func uniqueName(_ name: String, taken: inout Set<String>) -> String {
+        let url = URL(fileURLWithPath: name)
+        let base = url.deletingPathExtension().lastPathComponent
+        let ext = url.pathExtension
+        var candidate = name
+        var index = 2
+        while taken.contains(candidate.lowercased()) {
+            candidate = ext.isEmpty ? "\(base) (\(index))" : "\(base) (\(index)).\(ext)"
+            index += 1
+        }
+        taken.insert(candidate.lowercased())
+        return candidate
+    }
+}

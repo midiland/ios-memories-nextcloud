@@ -25,6 +25,8 @@ enum PhotoMatcher {
     struct Result: Equatable {
         /// IDs of the device photos that have a server copy.
         var matched: Set<String> = []
+        /// File IDs of the server photos that have a device copy.
+        var matchedServer: Set<Int64> = []
         var byIdentifier = 0
         var byFingerprint = 0
     }
@@ -44,6 +46,9 @@ enum PhotoMatcher {
             if candidate.auid.map(auids.contains) == true || candidate.buid.map(buids.contains) == true {
                 result.matched.insert(candidate.id)
                 result.byIdentifier += 1
+                for photo in server where photo.auid == candidate.auid || (photo.buid != nil && photo.buid == candidate.buid) {
+                    result.matchedServer.insert(photo.fileid)
+                }
             } else {
                 remaining.append(candidate)
             }
@@ -55,7 +60,7 @@ enum PhotoMatcher {
         }
         for candidate in remaining.sorted(by: { $0.epoch < $1.epoch }) {
             guard let index = bestMatch(for: candidate, in: available) else { continue }
-            available.remove(at: index)
+            result.matchedServer.insert(available.remove(at: index).fileid)
             result.matched.insert(candidate.id)
             result.byFingerprint += 1
         }

@@ -65,6 +65,7 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 | `Offline/` | `AssetManifest` (describe `?manifest=1`), `DSSEEnvelope` + `TUFTargets` (Memories 10 manifest format), `ManifestVerifier` (Ed25519 via CryptoKit, both formats), `ManifestPin` + `ManifestPinStore` (rollback protection per account), `SnapshotStore` (Application Support/offline), `AppWebPath` (real folder of the app's static files, read from `_oc_appswebroots`: the manifest hrefs always say `/apps/memories/js/`, which 404s for apps in `custom_apps` (AIO, Docker image) or under a web root), `AssetSyncer` (SHA-256 + TUF length, 8 in parallel, reuse), `ShellPage` (local HTML), `CSSPathRewriter`, `OfflineAppLoader` (orchestration; answers the web layer's questions about the local server) |
 | `LocalServer/` | Custom HTTP/1.1 server on Network.framework: `LocalHTTPServer` (127.0.0.1:62079), `LocalServerAccess` (port + `local-auth` secret for native requests), `HTTPConnection`, `HTTPTypes`, `LocalRouter` (routing modeled on `ServerRouter.kt`), `StaticFiles`, `UpstreamProxy` (streaming relay to Nextcloud) |
 | `Web/` | `WebViewModel` (owns the WKWebView), `WebViewFactory` (config), `WebNavigationHandler` (delegates), `NavigationPolicy` (pure navigation rules), `BackNavigationRule`, `MemoriesWebView` (UIViewRepresentable), `DebugAutomation` (Debug only) |
+| `Downloads/` | Downloads saved to Photos: `ZipArchive` (minimal ZIP reader: ZIP64 + stored/deflate; ZIPFoundation rejects ZipStreamer's zero ZIP64 fields, weichsel/ZIPFoundation#319), `ZipExtractor` (flat, safe names), `MediaFile`, `CaptureDate` + `MediaMetadata` (EXIF/QuickTime capture instant), `DuplicateFinder` (`PhotoMatcher` against the library), `PhotosSaver` (originals + album), `PhotosAccessPrompt` (explanation before the iOS prompt) |
 | `Views/` | `LoginView`, `SafariView`, `WebContainerView` (themed background + toasts), `ErrorView`, `ToastView`, `BackButton`, `DownloadProgressView`, `SharePresenter` |
 | `Photos/` | Device photos (PhotoKit, read-only): `LocalTimeline` (actor answering the local timeline routes, implements `LocalMediaProvider`), `PhotoLibrary` (permission, folders = library + albums, assets, original file name/size), `PhotoMatcher` (pure: device ↔ server deduplication), `PhotoIDs` (auid/buid/dayid/fileid like the server), `ServerDayClient` (server day photos, cached), `RemoteCopyStore` (known matches per account), `LocalImageRenderer` (JPEG), `LocalPhotoSettings`, models |
 | `NativeX/` | `NativeXController` (bridge), `NativeXPhotoService` (device photo settings, state, routes), `NativeXHost` (implemented by `WebViewModel`), `NativeXLoopbackRouter` (`127.0.0.1` routes), `NativeXShareService` (downloader + share sheet injected), `NativeXMethod`, `NativeXArguments`, `NativeXResponse`, `WeakScriptMessageProxy` |
@@ -150,8 +151,13 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 - **Upload button hidden**: `nativex.js` hides the mobile header's upload button (`.upload-menu`,
   `UploadMenuItem.vue`) until upload is implemented on iOS. The "Upload files" action of the Folders view is not hidden.
 - `playVideo`/`playVideo2`/`destroyVideo` **not exposed**: the frontend keeps its web player.
-- `playTouchSound` = haptic feedback; `downloadFromUrl` = download then share sheet
-  (credentials are only ever sent to the account's host). The frontend builds download and share URLs on
+- `playTouchSound` = haptic feedback; `downloadFromUrl` = download, then **Photos** for photos and videos
+  (an album ZIP is extracted; Android extracts it to Downloads/memories/) and the share sheet for other files or
+  without access (credentials are only ever sent to the account's host).
+  - Full photo library access, asked after an explanation (`PhotosAccessPrompt`): it lets the app skip photos
+    already in the library (same rules as the timeline, `PhotoMatcher.Result.matchedServer`) and gather the files
+    in an album named after the Memories album (`title` argument; existing album reused; device copies added too).
+  - Live Photos (HEIC + MOV pairs) are saved as two separate items for now. The frontend builds download and share URLs on
   the page origin (`http://127.0.0.1:<port>/…`): `AuthenticatedDownloader` adds the `local-auth` cookie for
   the local server's port only (`LocalServerAccess`), otherwise the local server answers 403 (like
   `InAppDownloader.kt` on Android, which reads it from the web view's cookies).
@@ -183,8 +189,9 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 - **App Store screenshots**: on dedicated simulators ("iPhone 17 Pro Max" = 6.9", "iPad Pro 13-inch (M5)" = 13"), never
   the user's "iPhone 17 Pro"; `xcrun simctl status_bar <udid> override --time 9:41 …`. The web UI language follows the
   Nextcloud account setting, not iOS.
-- **Device photos on the simulator**: `xcrun simctl privacy … grant photos` did not pre-grant access here;
-  the prompt needs a tap. Add photos with `xcrun simctl addmedia` or drag and drop. `log stream` stops when
+- **Device photos on the simulator**: `xcrun simctl privacy … grant photos` writes TCC (`auth_value 2`) but PhotoKit
+  still reports `notDetermined`: the prompt needs a tap (ask the user). Saved downloads can be checked read-only in
+  `data/Media/PhotoData/Photos.sqlite` (`ZADDITIONALASSETATTRIBUTES.ZORIGINALFILENAME`, `ZGENERICALBUM.ZTITLE`). Add photos with `xcrun simctl addmedia` or drag and drop. `log stream` stops when
   the app is reinstalled: restart it.
   Do not relaunch the app while the user is using it in the simulator.
 - **Code-loading checks on the simulator** (`tools/fake-nextcloud/`): a fake Nextcloud in Node (`server.mjs`,
@@ -226,7 +233,7 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 Device photos, phase 2: local videos (`/video/full/{id}` with `Range`, then list videos), deletion
 (`/api/image/delete`, `PHAssetChangeRequest`), upload (`/api/upload/local`).
 
-Other candidates: album ZIP extraction to Photos,
+Other candidates: Live Photo pairs when saving downloads to Photos,
 self-signed certificate support, launch screen.
 
 ## Git

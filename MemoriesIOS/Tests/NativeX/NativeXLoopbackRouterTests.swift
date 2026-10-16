@@ -11,6 +11,7 @@ final class NativeXLoopbackRouterTests: XCTestCase {
         presented = []
         share = NativeXShareService(
             downloader: AuthenticatedDownloader(credentials: Fixtures.credentials),
+            photoLibrary: PhotoLibrary(),
             presentShareSheet: { [unowned self] items in presented.append(items) }
         )
         // No timeline attached (before the first load): no device photos.
