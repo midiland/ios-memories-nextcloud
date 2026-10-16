@@ -63,7 +63,7 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
 | `Auth/` | `Credentials`, `CredentialStore` (Keychain), `LoginFlowV2`, `SessionStore` (global state, ObservableObject; cleanup injected) |
 | `Network/` | `ServerURL` (input normalization → `…/index.php/apps/memories/`), `NextcloudClient` (describe, Login Flow v2, revocation), `AuthenticatedDownloader`, `URLRequest(url:authorizedFor:)` (credentials only for the account's host), models, `SemanticVersion` |
 | `Offline/` | `AssetManifest` (describe `?manifest=1`), `DSSEEnvelope` + `TUFTargets` (Memories 10 manifest format), `ManifestVerifier` (Ed25519 via CryptoKit, both formats), `ManifestPin` + `ManifestPinStore` (rollback protection per account), `SnapshotStore` (Application Support/offline), `AppWebPath` (real folder of the app's static files, read from `_oc_appswebroots`: the manifest hrefs always say `/apps/memories/js/`, which 404s for apps in `custom_apps` (AIO, Docker image) or under a web root), `AssetSyncer` (SHA-256 + TUF length, 8 in parallel, reuse), `ShellPage` (local HTML), `CSSPathRewriter`, `OfflineAppLoader` (orchestration; answers the web layer's questions about the local server) |
-| `LocalServer/` | Custom HTTP/1.1 server on Network.framework: `LocalHTTPServer` (127.0.0.1:62079), `HTTPConnection`, `HTTPTypes`, `LocalRouter` (routing modeled on `ServerRouter.kt`), `StaticFiles`, `UpstreamProxy` (streaming relay to Nextcloud) |
+| `LocalServer/` | Custom HTTP/1.1 server on Network.framework: `LocalHTTPServer` (127.0.0.1:62079), `LocalServerAccess` (port + `local-auth` secret for native requests), `HTTPConnection`, `HTTPTypes`, `LocalRouter` (routing modeled on `ServerRouter.kt`), `StaticFiles`, `UpstreamProxy` (streaming relay to Nextcloud) |
 | `Web/` | `WebViewModel` (owns the WKWebView), `WebViewFactory` (config), `WebNavigationHandler` (delegates), `NavigationPolicy` (pure navigation rules), `BackNavigationRule`, `MemoriesWebView` (UIViewRepresentable), `DebugAutomation` (Debug only) |
 | `Views/` | `LoginView`, `SafariView`, `WebContainerView` (themed background + toasts), `ErrorView`, `ToastView`, `BackButton`, `DownloadProgressView`, `SharePresenter` |
 | `Photos/` | Device photos (PhotoKit, read-only): `LocalTimeline` (actor answering the local timeline routes, implements `LocalMediaProvider`), `PhotoLibrary` (permission, folders = library + albums, assets, original file name/size), `PhotoMatcher` (pure: device ↔ server deduplication), `PhotoIDs` (auid/buid/dayid/fileid like the server), `ServerDayClient` (server day photos, cached), `RemoteCopyStore` (known matches per account), `LocalImageRenderer` (JPEG), `LocalPhotoSettings`, models |
@@ -151,7 +151,10 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
   `UploadMenuItem.vue`) until upload is implemented on iOS. The "Upload files" action of the Folders view is not hidden.
 - `playVideo`/`playVideo2`/`destroyVideo` **not exposed**: the frontend keeps its web player.
 - `playTouchSound` = haptic feedback; `downloadFromUrl` = download then share sheet
-  (credentials are only ever sent to the account's host).
+  (credentials are only ever sent to the account's host). The frontend builds download and share URLs on
+  the page origin (`http://127.0.0.1:<port>/…`): `AuthenticatedDownloader` adds the `local-auth` cookie for
+  the local server's port only (`LocalServerAccess`), otherwise the local server answers 403 (like
+  `InAppDownloader.kt` on Android, which reads it from the web view's cookies).
 - Status bar: its style follows the system theme, not `isDark` (known limitation when the forced
   Nextcloud theme differs from the iOS theme).
 - `SFSafariViewController` rather than `ASWebAuthenticationSession` (Login Flow v2 has no callback scheme).

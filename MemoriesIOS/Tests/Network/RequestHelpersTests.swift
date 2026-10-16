@@ -21,6 +21,31 @@ final class RequestHelpersTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: "User-Agent"), AppConstants.userAgentSuffix)
     }
 
+    // MARK: - Local server (downloads built by the frontend on the page origin)
+
+    private let local = LocalServerAccess(port: 62079, secret: "s3cr3t")
+
+    func testLocalServerURLsCarryTheAccessCookieButNoCredentials() {
+        let url = URL(string: "http://127.0.0.1:62079/index.php/apps/memories/api/stream/78?attachment=1")!
+        let request = URLRequest(url: url, authorizedFor: Fixtures.credentials, localServer: local)
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Cookie"), "local-auth=s3cr3t")
+        XCTAssertNil(request.value(forHTTPHeaderField: "Authorization"), "the local server adds them upstream")
+    }
+
+    func testAccessCookieOnlyGoesToTheLocalServerPort() {
+        for text in ["http://127.0.0.1:8080/x", "http://127.0.0.1/x", "https://127.0.0.1:62079/x",
+                     "http://evil.example.org:62079/x", "https://cloud.example.com/x"] {
+            let request = URLRequest(url: URL(string: text)!, authorizedFor: Fixtures.credentials, localServer: local)
+            XCTAssertNil(request.value(forHTTPHeaderField: "Cookie"), text)
+        }
+        XCTAssertTrue(local.covers(URL(string: "http://localhost:62079/x")!))
+    }
+
+    func testNoAccessCookieWithoutALocalServer() {
+        let request = URLRequest(url: URL(string: "http://127.0.0.1:62079/x")!, authorizedFor: Fixtures.credentials)
+        XCTAssertNil(request.value(forHTTPHeaderField: "Cookie"))
+    }
+
     func testUserAgentAdvertisesNativeMode() {
         XCTAssertTrue(AppConstants.userAgentSuffix.hasPrefix("MemoriesNative/\(AppConstants.nativeXVersion) MemoriesIOS/"))
     }

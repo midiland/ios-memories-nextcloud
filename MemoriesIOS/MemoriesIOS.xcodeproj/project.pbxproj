@@ -43,6 +43,7 @@
 		57F2EBAA933BF2B7C6F1AB5B /* Data+SHA256.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2979A6B3F3F1369986AB59 /* Data+SHA256.swift */; };
 		58045639F3E2058DE81B2566 /* NextcloudModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28D34FFC28713D84A4787A19 /* NextcloudModels.swift */; };
 		5809D13775AFD39232F5A34C /* NextcloudClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE9D8A0862DCDCCF8E3C1D83 /* NextcloudClient.swift */; };
+		58814F213BD3C92E5E74CE54 /* LocalServerAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1075A28F45BCCDCDACC40351 /* LocalServerAccess.swift */; };
 		616C5F2497D8EE2F45C9EF52 /* NativeXArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A15C8DB79A413AF2B5057A /* NativeXArguments.swift */; };
 		6172EF24BB56904E610101BD /* PhotoIDsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAF18CBE1FE0F77D444FD6 /* PhotoIDsTests.swift */; };
 		62CE9D8F13F0BA3FD5B72CA1 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */; };
@@ -144,6 +145,7 @@
 		0BAF48A1102A5E5C47A366B0 /* NavigationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationPolicy.swift; sourceTree = "<group>"; };
 		0C209FB55BFAA8E96027D1BC /* Memories.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Memories.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DCE51A11A078EEDA410F981 /* LocalFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFolder.swift; sourceTree = "<group>"; };
+		1075A28F45BCCDCDACC40351 /* LocalServerAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalServerAccess.swift; sourceTree = "<group>"; };
 		10E8BEE182634C3C7239875F /* PhotoIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoIDs.swift; sourceTree = "<group>"; };
 		12DE8CF992978EC7BF336714 /* ShellPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellPage.swift; sourceTree = "<group>"; };
 		18EB7B76BF92DD579502785A /* RemoteCopyStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCopyStoreTests.swift; sourceTree = "<group>"; };
@@ -304,6 +306,7 @@
 				2586D18FD65C760329E8F42D /* LocalHTTPServer.swift */,
 				4327162AD69815CE61889C48 /* LocalMediaProvider.swift */,
 				BD6CEED9FA8725E31B565022 /* LocalRouter.swift */,
+				1075A28F45BCCDCDACC40351 /* LocalServerAccess.swift */,
 				ABEB41FB80250E35047AAD3C /* StaticFiles.swift */,
 				5553864E4F497C37B3A11B42 /* UpstreamProxy.swift */,
 			);
@@ -737,6 +740,7 @@
 				FAEA500499CC7F026668C2B7 /* LocalPhotoSettings.swift in Sources */,
 				69BE68CCC83FDC44390396A8 /* LocalReloadRule.swift in Sources */,
 				88F8201C703F476EB24C969F /* LocalRouter.swift in Sources */,
+				58814F213BD3C92E5E74CE54 /* LocalServerAccess.swift in Sources */,
 				28D05460CD4DC54AA4189F95 /* LocalTimeline.swift in Sources */,
 				BD199E2CDC70374F6176ED32 /* Log.swift in Sources */,
 				2EADC08FB615EB3066C88F65 /* LoginFlowV2.swift in Sources */,
@@ -835,7 +839,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1000007;
+				CURRENT_PROJECT_VERSION = 1000008;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -968,7 +972,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1000007;
+				CURRENT_PROJECT_VERSION = 1000008;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

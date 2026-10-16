@@ -75,7 +75,9 @@ final class WebViewModel: ObservableObject {
         offline = OfflineAppLoader(credentials: credentials, server: server, media: localPhotos)
         nativeX = NativeXController(
             share: NativeXShareService(
-                downloader: AuthenticatedDownloader(credentials: credentials),
+                downloader: AuthenticatedDownloader(credentials: credentials) { [weak server] in
+                    server.map { LocalServerAccess(port: $0.port, secret: $0.secret) }
+                },
                 presentShareSheet: SharePresenter.present
             ),
             photos: NativeXPhotoService(library: library)
