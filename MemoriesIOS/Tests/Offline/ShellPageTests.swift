@@ -1,3 +1,4 @@
+import JavaScriptCore
 import XCTest
 @testable import Memories
 
@@ -36,5 +37,52 @@ final class ShellPageTests: XCTestCase {
         XCTAssertTrue(csp.contains("script-src 'self' blob: 'nonce-N0NCE'"))
         XCTAssertTrue(csp.contains("object-src 'none'"))
         XCTAssertFalse(csp.contains("'unsafe-eval'"))
+    }
+
+    // MARK: - window.OC (album share / collaborators dialogs)
+
+    func testDefinesTheOCGlobalBeforeTheApp() throws {
+        let page = try html()
+        let global = try XCTUnwrap(page.range(of: ShellPage.ocGlobal))
+        let entry = try XCTUnwrap(page.range(of: "memories-main.js\" defer"))
+        XCTAssertLessThan(global.lowerBound, entry.lowerBound)
+    }
+
+    /// Runs the injected script, then `expression`, in a page-like JavaScript context.
+    private func evaluate(_ expression: String, existing: String? = nil) -> JSValue? {
+        let context = JSContext()!
+        context.evaluateScript("var window = this;")
+        if let existing { context.evaluateScript(existing) }
+        context.evaluateScript(ShellPage.ocGlobal)
+        return context.evaluateScript(expression)
+    }
+
+    func testCurrentFrontendCodeNoLongerThrows() {
+        // AlbumCollaborators.vue today (line 209).
+        let value = evaluate("parseInt(window.OC.config['sharing.minSearchStringLength'], 10) || 0")
+        XCTAssertEqual(value?.toInt32(), 0)
+    }
+
+    func testUpstreamFixGivesTheSameResult() {
+        // The fix proposed upstream: same value with or without the injected global.
+        let fixed = "parseInt(window.OC?.config?.['sharing.minSearchStringLength'], 10) || 0"
+        XCTAssertEqual(evaluate(fixed)?.toInt32(), 0)
+        let withoutGlobal = JSContext()!
+        withoutGlobal.evaluateScript("var window = this;")
+        XCTAssertEqual(withoutGlobal.evaluateScript(fixed)?.toInt32(), 0)
+    }
+
+    func testOptionalReadsBehaveAsWithoutOC() {
+        // Other reads in the frontend and @nextcloud libraries all use optional chaining.
+        XCTAssertTrue(evaluate("window.OC?.config?.version")?.isUndefined ?? false)
+        XCTAssertEqual(evaluate("window.OC?.webroot || ''")?.toString(), "")
+        XCTAssertTrue(evaluate("window.OC?._eventBus")?.isUndefined ?? false)
+        XCTAssertTrue(evaluate("window.OC?.appConfig?.files?.max_chunk_size")?.isUndefined ?? false)
+    }
+
+    func testKeepsAnExistingOCObject() {
+        let existing = "window.OC = { config: { 'sharing.minSearchStringLength': '3' }, debug: true };"
+        XCTAssertEqual(evaluate("parseInt(window.OC.config['sharing.minSearchStringLength'], 10)", existing: existing)?.toInt32(), 3)
+        XCTAssertEqual(evaluate("window.OC.debug", existing: existing)?.toBool(), true)
     }
 }

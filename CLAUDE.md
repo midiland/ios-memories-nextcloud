@@ -148,6 +148,11 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
   fragment (viewer, dialogs). For consistency, `nativex.js` hides the web back arrows of the cluster headers
   (`*TopMatter.vue`, matched by `.arrow-left-icon`), which the frontend only shows inside an item.
   The left-edge swipe does the same.
+- **Minimal `window.OC` in the shell page** (`ShellPage.ocGlobal`): `AlbumCollaborators.vue` reads
+  `window.OC.config[…]` without optional chaining, which emptied the album share and "add collaborators" dialogs
+  (issues #5, #6; Android has the same gap; reported upstream as pulsejet/memories#1748). The object is empty
+  and never replaces an existing one, so every `window.OC?.…` read, including the proposed upstream fix, behaves
+  as without it (`ShellPageTests` runs both forms in JavaScriptCore). Remove once servers ship the fix.
 - **Upload button hidden**: `nativex.js` hides the mobile header's upload button (`.upload-menu`,
   `UploadMenuItem.vue`) until upload is implemented on iOS. The "Upload files" action of the Folders view is not hidden.
 - `playVideo`/`playVideo2`/`destroyVideo` **not exposed**: the frontend keeps its web player.
@@ -179,6 +184,8 @@ Settings changed in Xcode's UI land in the `.pbxproj` only and are lost on the n
   → one line per local server request (`GET /path → status`) plus offline-mode events.
 - **Automated navigation** (Debug): `xcrun simctl launch "iPhone 17 Pro" fr.midiland.memories -MXRoute /thisday -MXBackAfter 5`
   → opens a route through `_m.router.push`, then presses the back button (`DebugAutomation.swift`).
+  Memories 10 (Vue 3) no longer exposes `_m.router`, so `-MXRoute` does nothing there: navigate in `-MXEval` by
+  clicking links instead (e.g. `document.querySelector('a[href$="/albums"]').click()`).
   Add `-MXClick .cluster` to click the first matching element in between (e.g. open a person).
   `-MXEval "<js>"` logs the result of an (async) expression, e.g. a bridge call:
   `-MXEval "JSON.stringify(await fetch(location.origin + '/api/days').then(r => r.json()))"`

@@ -57,6 +57,7 @@ enum ShellPage {
         <div id="content"></div>
         <script nonce="\(nonce)">
         window._oc_webroot = \(root); window._oc_appswebroots = {'memories': \(root) + '/apps/memories'};
+        \(ocGlobal)
         window._oc_capabilities = {
           'files': {
             'forbidden_filename_characters': ['/', '\\\\'],
@@ -71,6 +72,14 @@ enum ShellPage {
         </html>
         """
     }
+
+    /// Minimal `window.OC`, normally defined by the Nextcloud page. `AlbumCollaborators.vue` reads
+    /// `window.OC.config[…]` without optional chaining, which breaks the album share and "add
+    /// collaborators" dialogs in the native apps (midiland/ios-memories-nextcloud#5, #6; the Android
+    /// shell has the same gap). Empty and never replacing an existing object: every `window.OC?.…`
+    /// read (including the upstream fix `window.OC?.config?.[…]`) gives the same result as without it.
+    /// Reported upstream: pulsejet/memories#1748. Remove once servers ship a Memories version with the fix.
+    static let ocGlobal = "window.OC = window.OC || {}; window.OC.config = window.OC.config || {};"
 
     /// Escaping for an HTML attribute.
     private static func escape(_ text: String) -> String {
