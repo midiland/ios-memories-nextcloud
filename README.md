@@ -112,6 +112,22 @@ xcodebuild -project MemoriesIOS/MemoriesIOS.xcodeproj -scheme MemoriesIOS \
 `project.yml` is the source of truth; regenerate the Xcode project after adding or removing files.
 To run on a device, select your development team under *Signing & Capabilities*.
 
+## For Developers
+
+Full documentation is available in the [`/docs`](./docs/) directory:
+
+| Guide | Description |
+|-------|-------------|
+| [Development Setup](./docs/DEVELOPMENT.md) | Build commands, project configuration, and tool setup |
+| [Architecture](./docs/ARCHITECTURE.md) | Technical architecture, data flows, and design decisions |
+| [Testing Guide](./docs/TESTING.md) | Unit tests, debugging tools, fake Nextcloud, Docker setup |
+| [Releasing](./docs/RELEASING.md) | Versioning scheme, release process, and build numbers |
+| [Contributing](./docs/CONTRIBUTING.md) | Language policy, localization, and Git guidelines |
+| [Roadmap](./docs/ROADMAP.md) | Planned features and next steps |
+| [Android Analysis](./docs/ANALYSIS.md) | Deep dive into the Android app |
+
+For AI assistants: See [`CLAUDE.md`](./CLAUDE.md) for optimized context.
+
 ## How it works
 
 ```
