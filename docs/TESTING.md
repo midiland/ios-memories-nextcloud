@@ -23,6 +23,21 @@ xcodebuild -project MemoriesIOS/MemoriesIOS.xcodeproj -scheme MemoriesIOS \
 - **Add tests**: With every change to pure logic
 - **Special case**: `CredentialStoreTests` uses its own Keychain service and **never touches the real account**
 
+### Test Rules
+- **Bug fix**: add a regression test that fails without the fix.
+- **New logic**: cover the nominal case and edge cases (empty input, invalid format, unrelated input left unchanged).
+- **Naming**: `MemoriesIOS/Tests/<Folder>/<Name>Tests.swift` for `MemoriesIOS/Sources/<Folder>/<Name>.swift`, methods `test<Behavior>`.
+- **Assertions**: compare whole values (e.g. the full URL), not only some of their parts.
+- **Isolation**: `setUp()` runs before each test; never rely on state left by another test.
+- **Ship with the fix**: tests go in the same commit as the code (the pre-push hook rejects separate `test:` commits).
+
+### Pre-commit Test Check (optional)
+`scripts/pre-commit-test-check.sh` checks staged files under `MemoriesIOS/Sources/`: it fails when one has no test file, and warns when its test file exists but is not staged.
+```bash
+ln -sf ../../scripts/pre-commit-test-check.sh .git/hooks/pre-commit
+```
+Use `git commit --no-verify` for code that is not unit-testable (SwiftUI views, platform glue).
+
 ---
 
 ## 📝 Logging (Debug Builds)
