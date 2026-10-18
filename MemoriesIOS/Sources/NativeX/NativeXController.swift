@@ -25,10 +25,10 @@ final class NativeXController: NSObject {
     let photos: NativeXPhotoService
     private let router: NativeXLoopbackRouter
 
-    init(share: NativeXShareService, photos: NativeXPhotoService) {
+    init(share: NativeXShareService, photos: NativeXPhotoService, serverOrigin: URL) {
         self.share = share
         self.photos = photos
-        router = NativeXLoopbackRouter(share: share, photos: photos)
+        router = NativeXLoopbackRouter(share: share, photos: photos, serverOrigin: serverOrigin)
     }
 
     // MARK: - Installation

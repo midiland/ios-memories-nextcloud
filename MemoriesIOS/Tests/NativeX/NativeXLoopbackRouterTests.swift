@@ -15,7 +15,8 @@ final class NativeXLoopbackRouterTests: XCTestCase {
             presentShareSheet: { [unowned self] items in presented.append(items) }
         )
         // No timeline attached (before the first load): no device photos.
-        router = NativeXLoopbackRouter(share: share, photos: NativeXPhotoService(library: PhotoLibrary()))
+        let serverOrigin = Fixtures.credentials.server.origin
+        router = NativeXLoopbackRouter(share: share, photos: NativeXPhotoService(library: PhotoLibrary()), serverOrigin: serverOrigin)
     }
 
     private func get(_ path: String, method: String = "GET") async -> NativeXResponse {
@@ -45,6 +46,33 @@ final class NativeXLoopbackRouterTests: XCTestCase {
         XCTAssertEqual(response.status, 200)
         XCTAssertEqual(presented.count, 1)
         XCTAssertEqual(presented.first?.first as? URL, URL(string: link))
+    }
+
+    func testShareURLReplacesLocalhostWithServerOrigin() async throws {
+        // Test that localhost URLs are replaced with the actual server origin
+        let serverOrigin = Fixtures.credentials.server.origin
+        let localLink = "http://127.0.0.1:62079/index.php/apps/memories/a/abc"
+        let once = try XCTUnwrap(localLink.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
+        let twice = try XCTUnwrap(once.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
+        
+        // Create router with server origin
+        let testRouter = NativeXLoopbackRouter(
+            share: share,
+            photos: NativeXPhotoService(library: PhotoLibrary()),
+            serverOrigin: serverOrigin
+        )
+        
+        let response = await testRouter.handle(method: "GET", url: URL(string: "http://127.0.0.1/api/share/url/" + twice)!)
+        XCTAssertEqual(response.status, 200)
+        XCTAssertEqual(presented.count, 2) // Previous test + this one
+        
+        // Verify the last presented link uses server origin, not localhost
+        let lastPresented = presented.last?.first as? URL
+        XCTAssertNotNil(lastPresented)
+        XCTAssertNotEqual(lastPresented?.host, "127.0.0.1")
+        XCTAssertNotEqual(lastPresented?.host, "localhost")
+        XCTAssertEqual(lastPresented?.host, serverOrigin.host)
+        XCTAssertEqual(lastPresented?.scheme, serverOrigin.scheme)
     }
 
     func testShareBlobsWithoutStagedFilesFails() async {

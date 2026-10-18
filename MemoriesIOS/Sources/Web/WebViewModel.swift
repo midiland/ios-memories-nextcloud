@@ -81,7 +81,8 @@ final class WebViewModel: ObservableObject {
                 photoLibrary: library,
                 presentShareSheet: SharePresenter.present
             ),
-            photos: NativeXPhotoService(library: library)
+            photos: NativeXPhotoService(library: library),
+            serverOrigin: credentials.server.origin
         )
         webView = WebViewFactory.make(bridge: nativeX)
         nativeX.host = self
