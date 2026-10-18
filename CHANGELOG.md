@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fix public album share link using localhost (127.0.0.1) instead of the actual Nextcloud server domain. Share links now correctly point to the real server URL and are usable by external users. (Issue #7)
+- **Setup**: The "Set up automatic upload" button now opens the Nextcloud app on the App Store instead of the Android app on Google Play. (Issue #8)
 
 ---
 

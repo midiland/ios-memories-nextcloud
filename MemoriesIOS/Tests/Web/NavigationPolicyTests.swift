@@ -32,4 +32,15 @@ final class NavigationPolicyTests: XCTestCase {
         let other = url("https://www.openstreetmap.org/")
         XCTAssertEqual(policy.decide(other), .external(other))
     }
+
+    func testNextcloudPlayStoreLinkOpensTheAppStore() {
+        let play = url("https://play.google.com/store/apps/details?id=com.nextcloud.client")
+        let appStore = url("https://apps.apple.com/app/nextcloud/id1125420102")
+        XCTAssertEqual(policy.decide(play), .external(appStore))
+    }
+
+    func testOtherPlayStoreLinksAreKept() {
+        let play = url("https://play.google.com/store/apps/details?id=gallery.memories")
+        XCTAssertEqual(policy.decide(play), .external(play))
+    }
 }
