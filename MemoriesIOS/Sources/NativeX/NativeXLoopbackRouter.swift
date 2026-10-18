@@ -9,29 +9,17 @@ struct NativeXLoopbackRouter {
     let photos: NativeXPhotoService
     let serverOrigin: URL
 
-    /// Replaces localhost (127.0.0.1) URLs with the actual Nextcloud server origin.
-    /// This fixes issue #7 where public share links were pointing to the local server
-    /// instead of the real Nextcloud server.
-    /// https://github.com/midiland/ios-memories-nextcloud/issues/7
-    private func replaceLocalhostWithServerOrigin(_ url: URL) -> URL {
-        // If the URL already uses the correct server, return as-is
-        if url.host == serverOrigin.host && url.scheme == serverOrigin.scheme {
-            return url
-        }
-        
-        // If the URL is localhost or 127.0.0.1, replace with serverOrigin
-        if url.host == "127.0.0.1" || url.host == "localhost" {
-            var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-            components?.scheme = serverOrigin.scheme
-            components?.host = serverOrigin.host
-            components?.port = serverOrigin.port
-            if let correctedURL = components?.url {
-                return correctedURL
-            }
-        }
-        
-        // For relative URLs or other cases, append to serverOrigin
-        return serverOrigin.appendingPathComponent(url.absoluteString)
+    /// Public form of a link built by the frontend: it runs on the local server, so links to
+    /// itself point to `127.0.0.1`; they are moved to the real server origin (same path, since
+    /// the local server mirrors the server paths). Other links are returned unchanged.
+    func publicURL(_ url: URL) -> URL {
+        guard url.host == LocalHTTPServer.host || url.host == "localhost",
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
+        else { return url }
+        components.scheme = serverOrigin.scheme
+        components.host = serverOrigin.host
+        components.port = serverOrigin.port
+        return components.url ?? url
     }
 
     func handle(method: String, url: URL) async -> NativeXResponse {
@@ -60,9 +48,7 @@ struct NativeXLoopbackRouter {
             guard let text = p[2].removingPercentEncoding?.removingPercentEncoding,
                   let target = URL(string: text)
             else { return .error }
-            // Fix issue #7: replace localhost with actual server origin
-            let correctedTarget = replaceLocalhostWithServerOrigin(target)
-            share.shareLink(correctedTarget)
+            share.shareLink(publicURL(target))
             return .json("{}")
 
         // Sharing files staged by `setShareBlobs`.

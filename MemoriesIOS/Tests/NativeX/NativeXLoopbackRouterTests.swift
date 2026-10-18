@@ -38,41 +38,49 @@ final class NativeXLoopbackRouterTests: XCTestCase {
         XCTAssertEqual(response.body, #"{"confirms":false,"count":0}"#)
     }
 
-    func testShareURLPresentsTheDecodedLink() async throws {
-        let link = "https://cloud.example.com/s/abc?x=1"
+    /// Shares `link` through the route (double-encoded like the frontend) and returns the presented URL.
+    private func sharedURL(_ link: String, serverOrigin: URL? = nil) async throws -> URL? {
+        if let serverOrigin {
+            router = NativeXLoopbackRouter(share: share, photos: router.photos, serverOrigin: serverOrigin)
+        }
         let once = try XCTUnwrap(link.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
         let twice = try XCTUnwrap(once.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
         let response = await get("/api/share/url/" + twice)
         XCTAssertEqual(response.status, 200)
         XCTAssertEqual(presented.count, 1)
-        XCTAssertEqual(presented.first?.first as? URL, URL(string: link))
+        return presented.first?.first as? URL
     }
 
-    func testShareURLReplacesLocalhostWithServerOrigin() async throws {
-        // Test that localhost URLs are replaced with the actual server origin
-        let serverOrigin = Fixtures.credentials.server.origin
-        let localLink = "http://127.0.0.1:62079/index.php/apps/memories/a/abc"
-        let once = try XCTUnwrap(localLink.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
-        let twice = try XCTUnwrap(once.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
-        
-        // Create router with server origin
-        let testRouter = NativeXLoopbackRouter(
-            share: share,
-            photos: NativeXPhotoService(library: PhotoLibrary()),
-            serverOrigin: serverOrigin
+    func testShareURLPresentsTheDecodedLink() async throws {
+        let link = "https://cloud.example.com/s/abc?x=1"
+        let shared = try await sharedURL(link)
+        XCTAssertEqual(shared, URL(string: link))
+    }
+
+    func testShareURLMovesLocalLinksToTheServerOrigin() async throws {
+        let path = "/nextcloud/index.php/apps/memories/a/abc?x=1#top"
+        let expected = URL(string: "https://cloud.example.com" + path)
+        for host in ["http://127.0.0.1:62079", "http://127.0.0.1", "http://localhost:62079"] {
+            presented = []
+            let shared = try await sharedURL(host + path)
+            XCTAssertEqual(shared, expected, host)
+        }
+    }
+
+    func testShareURLUsesTheServerPort() async throws {
+        let shared = try await sharedURL(
+            "http://127.0.0.1:62079/index.php/s/abc",
+            serverOrigin: try XCTUnwrap(URL(string: "http://cloud.example.com:8080"))
         )
-        
-        let response = await testRouter.handle(method: "GET", url: URL(string: "http://127.0.0.1/api/share/url/" + twice)!)
-        XCTAssertEqual(response.status, 200)
-        XCTAssertEqual(presented.count, 2) // Previous test + this one
-        
-        // Verify the last presented link uses server origin, not localhost
-        let lastPresented = presented.last?.first as? URL
-        XCTAssertNotNil(lastPresented)
-        XCTAssertNotEqual(lastPresented?.host, "127.0.0.1")
-        XCTAssertNotEqual(lastPresented?.host, "localhost")
-        XCTAssertEqual(lastPresented?.host, serverOrigin.host)
-        XCTAssertEqual(lastPresented?.scheme, serverOrigin.scheme)
+        XCTAssertEqual(shared, URL(string: "http://cloud.example.com:8080/index.php/s/abc"))
+    }
+
+    func testShareURLKeepsOtherHostsUnchanged() async throws {
+        for link in ["https://other.example.com/s/abc?x=1", "http://cloud.example.com/s/abc"] {
+            presented = []
+            let shared = try await sharedURL(link)
+            XCTAssertEqual(shared, URL(string: link), link)
+        }
     }
 
     func testShareBlobsWithoutStagedFilesFails() async {
