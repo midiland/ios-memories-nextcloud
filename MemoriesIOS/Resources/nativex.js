@@ -48,8 +48,9 @@
   // - the web back arrows of the cluster headers (*TopMatter.vue: person, place, tag, album):
   //   the app shows a single native back button on every page that needs one
   //   (BackNavigationRule.swift). Matched by icon, not by the translated "Back" label;
-  // - the upload button of the mobile header (UploadMenuItem.vue): upload is not implemented
-  //   on iOS yet. Remove this rule once it is;
+  // - the upload button of the mobile header (UploadMenuItem.vue) and the "Upload Local" action
+  //   of the selection bar (SelectionManager.vue, inline or in its overflow menu): upload is not
+  //   implemented on iOS yet. Remove these rules once it is;
   // - the logo of the mobile header (MobileHeader.vue) when the navigation sidebar is open
   //   (wide screens, e.g. iPad): the header spans the whole width and its logo covers the sidebar.
   const hideUnsupportedControls = () => {
@@ -57,6 +58,7 @@
     style.textContent = [
       ':is(.face-top-matter, .places-top-matter, .top-matter) > :has(.arrow-left-icon) { display: none !important; }',
       '#mobile-header .upload-menu { display: none !important; }',
+      ':is(.memories-top-bar button, li.action):has(.cloud-upload-icon) { display: none !important; }',
       'body:has(.app-navigation:not(.app-navigation--closed)) #mobile-header .logo { visibility: hidden; }',
     ].join('\n');
     document.head.appendChild(style);
