@@ -9,10 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+---
+
+## 1.0.0-rc.11
+
 ### Fixed
-- Fix public album share link using localhost (127.0.0.1) instead of the actual Nextcloud server domain. Share links now correctly point to the real server URL and are usable by external users. (Issue #7)
-- **Device photos**: The "Upload Local" action is no longer shown when selecting photos stored only on the device, since uploading from the app is not supported yet. (Issue #9)
+- **Sharing**: Public links for albums and photos now use the Nextcloud server address instead of the local address (127.0.0.1), so they work for anyone they are shared with. (Issue #7)
 - **Setup**: The "Set up automatic upload" button now opens the Nextcloud app on the App Store instead of the Android app on Google Play. (Issue #8)
+- **Device photos**: The "Upload Local" action is no longer shown when selecting photos stored only on the device, since uploading from the app is not supported yet. (Issue #9)
 
 ---
 
