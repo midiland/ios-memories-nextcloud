@@ -33,6 +33,27 @@ git push --no-verify
 
 ---
 
+### update-changelog.sh
+**Génère les entrées "Unreleased" du CHANGELOG depuis les commits conventionnels.**
+
+#### Fonctionnalités :
+- ✅ Mappe `feat:` / `fix:` / `perf:` vers les sections Added / Fixed / Changed
+- ✅ Le scope du commit devient la catégorie en gras (`fix(zoom): …` → `- **Zoom**: …`)
+- ✅ Extrait les références d'issues (`#12`, `Fixes #12`) → `(Issue #12)`
+- ✅ Ignore les commits non user-facing (`chore`, `docs`, `test`, `style`, `build`, `ci`, `refactor`)
+- ✅ Idempotent : une entrée déjà présente (même puce ou mêmes issues) n'est pas dupliquée
+
+#### Utilisation :
+```bash
+./scripts/update-changelog.sh                          # depuis le dernier tag
+./scripts/update-changelog.sh --dry-run                # aperçu sans modifier le fichier
+./scripts/update-changelog.sh v1.0.0-rc.10..HEAD       # plage explicite
+```
+
+À lancer après un commit `fix:`/`feat:`, ou en préparation d'une release.
+
+---
+
 ## 🎯 Alias Git Configurés
 
 ### squash-last
