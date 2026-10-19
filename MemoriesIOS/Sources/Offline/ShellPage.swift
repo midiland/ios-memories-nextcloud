@@ -46,7 +46,7 @@ enum ShellPage {
         <html>
         <head\(userAttribute)>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <title>Memories</title>
         \(links)
         <link href="/local/static/shell-overrides.css" rel="stylesheet">

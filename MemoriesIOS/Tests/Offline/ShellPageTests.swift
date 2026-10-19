@@ -32,6 +32,16 @@ final class ShellPageTests: XCTestCase {
         XCTAssertTrue(try html(user: nil).contains("<head>"))
     }
 
+    /// Issue #12: the WebView zooms the whole page (grid, top and bottom bars) on pinch.
+    /// The shell page must forbid user scaling: unlike mobile Safari, WKWebView honors
+    /// `user-scalable=no` / `maximum-scale=1`.
+    func testViewportMetaDisablesPinchZoom() throws {
+        let page = try html()
+        XCTAssertTrue(page.contains(
+            #"<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">"#
+        ))
+    }
+
     func testCSPAllowsOnlyTheNonceForInlineScripts() {
         let csp = ShellPage.csp(nonce: "N0NCE")
         XCTAssertTrue(csp.contains("script-src 'self' blob: 'nonce-N0NCE'"))
