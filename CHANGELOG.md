@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+- **Zoom**: Pinch-to-zoom no longer scales the whole app UI (photo grid, top bar and bottom navigation); the interface now always stays at its normal scale. (Issue #12)
+
 ---
 
 ## 1.0.0-rc.11
