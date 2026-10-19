@@ -33,6 +33,9 @@ final class WebViewModel: ObservableObject {
     @Published private(set) var showsUnverifiedUpdateBanner = false
     /// Whether the native back button is visible (pages without a web navigation bar, see `BackNavigationRule`).
     @Published private(set) var showsBackButton = false
+    /// The web photo viewer is open: the WebView extends over the safe areas (full screen,
+    /// issue #13) so a zoomed photo can use the whole screen.
+    @Published private(set) var viewerFullscreen = false
 
     let credentials: Credentials
     let webView: WKWebView
@@ -302,5 +305,9 @@ extension WebViewModel: NativeXHost {
 
     func nativeXEvaluate(_ script: String) {
         webView.evaluateJavaScript(script, completionHandler: nil)
+    }
+
+    func nativeXSetViewerFullscreen(_ fullscreen: Bool) {
+        viewerFullscreen = fullscreen
     }
 }

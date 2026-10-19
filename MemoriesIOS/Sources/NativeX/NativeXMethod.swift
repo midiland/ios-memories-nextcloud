@@ -19,4 +19,5 @@ enum NativeXMethod: String {
     case configHasMediaPermission  // () -> Boolean
     case getSyncStatus             // () -> Int (-1 if no sync)
     case setHasRemote              // (auids: String JSON, buids: String JSON, value: Boolean)
+    case setViewerFullscreen       // (fullscreen: Boolean) — iOS only: photo viewer open/close
 }

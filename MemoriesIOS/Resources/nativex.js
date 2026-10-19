@@ -66,6 +66,24 @@
   if (document.head) hideUnsupportedControls();
   else document.addEventListener('DOMContentLoaded', hideUnsupportedControls, { once: true });
 
+  // Photo viewer full screen (midiland/ios-memories-nextcloud#13): when the Memories
+  // viewer opens, the app extends the WebView over the safe areas so a zoomed photo
+  // can fill the whole screen. The viewer is the only full-screen context; the rest
+  // of the app keeps the safe-area layout (the web UI does not handle the top inset).
+  const watchViewerFullscreen = () => {
+    let fullscreen = false;
+    const check = () => {
+      const open = !!document.querySelector('.memories-viewer');
+      if (open !== fullscreen) {
+        fullscreen = open;
+        post('setViewerFullscreen', open);
+      }
+    };
+    new MutationObserver(check).observe(document.body, { childList: true, subtree: true });
+  };
+  if (document.body) watchViewerFullscreen();
+  else document.addEventListener('DOMContentLoaded', watchViewerFullscreen, { once: true });
+
   /** Cache update from the native side (evaluateJavaScript). */
   Object.defineProperty(window, '__nativexSetState', {
     value: (patch) => Object.assign(state, patch),

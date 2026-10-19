@@ -37,8 +37,17 @@ final class ShellPageTests: XCTestCase {
     /// `user-scalable=no` / `maximum-scale=1`.
     func testViewportMetaDisablesPinchZoom() throws {
         let page = try html()
+        XCTAssertTrue(page.contains("user-scalable=no"))
+        XCTAssertTrue(page.contains("maximum-scale=1"))
+    }
+
+    /// Issue #13: same viewport as the server-side patch (TemplateResponsePatch.php):
+    /// `viewport-fit=cover` lets the web viewport extend over the safe areas (Dynamic
+    /// Island, home indicator, landscape side insets) when the app goes full screen.
+    func testViewportMetaCoversSafeAreas() throws {
+        let page = try html()
         XCTAssertTrue(page.contains(
-            #"<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">"#
+            #"<meta name="viewport" content="width=device-width, viewport-fit=cover, initial-scale=1, minimum-scale=1.0, maximum-scale=1, user-scalable=no">"#
         ))
     }
 

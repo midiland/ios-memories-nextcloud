@@ -18,4 +18,7 @@ protocol NativeXHost: AnyObject {
 
     /// Runs a script in the page (state updates, events on the frontend's bus).
     func nativeXEvaluate(_ script: String)
+
+    /// The web photo viewer opened/closed: extend the WebView over the safe areas (issue #13).
+    func nativeXSetViewerFullscreen(_ fullscreen: Bool)
 }

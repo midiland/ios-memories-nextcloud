@@ -2,3 +2,23 @@ html, body {
     background-color: transparent !important;
     background-image: none !important
 }
+
+/* Photo viewer in full screen (issue #13): while the viewer is open, the app extends the
+   WebView over the safe areas; keep the viewer controls out of the Dynamic Island and the
+   side safe areas (landscape notch). The photo itself fills the whole screen. */
+body:has(.memories-viewer) .memories-viewer .top-bar,
+body:has(.memories-viewer) .memories-viewer .top-bar-left {
+    top: max(8px, env(safe-area-inset-top, 0px)) !important;
+}
+
+body:has(.memories-viewer) .memories-viewer .top-bar-left {
+    left: max(8px, env(safe-area-inset-left, 0px)) !important;
+}
+
+body:has(.memories-viewer) .memories-viewer .top-bar {
+    right: max(8px, env(safe-area-inset-right, 0px)) !important;
+}
+
+body:has(.memories-viewer) .memories-viewer .top-date {
+    top: max(15px, calc(15px + env(safe-area-inset-top, 0px))) !important;
+}

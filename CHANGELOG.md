@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Zoom**: Pinch-to-zoom no longer scales the whole app UI (photo grid, top bar and bottom navigation); the interface now always stays at its normal scale. (Issue #12)
+- **Photo viewer**: A zoomed photo now fills the whole screen, including the areas behind the Dynamic Island / status bar, the home indicator and the side safe areas in landscape; black bars no longer remain at the screen edges. The WebView switches to full screen only while the photo viewer is open. (Issue #13)
 
 ---
 

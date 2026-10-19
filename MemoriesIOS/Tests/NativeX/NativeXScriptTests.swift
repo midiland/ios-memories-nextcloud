@@ -19,15 +19,26 @@ final class NativeXScriptTests: XCTestCase {
         // Fake page: records bridge messages and real network calls.
         context.evaluateScript("""
             var window = globalThis;
-            var bridged = [], fetched = [], opened = [];
+            var bridged = [], fetched = [], opened = [], posted = [];
+            var observerCallbacks = [], domReady = [];
             window.webkit = { messageHandlers: {
-                nativex: { postMessage: () => {} },
+                nativex: { postMessage: (m) => posted.push(m) },
                 nativexAsync: { postMessage: (m) => {
                     bridged.push(m.url);
                     return Promise.resolve({ status: 200, contentType: 'application/json', body: '[]' });
                 } },
             } };
-            var document = { head: null, addEventListener: () => {} };
+            var document = {
+                head: { appendChild: () => {} },
+                body: null,
+                createElement: () => ({}),
+                querySelector: () => null,
+                addEventListener: (type, fn) => { if (type === 'DOMContentLoaded') domReady.push(fn); },
+            };
+            var MutationObserver = class {
+                constructor(cb) { observerCallbacks.push(cb); }
+                observe() {}
+            };
             window.fetch = (input) => { fetched.push(String(input)); return Promise.resolve(null); };
             function XMLHttpRequest() {}
             XMLHttpRequest.prototype.open = function (method, url) { opened.push(String(url)); };
@@ -80,6 +91,41 @@ final class NativeXScriptTests: XCTestCase {
     func testOtherHostsAreNotDiverted() {
         XCTAssertEqual(fetch("https://cloud.example.com/api/days"), .network)
         XCTAssertEqual(xhr("https://127.0.0.1.example.com/api/days"), .network)
+    }
+
+    // MARK: - Photo viewer full screen (issue #13)
+
+    /// The app extends the WebView over the safe areas while the web photo viewer is open:
+    /// `nativex.js` watches `.memories-viewer` entering/leaving the DOM and tells the app.
+    func testViewerFullscreenFollowsTheViewerDom() {
+        // Simulate DOM ready: the observer is installed (document.body exists).
+        context.evaluateScript("document.body = {}; domReady.forEach((f) => f())")
+        XCTAssertEqual(context.evaluateScript("observerCallbacks.length").toInt32(), 1)
+
+        // The viewer opens: full screen on.
+        context.evaluateScript("""
+            posted = [];
+            document.querySelector = (s) => (s === '.memories-viewer' ? {} : null);
+            observerCallbacks.forEach((cb) => cb());
+            """)
+        XCTAssertEqual(
+            context.evaluateScript("JSON.stringify(posted)").toString(),
+            #"[{"method":"setViewerFullscreen","args":[true]}]"#
+        )
+
+        // No duplicate message while the viewer stays open.
+        context.evaluateScript("posted = []; observerCallbacks.forEach((cb) => cb())")
+        XCTAssertEqual(context.evaluateScript("posted.length").toInt32(), 0)
+
+        // The viewer closes: full screen off.
+        context.evaluateScript("""
+            document.querySelector = () => null;
+            observerCallbacks.forEach((cb) => cb());
+            """)
+        XCTAssertEqual(
+            context.evaluateScript("JSON.stringify(posted)").toString(),
+            #"[{"method":"setViewerFullscreen","args":[false]}]"#
+        )
     }
 
     // MARK: - Helpers

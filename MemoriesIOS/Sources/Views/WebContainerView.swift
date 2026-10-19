@@ -29,11 +29,16 @@ struct WebContainerView: View {
             background.ignoresSafeArea()
             VStack(spacing: 0) {
                 // Above the web view rather than over it: it must not hide the Memories header.
-                if model.showsUnverifiedUpdateBanner && model.state == .ready {
+                // Hidden while the photo viewer is open: it would sit over the full-screen photo.
+                if model.showsUnverifiedUpdateBanner && model.state == .ready && !model.viewerFullscreen {
                     UnverifiedUpdateBanner(dismiss: model.dismissUnverifiedUpdateBanner)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
+                // Full screen only while the photo viewer is open (issue #13): a zoomed photo
+                // then uses the whole screen, safe areas included. The rest of the app keeps
+                // the safe-area layout (the web UI does not handle the top inset).
                 MemoriesWebView(model: model)
+                    .ignoresSafeArea(model.viewerFullscreen ? .all : [])
             }
 
             switch model.state {
@@ -49,7 +54,8 @@ struct WebContainerView: View {
                 EmptyView()
             }
 
-            if model.showsBackButton && model.state == .ready {
+            // Hidden while the photo viewer is open: the viewer has its own back button.
+            if model.showsBackButton && model.state == .ready && !model.viewerFullscreen {
                 BackButton(action: model.goBack)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .transition(.opacity)

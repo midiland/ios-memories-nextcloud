@@ -115,6 +115,8 @@ extension NativeXController: WKScriptMessageHandler, WKScriptMessageHandlerWithR
             photos.setFolders(json: args.string(0))
         case .setHasRemote:
             photos.setHasRemote(auidsJSON: args.string(0), buidsJSON: args.string(1), value: args.bool(2))
+        case .setViewerFullscreen:
+            host?.nativeXSetViewerFullscreen(args.bool(0))
         case .isNative, .configGetLocalFolders, .configHasMediaPermission, .getSyncStatus,
              .playVideo, .playVideo2, .destroyVideo:
             break // synchronous (served by the JS cache) or not exposed
