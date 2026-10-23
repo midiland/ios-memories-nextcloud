@@ -64,7 +64,8 @@ struct DownloadProgressBanner: View {
         .accessibilityAddTraits(.updatesFrequently)
     }
 
-    private var iconName: String {
+    /// Internal for tests (issue #14).
+    var iconName: String {
         switch progress.phase {
         case .downloading: return "arrow.down.circle.fill"
         case .extracting: return "doc.zipper"
@@ -72,7 +73,8 @@ struct DownloadProgressBanner: View {
         }
     }
 
-    private var phaseText: String {
+    /// Internal for tests (issue #14).
+    var phaseText: String {
         switch progress.phase {
         case .downloading: return String(localized: "Downloading…")
         case .extracting: return String(localized: "Extracting…")
@@ -80,7 +82,8 @@ struct DownloadProgressBanner: View {
         }
     }
 
-    private var accessibilityText: String {
+    /// Internal for tests (issue #14).
+    var accessibilityText: String {
         let base = progress.title ?? String(localized: "Downloading…")
         let phase = phaseText
         if progress.total > 0 {

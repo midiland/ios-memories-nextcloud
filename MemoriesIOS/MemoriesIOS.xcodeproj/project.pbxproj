@@ -146,6 +146,7 @@
 		302B64A423A9431183989A3B /* DownloadProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */; };
 		2036BAA544BE483E987919E3 /* NativeXShareServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */; };
 		2EA686C23B6E4903829C9A20 /* DownloadProgressBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E467FB58E9EB456D9B9C68BB /* DownloadProgressBanner.swift */; };
+		6BBEBB2E8CFC41239E4C162B /* DownloadProgressViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E5BE85787D9460D844EA312 /* DownloadProgressViewTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -301,6 +302,7 @@
 		7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressTests.swift; sourceTree = "<group>"; };
 		960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXShareServiceTests.swift; sourceTree = "<group>"; };
 		E467FB58E9EB456D9B9C68BB /* DownloadProgressBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressBanner.swift; sourceTree = "<group>"; };
+		8E5BE85787D9460D844EA312 /* DownloadProgressViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressViewTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -342,6 +344,7 @@
 			isa = PBXGroup;
 			children = (
 				7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */,
+				8E5BE85787D9460D844EA312 /* DownloadProgressViewTests.swift */,
 				22273610CF29B56116C9EC39 /* DownloadToPhotosTests.swift */,
 				794FCA2DAF948B3E1FD66D97 /* ZipExtractorTests.swift */,
 			);
@@ -774,6 +777,7 @@
 				EAEFED0801470FD0D15C08B5 /* DeviceSetupRuleTests.swift in Sources */,
 				D56FD06F28F34AB63B11120F /* DownloadToPhotosTests.swift in Sources */,
 				302B64A423A9431183989A3B /* DownloadProgressTests.swift in Sources */,
+				6BBEBB2E8CFC41239E4C162B /* DownloadProgressViewTests.swift in Sources */,
 				6AF336532974C7CFEA37D89A /* Fixtures.swift in Sources */,
 				49BB9D06CD58C29DB1D483CA /* HTTPTypesTests.swift in Sources */,
 				681B6F5E44F7473173D7E61F /* LocalFolderTests.swift in Sources */,

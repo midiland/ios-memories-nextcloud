@@ -52,7 +52,8 @@ struct AlbumDownloadProgressView: View {
         .accessibilityAddTraits(.updatesFrequently)
     }
 
-    private var phaseText: String {
+    /// Internal for tests (issue #14).
+    var phaseText: String {
         switch progress.phase {
         case .downloading: return String(localized: "Downloading…")
         case .extracting: return String(localized: "Extracting…")
@@ -60,7 +61,8 @@ struct AlbumDownloadProgressView: View {
         }
     }
 
-    private var accessibilityText: String {
+    /// Internal for tests (issue #14).
+    var accessibilityText: String {
         let base = progress.title ?? String(localized: "Downloading…")
         let phase = phaseText
         if progress.total > 0 {
