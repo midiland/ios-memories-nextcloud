@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## Unreleased
+## 1.0.0-rc.13
 
 ### Added
 - **Download progress indicator**: Downloading an album now shows a persistent banner at the top with the current phase (downloading, extracting, saving to Photos), a progress bar with percentage and file counters, and a cancel button. The app stays usable while downloading, and tapping the banner opens a detailed modal view. (Issue #14)

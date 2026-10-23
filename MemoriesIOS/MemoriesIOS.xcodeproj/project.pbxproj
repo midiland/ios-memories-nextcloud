@@ -27,15 +27,18 @@
 		26E5726441FF5E0F97BEB356 /* ServerPhoto.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46E95639045DC5413921FF4 /* ServerPhoto.swift */; };
 		28D05460CD4DC54AA4189F95 /* LocalTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D387F5ABBE787E3FCBF912 /* LocalTimeline.swift */; };
 		2BF76E04E45056FDA40C3BF9 /* ZipArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1534AE12423F2BF3431D0CAB /* ZipArchive.swift */; };
+		2C0CA949F5015D6D1AE4ECCE /* DownloadProgressViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAE48FA47C0383BCAB84BA1E /* DownloadProgressViewTests.swift */; };
 		2CB08429D975FDD2A481A3AC /* RequestHelpersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46FD0D765E7FD9161964C7F1 /* RequestHelpersTests.swift */; };
 		2EADC08FB615EB3066C88F65 /* LoginFlowV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9445CA15C29A6891936FB808 /* LoginFlowV2.swift */; };
 		3121BD32EDB5987591AEF3F2 /* LocalHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2586D18FD65C760329E8F42D /* LocalHTTPServer.swift */; };
+		345BA493941CE83EC0FB6F5B /* DownloadProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E398022AAC3E601F35E560 /* DownloadProgressTests.swift */; };
 		3A56FEE0A08A24D422F271D8 /* PhotoMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D422473FD7DE808D32BFE2E /* PhotoMatcher.swift */; };
 		3E79508C4A14FA135A12D007 /* PhotosAccessPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3624590DC6648B306737A47A /* PhotosAccessPrompt.swift */; };
 		3EC73D98DBF7F22D20685D17 /* NavigationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8174267D8D9F1D2443A1F01F /* NavigationPolicyTests.swift */; };
 		413112E9547AE1F5F8AF4F49 /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB961FEAFE715CB9D5D5CFF /* CredentialStore.swift */; };
 		41A6E81857ADE907F7E61E13 /* ZipExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 794FCA2DAF948B3E1FD66D97 /* ZipExtractorTests.swift */; };
 		41C47FD14FE19427CA435595 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51523A13AA1DC5DA3171F621 /* AppError.swift */; };
+		4246F6CF65C1C0819DAAB027 /* NativeXShareServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1753A2FA96BB42DD04951CDF /* NativeXShareServiceTests.swift */; };
 		44EAD9F120A6E90C8A88A792 /* LocalAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92F41AD1FBD89805A5B42558 /* LocalAppConfig.swift */; };
 		4510EEC89214D24AE1AA4C00 /* UpdateCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82F9EA70099CEA65933FC8D /* UpdateCheckTests.swift */; };
 		46276E20F6864996DD9761F0 /* ShellPageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B9DA52B2DEBF1151EF9FA1 /* ShellPageTests.swift */; };
@@ -51,6 +54,7 @@
 		58045639F3E2058DE81B2566 /* NextcloudModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28D34FFC28713D84A4787A19 /* NextcloudModels.swift */; };
 		5809D13775AFD39232F5A34C /* NextcloudClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE9D8A0862DCDCCF8E3C1D83 /* NextcloudClient.swift */; };
 		58814F213BD3C92E5E74CE54 /* LocalServerAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1075A28F45BCCDCDACC40351 /* LocalServerAccess.swift */; };
+		5C6A921546810A1AF7020E3C /* AlbumDownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A68E7BEB442E975E8E65A4E /* AlbumDownloadProgressView.swift */; };
 		616C5F2497D8EE2F45C9EF52 /* NativeXArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A15C8DB79A413AF2B5057A /* NativeXArguments.swift */; };
 		6172EF24BB56904E610101BD /* PhotoIDsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAF18CBE1FE0F77D444FD6 /* PhotoIDsTests.swift */; };
 		62CE9D8F13F0BA3FD5B72CA1 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */; };
@@ -66,6 +70,7 @@
 		73E9484F4DCAC1C593F5F7BF /* NativeXMethod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C18C38E8EA70E5C09C47C5 /* NativeXMethod.swift */; };
 		7C20A7020CFBA87CEAB9887A /* ManifestVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7F435177E9AF666F47E8B3E /* ManifestVerifier.swift */; };
 		7DF3C93C24860D652861F2D0 /* HTTPRequestHead.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65039079FDAA9F138B15D0BB /* HTTPRequestHead.swift */; };
+		7E96D6726EE839B27B596A3A /* DownloadProgressBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B25EF8399782B99986FF7D /* DownloadProgressBanner.swift */; };
 		82D509754A4343651C5DCA9A /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = DBE394490710151EAA9893CD /* InfoPlist.xcstrings */; };
 		83DE7E7D361AFCD432BBDDC6 /* RemoteCopyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3856F17558DBE20B159436 /* RemoteCopyStore.swift */; };
 		83FE18EFE3C2F4A6BA10297A /* BackNavigationRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D939D7444B65506922E9E701 /* BackNavigationRule.swift */; };
@@ -142,11 +147,6 @@
 		FAEA500499CC7F026668C2B7 /* LocalPhotoSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B95B34B9AF72D50043652B1 /* LocalPhotoSettings.swift */; };
 		FB3613AC81BF0C8AF92C541F /* BackNavigationRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A326EE046A23BBB659525E98 /* BackNavigationRuleTests.swift */; };
 		FF0BC6BD37D183DAB5984E95 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A36D6568685189E036A167 /* SessionStore.swift */; };
-		FCD209EFBAC942518FBC89C6 /* AlbumDownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD3BD881C394D6582986E3B /* AlbumDownloadProgressView.swift */; };
-		302B64A423A9431183989A3B /* DownloadProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */; };
-		2036BAA544BE483E987919E3 /* NativeXShareServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */; };
-		2EA686C23B6E4903829C9A20 /* DownloadProgressBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E467FB58E9EB456D9B9C68BB /* DownloadProgressBanner.swift */; };
-		6BBEBB2E8CFC41239E4C162B /* DownloadProgressViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E5BE85787D9460D844EA312 /* DownloadProgressViewTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -171,6 +171,7 @@
 		10E8BEE182634C3C7239875F /* PhotoIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoIDs.swift; sourceTree = "<group>"; };
 		12DE8CF992978EC7BF336714 /* ShellPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellPage.swift; sourceTree = "<group>"; };
 		1534AE12423F2BF3431D0CAB /* ZipArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipArchive.swift; sourceTree = "<group>"; };
+		1753A2FA96BB42DD04951CDF /* NativeXShareServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXShareServiceTests.swift; sourceTree = "<group>"; };
 		18EB7B76BF92DD579502785A /* RemoteCopyStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCopyStoreTests.swift; sourceTree = "<group>"; };
 		1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressView.swift; sourceTree = "<group>"; };
 		1C728FC7B67583E5ED70EEFE /* shell-overrides.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "shell-overrides.css"; sourceTree = "<group>"; };
@@ -182,6 +183,7 @@
 		28D34FFC28713D84A4787A19 /* NextcloudModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextcloudModels.swift; sourceTree = "<group>"; };
 		298CB93F1B2C16EEAA998820 /* OfflineError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineError.swift; sourceTree = "<group>"; };
 		2A1A5C25D70998326EA46352 /* DuplicateFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateFinder.swift; sourceTree = "<group>"; };
+		2A68E7BEB442E975E8E65A4E /* AlbumDownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumDownloadProgressView.swift; sourceTree = "<group>"; };
 		2B01FD5A21312057FA292E04 /* mixed-entries.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "mixed-entries.zip"; sourceTree = "<group>"; };
 		319B16F13BD620053AA5B9A2 /* SwipeSelectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeSelectTests.swift; sourceTree = "<group>"; };
 		35EE2AE740C81030FFD724A9 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -216,6 +218,7 @@
 		6CA91A9A54F1A70BB2534E56 /* LocalReloadRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReloadRule.swift; sourceTree = "<group>"; };
 		6EFF8FD8DFA03385FB8F7D02 /* LocalRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRouterTests.swift; sourceTree = "<group>"; };
 		6F48B1AD829B7A6948CE41A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		71E398022AAC3E601F35E560 /* DownloadProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressTests.swift; sourceTree = "<group>"; };
 		74A728D9BB86B96CF10DA427 /* NativeXResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXResponse.swift; sourceTree = "<group>"; };
 		78AB113A377363502B95681F /* ServerURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerURLTests.swift; sourceTree = "<group>"; };
 		794FCA2DAF948B3E1FD66D97 /* ZipExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipExtractorTests.swift; sourceTree = "<group>"; };
@@ -283,6 +286,7 @@
 		E0A15C8DB79A413AF2B5057A /* NativeXArguments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXArguments.swift; sourceTree = "<group>"; };
 		E2D387F5ABBE787E3FCBF912 /* LocalTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTimeline.swift; sourceTree = "<group>"; };
 		E3087F7FABD8E0CCD42AE82B /* SemanticVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersionTests.swift; sourceTree = "<group>"; };
+		E5B25EF8399782B99986FF7D /* DownloadProgressBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressBanner.swift; sourceTree = "<group>"; };
 		E7CE0B8100755A4931902610 /* OfflineAppLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineAppLoader.swift; sourceTree = "<group>"; };
 		E8B89F6CC76F01D9DF759F13 /* ServerDayClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerDayClient.swift; sourceTree = "<group>"; };
 		EB9408F20624F03C876FBEB1 /* NativeXLoopbackRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXLoopbackRouterTests.swift; sourceTree = "<group>"; };
@@ -296,13 +300,9 @@
 		F2109B18C4219F7C865ACE05 /* WebContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebContainerView.swift; sourceTree = "<group>"; };
 		F43AC8C11C4F54E363481FE4 /* MemoriesApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoriesApp.swift; sourceTree = "<group>"; };
 		FA94060EF05238A960120D93 /* ZipExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipExtractor.swift; sourceTree = "<group>"; };
+		FAE48FA47C0383BCAB84BA1E /* DownloadProgressViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressViewTests.swift; sourceTree = "<group>"; };
 		FC2979A6B3F3F1369986AB59 /* Data+SHA256.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+SHA256.swift"; sourceTree = "<group>"; };
 		FF49598246D6C081211A8E7E /* AssetSyncer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSyncer.swift; sourceTree = "<group>"; };
-		BAD3BD881C394D6582986E3B /* AlbumDownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumDownloadProgressView.swift; sourceTree = "<group>"; };
-		7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressTests.swift; sourceTree = "<group>"; };
-		960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXShareServiceTests.swift; sourceTree = "<group>"; };
-		E467FB58E9EB456D9B9C68BB /* DownloadProgressBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressBanner.swift; sourceTree = "<group>"; };
-		8E5BE85787D9460D844EA312 /* DownloadProgressViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressViewTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -343,8 +343,8 @@
 		155780E73FEBFD7706D0DDCC /* Downloads */ = {
 			isa = PBXGroup;
 			children = (
-				7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */,
-				8E5BE85787D9460D844EA312 /* DownloadProgressViewTests.swift */,
+				71E398022AAC3E601F35E560 /* DownloadProgressTests.swift */,
+				FAE48FA47C0383BCAB84BA1E /* DownloadProgressViewTests.swift */,
 				22273610CF29B56116C9EC39 /* DownloadToPhotosTests.swift */,
 				794FCA2DAF948B3E1FD66D97 /* ZipExtractorTests.swift */,
 			);
@@ -394,9 +394,9 @@
 		55D58530F738B9F138F13EA7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				BAD3BD881C394D6582986E3B /* AlbumDownloadProgressView.swift */,
+				2A68E7BEB442E975E8E65A4E /* AlbumDownloadProgressView.swift */,
 				EC31B71637A0A4B4853BCD27 /* BackButton.swift */,
-				E467FB58E9EB456D9B9C68BB /* DownloadProgressBanner.swift */,
+				E5B25EF8399782B99986FF7D /* DownloadProgressBanner.swift */,
 				1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */,
 				A9C046AD44136921D0B836A3 /* ErrorView.swift */,
 				ECEB9D7993CB70E1CE7C346E /* LoginView.swift */,
@@ -573,7 +573,7 @@
 				51EC50CF230085C5BEC65CBC /* NativeXArgumentsTests.swift */,
 				EB9408F20624F03C876FBEB1 /* NativeXLoopbackRouterTests.swift */,
 				4943A8B728F2AC6298F5AC6F /* NativeXScriptTests.swift */,
-				960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */,
+				1753A2FA96BB42DD04951CDF /* NativeXShareServiceTests.swift */,
 			);
 			path = NativeX;
 			sourceTree = "<group>";
@@ -775,9 +775,9 @@
 				BF5920752ACEBAC09DEF7A26 /* CredentialStoreTests.swift in Sources */,
 				9C483662B154D030E2CE5DA5 /* DSSEManifestTests.swift in Sources */,
 				EAEFED0801470FD0D15C08B5 /* DeviceSetupRuleTests.swift in Sources */,
+				345BA493941CE83EC0FB6F5B /* DownloadProgressTests.swift in Sources */,
+				2C0CA949F5015D6D1AE4ECCE /* DownloadProgressViewTests.swift in Sources */,
 				D56FD06F28F34AB63B11120F /* DownloadToPhotosTests.swift in Sources */,
-				302B64A423A9431183989A3B /* DownloadProgressTests.swift in Sources */,
-				6BBEBB2E8CFC41239E4C162B /* DownloadProgressViewTests.swift in Sources */,
 				6AF336532974C7CFEA37D89A /* Fixtures.swift in Sources */,
 				49BB9D06CD58C29DB1D483CA /* HTTPTypesTests.swift in Sources */,
 				681B6F5E44F7473173D7E61F /* LocalFolderTests.swift in Sources */,
@@ -789,7 +789,7 @@
 				DC4F7A9FA9E881F3FA49BA5F /* NativeXArgumentsTests.swift in Sources */,
 				47EE193DB2153FE7C735C365 /* NativeXLoopbackRouterTests.swift in Sources */,
 				84A7A447CB492DE5D8D2704E /* NativeXScriptTests.swift in Sources */,
-				2036BAA544BE483E987919E3 /* NativeXShareServiceTests.swift in Sources */,
+				4246F6CF65C1C0819DAAB027 /* NativeXShareServiceTests.swift in Sources */,
 				3EC73D98DBF7F22D20685D17 /* NavigationPolicyTests.swift in Sources */,
 				6172EF24BB56904E610101BD /* PhotoIDsTests.swift in Sources */,
 				9A25BB180F7E44A5BE8B5EA8 /* PhotoMatcherTests.swift in Sources */,
@@ -812,8 +812,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FCD209EFBAC942518FBC89C6 /* AlbumDownloadProgressView.swift in Sources */,
-				2EA686C23B6E4903829C9A20 /* DownloadProgressBanner.swift in Sources */,
+				5C6A921546810A1AF7020E3C /* AlbumDownloadProgressView.swift in Sources */,
 				D1B233FBB1D1ADED6D403859 /* AppConstants.swift in Sources */,
 				41C47FD14FE19427CA435595 /* AppError.swift in Sources */,
 				E31A4BB86F2F3FE7CC4BE343 /* AppWebPath.swift in Sources */,
@@ -830,6 +829,7 @@
 				57F2EBAA933BF2B7C6F1AB5B /* Data+SHA256.swift in Sources */,
 				D1D1F5DB4F241EA093053C38 /* DebugAutomation.swift in Sources */,
 				E9F21054B26305EBB6B9E0EE /* DeviceSetupRule.swift in Sources */,
+				7E96D6726EE839B27B596A3A /* DownloadProgressBanner.swift in Sources */,
 				62CE9D8F13F0BA3FD5B72CA1 /* DownloadProgressView.swift in Sources */,
 				90543EDF83A2D3F4C1171767 /* DuplicateFinder.swift in Sources */,
 				85EB6597E285963DE9AE1087 /* ErrorView.swift in Sources */,
@@ -951,7 +951,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1000012;
+				CURRENT_PROJECT_VERSION = 1000013;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -1084,7 +1084,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1000012;
+				CURRENT_PROJECT_VERSION = 1000013;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
