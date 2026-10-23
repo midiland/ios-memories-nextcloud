@@ -66,10 +66,24 @@ struct WebContainerView: View {
                     .id(toast.id)
                     .task(id: toast.id) { await dismiss(toast) }
             }
+
+            // Album download progress overlay (issue #14): blocks interaction while shown.
+            if let progress = model.downloadProgress {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .onTapGesture {} // Block taps on the web view behind the overlay.
+
+                AlbumDownloadProgressView(
+                    progress: progress,
+                    onCancel: model.cancelDownload
+                )
+                .transition(.scale.combined(with: .opacity))
+            }
         }
         .animation(.easeInOut(duration: 0.2), value: model.toast)
         .animation(.easeInOut(duration: 0.2), value: model.showsBackButton)
         .animation(.easeInOut(duration: 0.25), value: model.showsUnverifiedUpdateBanner)
+        .animation(.easeInOut(duration: 0.2), value: model.downloadProgress)
         .onAppear {
             model.startIfNeeded()
         }

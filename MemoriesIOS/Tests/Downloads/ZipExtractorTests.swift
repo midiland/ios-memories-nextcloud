@@ -61,4 +61,48 @@ final class ZipExtractorTests: XCTestCase {
         try Data("not a zip".utf8).write(to: file)
         XCTAssertFalse(ZipExtractor.isZip(file))
     }
+
+    // MARK: - Progress callback (issue #14)
+
+    func testExtractReportsProgressForEachFile() throws {
+        let zip = try fixture("zipstreamer-album")
+        let folder = try Fixtures.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+
+        var doneValues: [Int] = []
+        var totalValues: [Int] = []
+        let files = try ZipExtractor.extract(zip, into: folder) { done, total in
+            doneValues.append(done)
+            totalValues.append(total)
+        }
+
+        // 3 files in the fixture, progress reported after each one.
+        XCTAssertEqual(files.count, 3)
+        XCTAssertEqual(doneValues, [1, 2, 3])
+        XCTAssertEqual(totalValues, [3, 3, 3])
+    }
+
+    func testExtractProgressCountsOnlyFileEntries() throws {
+        // mixed-entries has 3 file entries (a.jpg, a.jpg duplicate, evil.mov).
+        let zip = try fixture("mixed-entries")
+        let folder = try Fixtures.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+
+        var lastTotal = 0
+        _ = try ZipExtractor.extract(zip, into: folder) { _, total in
+            lastTotal = total
+        }
+
+        XCTAssertEqual(lastTotal, 3)
+    }
+
+    func testExtractWithoutProgressCallback() throws {
+        let zip = try fixture("zipstreamer-album")
+        let folder = try Fixtures.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+
+        // No callback: should not crash.
+        let files = try ZipExtractor.extract(zip, into: folder)
+        XCTAssertEqual(files.count, 3)
+    }
 }

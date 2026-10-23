@@ -23,11 +23,34 @@ final class WebViewModel: ObservableObject {
         let long: Bool
     }
 
+    /// Progress of an ongoing album download (issue #14): shown as a persistent overlay
+    /// while the download, extraction and saving to Photos run.
+    struct DownloadProgress: Equatable {
+        enum Phase: Equatable {
+            case downloading
+            case extracting
+            case savingToPhotos
+        }
+
+        let phase: Phase
+        let done: Int
+        let total: Int
+        let title: String?
+
+        /// 0…1 for the progress bar; indeterminate (0) when `total` is 0.
+        var fraction: Double {
+            guard total > 0 else { return 0 }
+            return min(Double(done) / Double(total), 1)
+        }
+    }
+
     @Published private(set) var state: State = .loading
     /// Background color of the web UI, painted behind the web view (which is transparent
     /// in native mode) and in the safe areas. `nil` = system background.
     @Published private(set) var themeColor: UIColor?
     @Published var toast: Toast?
+    /// Ongoing album download (issue #14): shown as a persistent overlay over the web view.
+    @Published var downloadProgress: DownloadProgress?
     /// The server offers a Memories update that does not verify: the app runs the previous version
     /// (banner at the top of the screen, see `UnverifiedUpdateBanner`).
     @Published private(set) var showsUnverifiedUpdateBanner = false
@@ -45,7 +68,8 @@ final class WebViewModel: ObservableObject {
     /// Called when the user logs out (web UI or error screen).
     let onLogout: () -> Void
 
-    private let nativeX: NativeXController
+    /// The NativeX bridge (internal so the view can cancel an ongoing download, issue #14).
+    private(set) var nativeX: NativeXController
     /// Device photos shown in the timeline.
     private let localPhotos: LocalTimeline
     private let navigationHandler = WebNavigationHandler()
@@ -293,6 +317,16 @@ extension WebViewModel: NativeXHost {
 
     func nativeXToast(_ message: String, long: Bool) {
         toast = Toast(message: message, long: long)
+    }
+
+    func nativeXSetDownloadProgress(_ progress: DownloadProgress?) {
+        downloadProgress = progress
+    }
+
+    /// Cancels the ongoing album download (issue #14).
+    func cancelDownload() {
+        nativeX.cancelDownload()
+        downloadProgress = nil
     }
 
     func nativeXLogout() {

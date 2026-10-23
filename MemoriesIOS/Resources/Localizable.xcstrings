@@ -176,6 +176,17 @@
         }
       }
     },
+    "Extracting…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extraction…"
+          }
+        }
+      }
+    },
     "file" : {
       "comment" : "Fallback name of a downloaded file",
       "extractionState" : "stale",
@@ -369,6 +380,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enregistrés dans Photos (%1$lld), déjà présents : %2$lld"
+          }
+        }
+      }
+    },
+    "Saving to Photos…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrement dans Photos…"
           }
         }
       }

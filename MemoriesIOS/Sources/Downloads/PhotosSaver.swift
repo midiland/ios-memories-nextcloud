@@ -13,18 +13,32 @@ struct PhotosSaver {
     }
 
     /// Call once access is granted (`PhotosAccessPrompt`). Files are moved into the library.
-    func save(_ media: [MediaFile], album title: String?) async -> Result {
+    /// `progress(done, total)` is called after each file, with the number of files processed
+    /// so far and the total number of media files (issue #14).
+    func save(
+        _ media: [MediaFile],
+        album title: String?,
+        progress: (@Sendable (Int, Int) -> Void)? = nil
+    ) async -> Result {
         let duplicates = await DuplicateFinder(library: library).find(in: media)
         var result = Result(alreadyInPhotos: duplicates.duplicates.count)
         var albumAssets = Array(duplicates.deviceCopies)
+        let total = media.count
+        var done = 0
 
-        for (index, file) in media.enumerated() where !duplicates.duplicates.contains(index) {
+        for (index, file) in media.enumerated() {
+            done += 1
+            if duplicates.duplicates.contains(index) {
+                progress?(done, total)
+                continue
+            }
             if let id = await create(file) {
                 result.saved += 1
                 albumAssets.append(id)
             } else {
                 result.failed += 1
             }
+            progress?(done, total)
         }
 
         if let title = title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty,

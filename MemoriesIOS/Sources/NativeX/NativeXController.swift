@@ -31,6 +31,11 @@ final class NativeXController: NSObject {
         router = NativeXLoopbackRouter(share: share, photos: photos, serverOrigin: serverOrigin)
     }
 
+    /// Cancels the ongoing album download, if any (issue #14).
+    func cancelDownload() {
+        share.cancelDownload()
+    }
+
     // MARK: - Installation
 
     /// Installs the script and the message handlers into the web view configuration.

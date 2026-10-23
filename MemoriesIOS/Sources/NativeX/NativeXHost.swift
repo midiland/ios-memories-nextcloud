@@ -10,6 +10,9 @@ protocol NativeXHost: AnyObject {
     /// Short message shown over the WebView.
     func nativeXToast(_ message: String, long: Bool)
 
+    /// Shows, updates or hides the album download progress overlay (issue #14).
+    func nativeXSetDownloadProgress(_ progress: WebViewModel.DownloadProgress?)
+
     /// Logout requested from Settings > Account in the web UI.
     func nativeXLogout()
 

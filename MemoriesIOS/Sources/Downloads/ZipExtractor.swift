@@ -12,15 +12,27 @@ enum ZipExtractor {
 
     /// Extracts every file entry into `folder` (flat) and returns the extracted files.
     /// Entry names are reduced to a safe base name (no Zip Slip), duplicates get a suffix.
-    static func extract(_ zip: URL, into folder: URL) throws -> [URL] {
+    /// `progress(done, total)` is called after each file, with the number of files extracted
+    /// so far and the total number of extractable file entries (issue #14).
+    static func extract(
+        _ zip: URL,
+        into folder: URL,
+        progress: (@Sendable (Int, Int) -> Void)? = nil
+    ) throws -> [URL] {
         let archive = try ZipArchive(url: zip)
+        // Only entries with a safe name count towards the total (issue #14).
+        let entries = archive.entries.filter { !$0.isDirectory && safeName($0.path) != nil }
+        let total = entries.count
         var used = Set<String>()
         var files: [URL] = []
-        for entry in archive.entries where !entry.isDirectory {
+        var done = 0
+        for entry in entries {
             guard let name = safeName(entry.path) else { continue }
             let destination = folder.appendingPathComponent(uniqueName(name, taken: &used))
             try archive.extract(entry, to: destination)
             files.append(destination)
+            done += 1
+            progress?(done, total)
         }
         return files
     }

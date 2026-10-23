@@ -12,13 +12,24 @@ struct AuthenticatedDownloader {
     var localServer: @MainActor () -> LocalServerAccess? = { nil }
 
     /// Downloads `url` and returns the local file, named after `Content-Disposition`
-    /// (or `preferredName` if provided).
-    func download(_ url: URL, preferredName: String? = nil) async throws -> URL {
+    /// (or `preferredName` if provided). `progress(done, total)` is called with the bytes
+    /// downloaded so far and the expected total (0 when the server does not send a length),
+    /// so the UI can show a progress bar (issue #14).
+    func download(
+        _ url: URL,
+        preferredName: String? = nil,
+        progress: (@Sendable (Int64, Int64) -> Void)? = nil
+    ) async throws -> URL {
         let request = URLRequest(url: url, authorizedFor: credentials, localServer: await localServer())
+
+        // A dedicated session with a delegate so we can track the download progress.
+        let delegate = DownloadDelegate(progress: progress)
+        let session = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: nil)
+        defer { session.finishTasksAndInvalidate() }
 
         let (tempFile, response): (URL, URLResponse)
         do {
-            (tempFile, response) = try await URLSession.shared.download(for: request)
+            (tempFile, response) = try await session.download(for: request)
         } catch {
             throw AppError.from(error)
         }
@@ -37,4 +48,31 @@ struct AuthenticatedDownloader {
         try FileManager.default.moveItem(at: tempFile, to: destination)
         return destination
     }
+}
+
+/// Tracks the progress of a `URLSession` download task (issue #14).
+private final class DownloadDelegate: NSObject, URLSessionDownloadDelegate, @unchecked Sendable {
+    private let progress: (@Sendable (Int64, Int64) -> Void)?
+
+    init(progress: (@Sendable (Int64, Int64) -> Void)?) {
+        self.progress = progress
+    }
+
+    func urlSession(
+        _ session: URLSession,
+        downloadTask: URLSessionDownloadTask,
+        didWriteData bytesWritten: Int64,
+        totalBytesWritten: Int64,
+        totalBytesExpectedToWrite: Int64
+    ) {
+        progress?(totalBytesWritten, totalBytesExpectedToWrite)
+    }
+
+    // Required by the protocol but not called: the async `download(for:)` handles
+    // the completion itself (the file is at the temporary location it returns).
+    func urlSession(
+        _ session: URLSession,
+        downloadTask: URLSessionDownloadTask,
+        didFinishDownloadingTo location: URL
+    ) {}
 }

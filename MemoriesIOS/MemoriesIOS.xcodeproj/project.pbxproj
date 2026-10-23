@@ -142,6 +142,9 @@
 		FAEA500499CC7F026668C2B7 /* LocalPhotoSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B95B34B9AF72D50043652B1 /* LocalPhotoSettings.swift */; };
 		FB3613AC81BF0C8AF92C541F /* BackNavigationRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A326EE046A23BBB659525E98 /* BackNavigationRuleTests.swift */; };
 		FF0BC6BD37D183DAB5984E95 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A36D6568685189E036A167 /* SessionStore.swift */; };
+		FCD209EFBAC942518FBC89C6 /* AlbumDownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD3BD881C394D6582986E3B /* AlbumDownloadProgressView.swift */; };
+		302B64A423A9431183989A3B /* DownloadProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */; };
+		2036BAA544BE483E987919E3 /* NativeXShareServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -293,6 +296,9 @@
 		FA94060EF05238A960120D93 /* ZipExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZipExtractor.swift; sourceTree = "<group>"; };
 		FC2979A6B3F3F1369986AB59 /* Data+SHA256.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+SHA256.swift"; sourceTree = "<group>"; };
 		FF49598246D6C081211A8E7E /* AssetSyncer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetSyncer.swift; sourceTree = "<group>"; };
+		BAD3BD881C394D6582986E3B /* AlbumDownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumDownloadProgressView.swift; sourceTree = "<group>"; };
+		7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressTests.swift; sourceTree = "<group>"; };
+		960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXShareServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -333,6 +339,7 @@
 		155780E73FEBFD7706D0DDCC /* Downloads */ = {
 			isa = PBXGroup;
 			children = (
+				7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */,
 				22273610CF29B56116C9EC39 /* DownloadToPhotosTests.swift */,
 				794FCA2DAF948B3E1FD66D97 /* ZipExtractorTests.swift */,
 			);
@@ -382,6 +389,7 @@
 		55D58530F738B9F138F13EA7 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BAD3BD881C394D6582986E3B /* AlbumDownloadProgressView.swift */,
 				EC31B71637A0A4B4853BCD27 /* BackButton.swift */,
 				1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */,
 				A9C046AD44136921D0B836A3 /* ErrorView.swift */,
@@ -559,6 +567,7 @@
 				51EC50CF230085C5BEC65CBC /* NativeXArgumentsTests.swift */,
 				EB9408F20624F03C876FBEB1 /* NativeXLoopbackRouterTests.swift */,
 				4943A8B728F2AC6298F5AC6F /* NativeXScriptTests.swift */,
+				960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */,
 			);
 			path = NativeX;
 			sourceTree = "<group>";
@@ -761,6 +770,7 @@
 				9C483662B154D030E2CE5DA5 /* DSSEManifestTests.swift in Sources */,
 				EAEFED0801470FD0D15C08B5 /* DeviceSetupRuleTests.swift in Sources */,
 				D56FD06F28F34AB63B11120F /* DownloadToPhotosTests.swift in Sources */,
+				302B64A423A9431183989A3B /* DownloadProgressTests.swift in Sources */,
 				6AF336532974C7CFEA37D89A /* Fixtures.swift in Sources */,
 				49BB9D06CD58C29DB1D483CA /* HTTPTypesTests.swift in Sources */,
 				681B6F5E44F7473173D7E61F /* LocalFolderTests.swift in Sources */,
@@ -772,6 +782,7 @@
 				DC4F7A9FA9E881F3FA49BA5F /* NativeXArgumentsTests.swift in Sources */,
 				47EE193DB2153FE7C735C365 /* NativeXLoopbackRouterTests.swift in Sources */,
 				84A7A447CB492DE5D8D2704E /* NativeXScriptTests.swift in Sources */,
+				2036BAA544BE483E987919E3 /* NativeXShareServiceTests.swift in Sources */,
 				3EC73D98DBF7F22D20685D17 /* NavigationPolicyTests.swift in Sources */,
 				6172EF24BB56904E610101BD /* PhotoIDsTests.swift in Sources */,
 				9A25BB180F7E44A5BE8B5EA8 /* PhotoMatcherTests.swift in Sources */,
@@ -794,6 +805,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FCD209EFBAC942518FBC89C6 /* AlbumDownloadProgressView.swift in Sources */,
 				D1B233FBB1D1ADED6D403859 /* AppConstants.swift in Sources */,
 				41C47FD14FE19427CA435595 /* AppError.swift in Sources */,
 				E31A4BB86F2F3FE7CC4BE343 /* AppWebPath.swift in Sources */,
