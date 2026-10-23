@@ -34,6 +34,17 @@ struct WebContainerView: View {
                     UnverifiedUpdateBanner(dismiss: model.dismissUnverifiedUpdateBanner)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
+                // Album download progress banner (issue #14): same style as the banner above,
+                // pushes the web view down so the user can keep navigating. Hidden while the
+                // photo viewer is open (full screen).
+                if let progress = model.downloadProgress, !model.viewerFullscreen {
+                    DownloadProgressBanner(
+                        progress: progress,
+                        onTap: model.showDownloadProgressModal,
+                        onCancel: model.cancelDownload
+                    )
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
                 // Full screen only while the photo viewer is open (issue #13): a zoomed photo
                 // then uses the whole screen, safe areas included. The rest of the app keeps
                 // the safe-area layout (the web UI does not handle the top inset).
@@ -65,17 +76,6 @@ struct WebContainerView: View {
                 ToastView(message: toast.message)
                     .id(toast.id)
                     .task(id: toast.id) { await dismiss(toast) }
-            }
-
-            // Album download progress banner (issue #14): non-blocking, shown at the bottom.
-            // Hidden while the photo viewer is open (it has its own back button).
-            if let progress = model.downloadProgress, !model.viewerFullscreen {
-                DownloadProgressBanner(
-                    progress: progress,
-                    onTap: model.showDownloadProgressModal,
-                    onCancel: model.cancelDownload
-                )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
             // Full progress modal (issue #14): opened by tapping the banner.

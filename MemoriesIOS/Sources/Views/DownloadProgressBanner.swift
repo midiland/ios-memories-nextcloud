@@ -1,32 +1,31 @@
 import SwiftUI
 
-/// Non-blocking banner shown at the bottom while an album downloads (issue #14).
-/// Tapping it opens the full progress modal (`AlbumDownloadProgressView`); the ✕ button
-/// cancels the download. Unlike a modal, the user can keep navigating the app.
+/// Non-blocking banner shown at the top while an album downloads (issue #14), in the same
+/// style as `UnverifiedUpdateBanner`: it pushes the web view down, so the user can keep
+/// navigating the app. Tapping it opens the full progress modal (`AlbumDownloadProgressView`);
+/// the ✕ button cancels the download.
 struct DownloadProgressBanner: View {
     let progress: WebViewModel.DownloadProgress
     let onTap: () -> Void
     let onCancel: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             // Phase icon.
             Image(systemName: iconName)
                 .font(.title3)
                 .foregroundStyle(.blue)
-                .frame(width: 28)
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 4) {
-                // Title + phase.
+                // Title.
                 Text(progress.title ?? String(localized: "Downloading…"))
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
 
-                // Progress bar + counter.
+                // Progress bar + phase/counter.
                 HStack(spacing: 8) {
                     ProgressView(value: progress.fraction, total: 1)
-                        .frame(maxWidth: .infinity)
 
                     if progress.total > 0 {
                         Text("\(progress.done) / \(progress.total)")
@@ -41,24 +40,25 @@ struct DownloadProgressBanner: View {
                 }
             }
 
+            Spacer(minLength: 0)
+
             // Cancel button.
             Button(action: onCancel) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.title3)
+                Image(systemName: "xmark")
+                    .font(.footnote.weight(.semibold))
                     .foregroundStyle(.secondary)
+                    .frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
             .accessibilityLabel(String(localized: "Cancel"))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-        .shadow(radius: 4)
-        .padding(.horizontal, 16)
-        .padding(.bottom, 8)
+        .background(Color(.secondarySystemBackground))
+        .overlay(alignment: .bottom) { Divider() }
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
         .accessibilityLabel(accessibilityText)
         .accessibilityHint(String(localized: "Tap to see details"))
         .accessibilityAddTraits(.updatesFrequently)
@@ -94,13 +94,13 @@ struct DownloadProgressBanner: View {
 }
 
 #Preview {
-    VStack {
-        Spacer()
+    VStack(spacing: 0) {
         DownloadProgressBanner(
             progress: .init(phase: .savingToPhotos, done: 12, total: 27, title: "Summer 2025"),
             onTap: {},
             onCancel: {}
         )
+        Spacer()
     }
     .background(Color(.systemBackground))
 }
