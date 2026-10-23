@@ -42,9 +42,22 @@ final class NativeXController: NSObject {
         }
         controller.addUserScript(WKUserScript(source: source, injectionTime: .atDocumentStart, forMainFrameOnly: true))
 
+        // Swipe-to-select enhancement for iOS (issue #11): haptic feedback + scroll bounce fix.
+        if let swipeSource = Self.swipeSelectScriptSource() {
+            controller.addUserScript(WKUserScript(source: swipeSource, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
+
         let proxy = WeakScriptMessageProxy(self)
         controller.add(proxy, name: Self.syncHandler)
         controller.addScriptMessageHandler(proxy, contentWorld: .page, name: Self.asyncHandler)
+    }
+
+    /// Reads `swipe-select.js` from the bundle (internal for the script tests).
+    nonisolated static func swipeSelectScriptSource() -> String? {
+        guard let url = Bundle.main.url(forResource: "swipe-select", withExtension: "js"),
+              let source = try? String(contentsOf: url, encoding: .utf8)
+        else { return nil }
+        return source
     }
 
     // MARK: - Synchronous state

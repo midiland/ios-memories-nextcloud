@@ -10,6 +10,7 @@
 		00B5FD0B27C55F325B699792 /* TUFTargets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA5B541AEC86986B650A2CD /* TUFTargets.swift */; };
 		0314C51450AEF2BB0BBD93AB /* WebViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4582ED08B5E5B3E110A6D69D /* WebViewModel.swift */; };
 		0329E0EAB836857A6249C83A /* shell-overrides.css in Resources */ = {isa = PBXBuildFile; fileRef = 1C728FC7B67583E5ED70EEFE /* shell-overrides.css */; };
+		09997F3E9CEE6DD656DB6FCF /* swipe-select.css in Resources */ = {isa = PBXBuildFile; fileRef = 4C26A74D86F56165252960CB /* swipe-select.css */; };
 		0CE168AC980D63EAFFD236CC /* CSSPathRewriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91D0B273ECF35F87F871E99 /* CSSPathRewriterTests.swift */; };
 		0E02A493FCB73E545C79563C /* NativeXShareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584963AC705E453ED4BB1D2B /* NativeXShareService.swift */; };
 		0FBA02B989471D0BD90955C5 /* NativeXHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89823EC4465556A2C7DADB0F /* NativeXHost.swift */; };
@@ -102,6 +103,7 @@
 		C49265FD3021601C302CA5E1 /* CSSPathRewriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B2F58E3B813012A1F0CE4F /* CSSPathRewriter.swift */; };
 		C4BF9872624746982B73ED82 /* memories-10.0.0-manifest.dsse.json in Resources */ = {isa = PBXBuildFile; fileRef = 88BA9B8C5BCFF859B452903F /* memories-10.0.0-manifest.dsse.json */; };
 		C4C58626190581A2A99D4BE3 /* SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0269CD2B24DBF8CE71ABE4E5 /* SnapshotStore.swift */; };
+		C738DA7D92E894EA5A2239E4 /* SwipeSelectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319B16F13BD620053AA5B9A2 /* SwipeSelectTests.swift */; };
 		CA31B54B15BE3CC33266F018 /* ServerDayClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B89F6CC76F01D9DF759F13 /* ServerDayClient.swift */; };
 		CAC80A90704ECAF6CF530EDD /* ServerPhotoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4AFBAC08817F20902BE298E /* ServerPhotoTests.swift */; };
 		CB638A06BC3738238CD726E9 /* LocalFolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DCE51A11A078EEDA410F981 /* LocalFolder.swift */; };
@@ -119,6 +121,7 @@
 		D81ADF403AF188A98126EDE5 /* UnverifiedUpdateBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCEC206F0ABB07BE042028D2 /* UnverifiedUpdateBanner.swift */; };
 		DC4F7A9FA9E881F3FA49BA5F /* NativeXArgumentsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51EC50CF230085C5BEC65CBC /* NativeXArgumentsTests.swift */; };
 		DD60C51E7B49820A75AD2376 /* OfflineError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 298CB93F1B2C16EEAA998820 /* OfflineError.swift */; };
+		E05F72843E5B7B24DB29C921 /* SwipeSelectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 594F0EDB99C9F9E70DD29B46 /* SwipeSelectUITests.swift */; };
 		E0DF2BB0D41049766A675C9D /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 35EE2AE740C81030FFD724A9 /* Localizable.xcstrings */; };
 		E10510BA68EDAF5E8D661E6D /* WebNavigationHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9C803954A14CF4F6F44D81F /* WebNavigationHandler.swift */; };
 		E10C3A2B259066D7FCFC7871 /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC25928F66C5B8D6F52683F4 /* SafariView.swift */; };
@@ -131,6 +134,7 @@
 		EC756466FA3AE955193B2AC7 /* StaticFilesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 932B49D93B318D8E503CB78D /* StaticFilesTests.swift */; };
 		EF5DD300DDFCC0D537D0712D /* LocalReloadRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD57D4A87BB439E16821A397 /* LocalReloadRuleTests.swift */; };
 		F0F282E15D155A261DD466B5 /* NativeXController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8672B5BEFA9FEB0519451E23 /* NativeXController.swift */; };
+		F3C174C15A6BCDCA586B33F5 /* swipe-select.js in Resources */ = {isa = PBXBuildFile; fileRef = 67ADE568C6F78DD2C75F30FA /* swipe-select.js */; };
 		F558EB4D626ECDEE8119C6D9 /* MediaMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = A230A86C0325C22444BB0052 /* MediaMetadata.swift */; };
 		F8545973EE0A5563A79829F3 /* SemanticVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74A4A6531629FD15E2E4086 /* SemanticVersion.swift */; };
 		F960AB8460F08BA0FD603DFE /* BackButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC31B71637A0A4B4853BCD27 /* BackButton.swift */; };
@@ -174,6 +178,7 @@
 		298CB93F1B2C16EEAA998820 /* OfflineError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineError.swift; sourceTree = "<group>"; };
 		2A1A5C25D70998326EA46352 /* DuplicateFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateFinder.swift; sourceTree = "<group>"; };
 		2B01FD5A21312057FA292E04 /* mixed-entries.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "mixed-entries.zip"; sourceTree = "<group>"; };
+		319B16F13BD620053AA5B9A2 /* SwipeSelectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeSelectTests.swift; sourceTree = "<group>"; };
 		35EE2AE740C81030FFD724A9 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		3624590DC6648B306737A47A /* PhotosAccessPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAccessPrompt.swift; sourceTree = "<group>"; };
 		3818A71D6D2BCA39078167A8 /* zipstreamer-album.zip */ = {isa = PBXFileReference; lastKnownFileType = archive.zip; path = "zipstreamer-album.zip"; sourceTree = "<group>"; };
@@ -187,6 +192,7 @@
 		46B2F58E3B813012A1F0CE4F /* CSSPathRewriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSSPathRewriter.swift; sourceTree = "<group>"; };
 		46FD0D765E7FD9161964C7F1 /* RequestHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestHelpersTests.swift; sourceTree = "<group>"; };
 		4943A8B728F2AC6298F5AC6F /* NativeXScriptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXScriptTests.swift; sourceTree = "<group>"; };
+		4C26A74D86F56165252960CB /* swipe-select.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "swipe-select.css"; sourceTree = "<group>"; };
 		51523A13AA1DC5DA3171F621 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		51EC50CF230085C5BEC65CBC /* NativeXArgumentsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXArgumentsTests.swift; sourceTree = "<group>"; };
 		522973BDEA6FF4B3A3E305BC /* AssetManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetManifest.swift; sourceTree = "<group>"; };
@@ -196,10 +202,12 @@
 		56D67C9F0EF5CCD308FEB3E9 /* LocalFolderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFolderTests.swift; sourceTree = "<group>"; };
 		5727B3053867AC663CA8A32E /* CSSColorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSSColorTests.swift; sourceTree = "<group>"; };
 		584963AC705E453ED4BB1D2B /* NativeXShareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXShareService.swift; sourceTree = "<group>"; };
+		594F0EDB99C9F9E70DD29B46 /* SwipeSelectUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeSelectUITests.swift; sourceTree = "<group>"; };
 		5D422473FD7DE808D32BFE2E /* PhotoMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoMatcher.swift; sourceTree = "<group>"; };
 		5D577D3390908913EDE68A38 /* AppErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppErrorTests.swift; sourceTree = "<group>"; };
 		623D531A3CAF7256AA4A556E /* DebugAutomation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugAutomation.swift; sourceTree = "<group>"; };
 		65039079FDAA9F138B15D0BB /* HTTPRequestHead.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestHead.swift; sourceTree = "<group>"; };
+		67ADE568C6F78DD2C75F30FA /* swipe-select.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = "swipe-select.js"; sourceTree = "<group>"; };
 		6CA91A9A54F1A70BB2534E56 /* LocalReloadRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalReloadRule.swift; sourceTree = "<group>"; };
 		6EFF8FD8DFA03385FB8F7D02 /* LocalRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRouterTests.swift; sourceTree = "<group>"; };
 		6F48B1AD829B7A6948CE41A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -413,6 +421,8 @@
 				35EE2AE740C81030FFD724A9 /* Localizable.xcstrings */,
 				8C60C16C55D86D78274624E7 /* nativex.js */,
 				1C728FC7B67583E5ED70EEFE /* shell-overrides.css */,
+				4C26A74D86F56165252960CB /* swipe-select.css */,
+				67ADE568C6F78DD2C75F30FA /* swipe-select.js */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -440,6 +450,7 @@
 				5727B3053867AC663CA8A32E /* CSSColorTests.swift */,
 				BD57D4A87BB439E16821A397 /* LocalReloadRuleTests.swift */,
 				8174267D8D9F1D2443A1F01F /* NavigationPolicyTests.swift */,
+				319B16F13BD620053AA5B9A2 /* SwipeSelectTests.swift */,
 			);
 			path = Web;
 			sourceTree = "<group>";
@@ -460,6 +471,14 @@
 			path = Web;
 			sourceTree = "<group>";
 		};
+		8012565512A75F8DD9559EA5 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				594F0EDB99C9F9E70DD29B46 /* SwipeSelectUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		9FADF206B0DD37BBB1AAC532 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -472,6 +491,7 @@
 				BF27764B709F69A58B1BEDFA /* Offline */,
 				4FB7FE2A70D5D3197334F6A0 /* Photos */,
 				D06A101D00C47AF9F1D30977 /* Support */,
+				8012565512A75F8DD9559EA5 /* UITests */,
 				729755D7B74ED102FB7FDB18 /* Web */,
 			);
 			path = Tests;
@@ -719,6 +739,8 @@
 				E0DF2BB0D41049766A675C9D /* Localizable.xcstrings in Resources */,
 				8FD49D87F27EF4142964CCA6 /* nativex.js in Resources */,
 				0329E0EAB836857A6249C83A /* shell-overrides.css in Resources */,
+				09997F3E9CEE6DD656DB6FCF /* swipe-select.css in Resources */,
+				F3C174C15A6BCDCA586B33F5 /* swipe-select.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -761,6 +783,8 @@
 				46276E20F6864996DD9761F0 /* ShellPageTests.swift in Sources */,
 				4E231BBE6E39F09E5AF4CAE5 /* SnapshotStoreTests.swift in Sources */,
 				EC756466FA3AE955193B2AC7 /* StaticFilesTests.swift in Sources */,
+				C738DA7D92E894EA5A2239E4 /* SwipeSelectTests.swift in Sources */,
+				E05F72843E5B7B24DB29C921 /* SwipeSelectUITests.swift in Sources */,
 				4510EEC89214D24AE1AA4C00 /* UpdateCheckTests.swift in Sources */,
 				41A6E81857ADE907F7E61E13 /* ZipExtractorTests.swift in Sources */,
 			);

@@ -50,6 +50,7 @@ enum ShellPage {
         <title>Memories</title>
         \(links)
         <link href="/local/static/shell-overrides.css" rel="stylesheet">
+        <link href="/local/static/swipe-select.css" rel="stylesheet">
         <script src="/local/assets/js/\(AssetManifest.l10nJS)"></script>
         </head>
         <body>

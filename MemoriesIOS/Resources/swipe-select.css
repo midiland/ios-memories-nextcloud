@@ -1,0 +1,62 @@
+/*
+ * Swipe-to-select on iOS (midiland/ios-memories-nextcloud#11).
+ *
+ * The web app already implements the multi-select gesture (long-press then swipe,
+ * see SelectionManager.vue in pulsejet/memories). On iOS WKWebView, the native
+ * scroll interceptor steals the touchmove events before the web app can
+ * preventDefault() them, so the swipe does nothing.
+ *
+ * `touch-action` tells WebKit which gestures it may handle natively:
+ * - pan-y: vertical scrolling only (default state — the user can still scroll the timeline)
+ * - none: no native gesture handling (selection mode — the web app owns all touch events)
+ *
+ * The selection mode is detected by the presence of a selected photo
+ * (`.p-outer.selected`), which the web app adds/removes reactively.
+ *
+ * IMPORTANT: We do NOT set `touch-action: none` on `.recycler` itself, because that
+ * would block ALL native scrolling in selection mode. Instead, we only disable
+ * native gestures on the photo elements (and their row containers to cover gaps),
+ * so the user can still scroll the timeline normally when not swiping over photos.
+ * The web app's JS (SelectionManager.vue) handles auto-scroll when swiping near
+ * the screen edges.
+ */
+
+/* Default: allow vertical scroll, block horizontal/zoom interception on photos */
+.recycler,
+.recycler .photo,
+.recycler .p-outer-super {
+  touch-action: pan-y;
+}
+
+/*
+ * Selection mode active: disable native gesture handling on photos and their
+ * row containers. This covers both the photos and the horizontal gaps between
+ * them, so the swipe gesture is never stolen mid-swipe.
+ * The vertical gaps between rows still allow native scrolling.
+ */
+body:has(.p-outer.selected) .recycler .photo,
+body:has(.p-outer.selected) .recycler .p-outer-super,
+body:has(.p-outer.selected) .recycler .vue-recycle-scroller__item-view {
+  touch-action: none;
+}
+
+/*
+ * Prevent the iOS text-selection callout and the image long-press menu
+ * from interfering with the swipe gesture on photos.
+ */
+.recycler .photo,
+.recycler .p-outer-super {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Visual feedback: slightly dim photos that are not selected while in selection mode */
+body:has(.p-outer.selected) .recycler .p-outer-super:not(:has(.p-outer.selected)) {
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+body:has(.p-outer.selected) .recycler .p-outer-super:has(.p-outer.selected) {
+  opacity: 1;
+}
