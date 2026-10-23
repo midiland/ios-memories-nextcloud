@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+---
+
+## 1.0.0-rc.12
+
+### Added
+- **Swipe-to-select**: Long-press a photo to enter selection mode, then swipe across multiple photos to select them in one gesture — like the iOS Photos app. Swiping over already-selected photos deselects them, and swiping near the screen edge auto-scrolls to extend the selection beyond the visible area. Implemented entirely on the iOS side (CSS `touch-action` + JS injection) without modifying the web app. (Issue #11)
+
 ### Fixed
 - **Zoom**: Pinch-to-zoom no longer scales the whole app UI (photo grid, top bar and bottom navigation); the interface now always stays at its normal scale. (Issue #12)
 - **Photo viewer**: A zoomed photo now fills the whole screen, including the areas behind the Dynamic Island / status bar, the home indicator and the side safe areas in landscape; black bars no longer remain at the screen edges. The WebView switches to full screen only while the photo viewer is open. (Issue #13)
