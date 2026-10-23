@@ -147,7 +147,12 @@ final class LocalRouter: @unchecked Sendable {
 
     private func shell(_ config: LocalAppConfig) -> HTTPResponse {
         let nonce = UUID().uuidString
-        let html = ShellPage.html(manifest: config.snapshot.manifest, webRoot: config.webRoot, user: config.user, nonce: nonce)
+        // `mod_rewrite_working` mirrors the upstream server's URL style (with or without
+        // `index.php`), taken from the canonical `baseUrl` returned by `api/describe`.
+        // The local server accepts both forms (`appPaths`), so this only affects the URLs
+        // the frontend generates (e.g. public share links) — they must match the server.
+        let modRewriteWorking = !config.server.memoriesURL.absoluteString.contains("index.php")
+        let html = ShellPage.html(manifest: config.snapshot.manifest, webRoot: config.webRoot, user: config.user, nonce: nonce, modRewriteWorking: modRewriteWorking)
         return HTTPResponse(
             status: 200,
             headers: [

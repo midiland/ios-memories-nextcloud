@@ -3,8 +3,8 @@ import XCTest
 @testable import Memories
 
 final class ShellPageTests: XCTestCase {
-    private func html(webRoot: String = "/nextcloud", user: String? = "alice") throws -> String {
-        ShellPage.html(manifest: try AssetManifest(raw: Fixtures.describe()), webRoot: webRoot, user: user, nonce: "N0NCE")
+    private func html(webRoot: String = "/nextcloud", user: String? = "alice", modRewriteWorking: Bool = true) throws -> String {
+        ShellPage.html(manifest: try AssetManifest(raw: Fixtures.describe()), webRoot: webRoot, user: user, nonce: "N0NCE", modRewriteWorking: modRewriteWorking)
     }
 
     func testLinksPointToLocalStylesheets() throws {
@@ -103,5 +103,30 @@ final class ShellPageTests: XCTestCase {
         let existing = "window.OC = { config: { 'sharing.minSearchStringLength': '3' }, debug: true };"
         XCTAssertEqual(evaluate("parseInt(window.OC.config['sharing.minSearchStringLength'], 10)", existing: existing)?.toInt32(), 3)
         XCTAssertEqual(evaluate("window.OC.debug", existing: existing)?.toBool(), true)
+    }
+
+    // MARK: - window.oc_config (issue #7: public share links must match server URL style)
+
+    /// The shell must expose `oc_config.mod_rewrite_working` so `@nextcloud/router`'s
+    /// `generateUrl()` emits URLs without `index.php` when the server uses pretty URLs.
+    func testSetsModRewriteWorkingWhenServerUsesPrettyURLs() throws {
+        let page = try html(modRewriteWorking: true)
+        XCTAssertTrue(page.contains("window.oc_config.mod_rewrite_working = true;"))
+    }
+
+    func testSetsModRewriteWorkingFalseWhenServerUsesIndexPHP() throws {
+        let page = try html(modRewriteWorking: false)
+        XCTAssertTrue(page.contains("window.oc_config.mod_rewrite_working = false;"))
+    }
+
+    /// `window.oc_config` must not clobber an existing object (defensive, like `ocGlobal`).
+    func testKeepsAnExistingOcConfig() throws {
+        let context = JSContext()!
+        context.evaluateScript("var window = this;")
+        context.evaluateScript("window.oc_config = { mod_rewrite_working: false, other: 1 };")
+        // Simulate the generated line (true = pretty URLs).
+        context.evaluateScript("window.oc_config = window.oc_config || {}; window.oc_config.mod_rewrite_working = true;")
+        XCTAssertEqual(context.evaluateScript("window.oc_config.mod_rewrite_working")?.toBool(), true)
+        XCTAssertEqual(context.evaluateScript("window.oc_config.other")?.toInt32(), 1)
     }
 }

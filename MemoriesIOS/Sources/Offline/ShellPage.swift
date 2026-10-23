@@ -2,7 +2,7 @@ import Foundation
 
 /// Local HTML page that replaces Nextcloud's PHP template (port of `ShellPage.kt`):
 /// snapshot stylesheets, l10n, globals expected by the frontend
-/// (`_oc_webroot`, `_oc_appswebroots`, `_oc_capabilities`), then `memories-main.js`.
+/// (`_oc_webroot`, `_oc_appswebroots`, `_oc_capabilities`, `oc_config`), then `memories-main.js`.
 enum ShellPage {
     /// Content-Security-Policy: local scripts + nonce-based inline script, API calls anywhere.
     static func csp(nonce: String) -> String {
@@ -27,7 +27,11 @@ enum ShellPage {
     /// - Parameters:
     ///   - webRoot: Nextcloud prefix (`""` at the domain root, otherwise e.g. `/nextcloud`).
     ///   - user: user ID shown by the frontend (`<head data-user>`).
-    static func html(manifest: AssetManifest, webRoot: String, user: String?, nonce: String) -> String {
+    ///   - modRewriteWorking: whether the **upstream Nextcloud server** serves pretty URLs
+    ///     (no `index.php`). Mirrors `oc_config.mod_rewrite_working` from the server template,
+    ///     so `@nextcloud/router`'s `generateUrl()` emits URLs matching the server config
+    ///     (midiland/ios-memories-nextcloud#7). The local server accepts both forms.
+    static func html(manifest: AssetManifest, webRoot: String, user: String?, nonce: String, modRewriteWorking: Bool) -> String {
         let links = manifest.css.map { asset -> String in
             var attributes = asset.attributes
             attributes["href"] = "/local/assets/css/" + asset.name
@@ -40,6 +44,7 @@ enum ShellPage {
 
         let root = jsString(webRoot)
         let userAttribute = user.map { " data-user=\"\(escape($0))\"" } ?? ""
+        let ocConfig = "window.oc_config = window.oc_config || {}; window.oc_config.mod_rewrite_working = \(modRewriteWorking);"
 
         return """
         <!DOCTYPE html>
@@ -58,6 +63,7 @@ enum ShellPage {
         <div id="content"></div>
         <script nonce="\(nonce)">
         window._oc_webroot = \(root); window._oc_appswebroots = {'memories': \(root) + '/apps/memories'};
+        \(ocConfig)
         \(ocGlobal)
         window._oc_capabilities = {
           'files': {

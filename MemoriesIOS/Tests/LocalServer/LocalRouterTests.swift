@@ -94,6 +94,32 @@ final class LocalRouterTests: XCTestCase {
         }
     }
 
+    // MARK: - oc_config.mod_rewrite_working (issue #7)
+
+    /// The shell must expose `mod_rewrite_working = false` when the upstream server's
+    /// canonical `baseUrl` contains `index.php` (Fixtures.server uses `index.php`).
+    func testShellSetsModRewriteWorkingFalseWhenServerUsesIndexPHP() async {
+        let response = await get("/", headers: ["Accept": "text/html"])
+        XCTAssertEqual(response.status, 200)
+        XCTAssertTrue(response.text?.contains("window.oc_config.mod_rewrite_working = false;") == true)
+    }
+
+    /// When the upstream server serves pretty URLs (no `index.php` in `baseUrl`),
+    /// the shell must expose `mod_rewrite_working = true` so `generateUrl()` omits
+    /// `index.php` in public share links.
+    func testShellSetsModRewriteWorkingTrueWhenServerUsesPrettyURLs() async throws {
+        let prettyServer = ServerURL(memoriesBaseURL: "https://cloud.example.com/nextcloud/apps/memories/")!
+        let prettyCredentials = Credentials(server: prettyServer, loginName: "alice", appPassword: "secret")
+        router.config = LocalAppConfig(
+            credentials: prettyCredentials,
+            snapshot: router.config!.snapshot,
+            user: "alice"
+        )
+        let response = await get("/", headers: ["Accept": "text/html"])
+        XCTAssertEqual(response.status, 200)
+        XCTAssertTrue(response.text?.contains("window.oc_config.mod_rewrite_working = true;") == true)
+    }
+
     func testOtherDocumentNavigationsAreNotRenderedLocally() async {
         let response = await get("/nextcloud/index.php/apps/files/", headers: ["Sec-Fetch-Dest": "document"])
         XCTAssertEqual(response.status, 404)

@@ -13,7 +13,8 @@ final class SwipeSelectTests: XCTestCase {
             manifest: try AssetManifest(raw: Fixtures.describe()),
             webRoot: "/nextcloud",
             user: "alice",
-            nonce: "N0NCE"
+            nonce: "N0NCE",
+            modRewriteWorking: true
         )
         XCTAssertTrue(
             html.contains(#"<link href="/local/static/swipe-select.css" rel="stylesheet">"#),
@@ -27,7 +28,8 @@ final class SwipeSelectTests: XCTestCase {
             manifest: try AssetManifest(raw: Fixtures.describe()),
             webRoot: "/nextcloud",
             user: "alice",
-            nonce: "N0NCE"
+            nonce: "N0NCE",
+            modRewriteWorking: true
         )
         let overridesRange = try XCTUnwrap(html.range(of: "shell-overrides.css"))
         let swipeRange = try XCTUnwrap(html.range(of: "swipe-select.css"))
