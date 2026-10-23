@@ -471,6 +471,17 @@
         }
       }
     },
+    "Tap to see details" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toucher pour voir les détails"
+          }
+        }
+      }
+    },
     "To save your downloads to Photos, allow Memories to access your photo library in Settings." : {
       "extractionState" : "stale",
       "localizations" : {

@@ -145,6 +145,7 @@
 		FCD209EFBAC942518FBC89C6 /* AlbumDownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD3BD881C394D6582986E3B /* AlbumDownloadProgressView.swift */; };
 		302B64A423A9431183989A3B /* DownloadProgressTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */; };
 		2036BAA544BE483E987919E3 /* NativeXShareServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */; };
+		2EA686C23B6E4903829C9A20 /* DownloadProgressBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E467FB58E9EB456D9B9C68BB /* DownloadProgressBanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -299,6 +300,7 @@
 		BAD3BD881C394D6582986E3B /* AlbumDownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumDownloadProgressView.swift; sourceTree = "<group>"; };
 		7F2E85492FC040C4B00ABA9E /* DownloadProgressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressTests.swift; sourceTree = "<group>"; };
 		960AFF5428A94BFFB7BDC54D /* NativeXShareServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXShareServiceTests.swift; sourceTree = "<group>"; };
+		E467FB58E9EB456D9B9C68BB /* DownloadProgressBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressBanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -391,6 +393,7 @@
 			children = (
 				BAD3BD881C394D6582986E3B /* AlbumDownloadProgressView.swift */,
 				EC31B71637A0A4B4853BCD27 /* BackButton.swift */,
+				E467FB58E9EB456D9B9C68BB /* DownloadProgressBanner.swift */,
 				1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */,
 				A9C046AD44136921D0B836A3 /* ErrorView.swift */,
 				ECEB9D7993CB70E1CE7C346E /* LoginView.swift */,
@@ -806,6 +809,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FCD209EFBAC942518FBC89C6 /* AlbumDownloadProgressView.swift in Sources */,
+				2EA686C23B6E4903829C9A20 /* DownloadProgressBanner.swift in Sources */,
 				D1B233FBB1D1ADED6D403859 /* AppConstants.swift in Sources */,
 				41C47FD14FE19427CA435595 /* AppError.swift in Sources */,
 				E31A4BB86F2F3FE7CC4BE343 /* AppWebPath.swift in Sources */,

@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// Persistent overlay shown while an album downloads (issue #14): download → extract →
-/// save to Photos. Stays visible even when the initial toast has disappeared, so the user
-/// always knows the process is still running.
+/// Full-screen modal shown while an album downloads (issue #14): download → extract →
+/// save to Photos. Opened by tapping the non-blocking `DownloadProgressBanner`; the
+/// download keeps running when the modal is closed.
 struct AlbumDownloadProgressView: View {
     let progress: WebViewModel.DownloadProgress
+    let onClose: (() -> Void)?
     let onCancel: (() -> Void)?
 
     var body: some View {
@@ -30,9 +31,16 @@ struct AlbumDownloadProgressView: View {
                     .foregroundStyle(.secondary)
             }
 
-            if let onCancel {
-                Button(String(localized: "Cancel"), action: onCancel)
-                    .buttonStyle(.bordered)
+            HStack(spacing: 12) {
+                if let onClose {
+                    Button(String(localized: "Close"), action: onClose)
+                        .buttonStyle(.bordered)
+                }
+                if let onCancel {
+                    Button(String(localized: "Cancel"), action: onCancel)
+                        .buttonStyle(.borderedProminent)
+                        .tint(.red)
+                }
             }
         }
         .padding(32)
@@ -67,6 +75,7 @@ struct AlbumDownloadProgressView: View {
         Color.gray.opacity(0.3)
         AlbumDownloadProgressView(
             progress: .init(phase: .downloading, done: 45, total: 100, title: "Summer 2025"),
+            onClose: {},
             onCancel: {}
         )
     }

@@ -67,14 +67,26 @@ struct WebContainerView: View {
                     .task(id: toast.id) { await dismiss(toast) }
             }
 
-            // Album download progress overlay (issue #14): blocks interaction while shown.
-            if let progress = model.downloadProgress {
+            // Album download progress banner (issue #14): non-blocking, shown at the bottom.
+            // Hidden while the photo viewer is open (it has its own back button).
+            if let progress = model.downloadProgress, !model.viewerFullscreen {
+                DownloadProgressBanner(
+                    progress: progress,
+                    onTap: model.showDownloadProgressModal,
+                    onCancel: model.cancelDownload
+                )
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
+            // Full progress modal (issue #14): opened by tapping the banner.
+            if model.showsDownloadProgressModal, let progress = model.downloadProgress {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
-                    .onTapGesture {} // Block taps on the web view behind the overlay.
+                    .onTapGesture { model.hideDownloadProgressModal() }
 
                 AlbumDownloadProgressView(
                     progress: progress,
+                    onClose: model.hideDownloadProgressModal,
                     onCancel: model.cancelDownload
                 )
                 .transition(.scale.combined(with: .opacity))
@@ -84,6 +96,7 @@ struct WebContainerView: View {
         .animation(.easeInOut(duration: 0.2), value: model.showsBackButton)
         .animation(.easeInOut(duration: 0.25), value: model.showsUnverifiedUpdateBanner)
         .animation(.easeInOut(duration: 0.2), value: model.downloadProgress)
+        .animation(.easeInOut(duration: 0.2), value: model.showsDownloadProgressModal)
         .onAppear {
             model.startIfNeeded()
         }

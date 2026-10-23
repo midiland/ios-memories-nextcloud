@@ -49,8 +49,10 @@ final class WebViewModel: ObservableObject {
     /// in native mode) and in the safe areas. `nil` = system background.
     @Published private(set) var themeColor: UIColor?
     @Published var toast: Toast?
-    /// Ongoing album download (issue #14): shown as a persistent overlay over the web view.
+    /// Ongoing album download (issue #14): shown as a non-blocking banner at the bottom.
     @Published var downloadProgress: DownloadProgress?
+    /// Whether the full download progress modal is open (tapped on the banner, issue #14).
+    @Published var showsDownloadProgressModal = false
     /// The server offers a Memories update that does not verify: the app runs the previous version
     /// (banner at the top of the screen, see `UnverifiedUpdateBanner`).
     @Published private(set) var showsUnverifiedUpdateBanner = false
@@ -327,6 +329,17 @@ extension WebViewModel: NativeXHost {
     func cancelDownload() {
         nativeX.cancelDownload()
         downloadProgress = nil
+        showsDownloadProgressModal = false
+    }
+
+    /// Opens the full download progress modal (tapped on the banner, issue #14).
+    func showDownloadProgressModal() {
+        showsDownloadProgressModal = true
+    }
+
+    /// Closes the full download progress modal (issue #14).
+    func hideDownloadProgressModal() {
+        showsDownloadProgressModal = false
     }
 
     func nativeXLogout() {
