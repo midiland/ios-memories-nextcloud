@@ -3,13 +3,13 @@ import XCTest
 /// UI tests for the swipe-to-select feature (midiland/ios-memories-nextcloud#11).
 ///
 /// These tests require a running Nextcloud server with Memories installed,
-/// and valid credentials configured in the app. They are not run in CI by default.
+/// and valid credentials configured in the app. They live in their own target
+/// (`MemoriesIOSUITests`) and are not part of the default test action.
 ///
 /// To run manually:
 /// ```
 /// cd MemoriesIOS
-/// xcodebuild test -scheme MemoriesIOS -destination 'platform=iOS Simulator,name=iPhone 16' \
-///   -only-testing:MemoriesIOSTests/SwipeSelectUITests
+/// xcodebuild test -scheme MemoriesIOSUITests -destination 'platform=iOS Simulator,name=iPhone 16'
 /// ```
 ///
 /// Or use the video recording script:

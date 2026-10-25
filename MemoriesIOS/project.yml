@@ -73,7 +73,9 @@ targets:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - Tests
+      - path: Tests
+        excludes:
+          - UITests # UI tests have their own target (MemoriesIOSUITests)
     dependencies:
       - target: MemoriesIOS
     settings:
@@ -84,7 +86,30 @@ targets:
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/Memories.app/Memories
         BUNDLE_LOADER: $(TEST_HOST)
         CODE_SIGN_STYLE: Automatic
+  # Needs a running Nextcloud with Memories and a logged-in app: not part of the default
+  # test action, run through the MemoriesIOSUITests scheme.
+  MemoriesIOSUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - Tests/UITests
+    dependencies:
+      - target: MemoriesIOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fr.midiland.memories.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
 schemes:
+  MemoriesIOSUITests:
+    build:
+      targets:
+        MemoriesIOS: all
+        MemoriesIOSUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - MemoriesIOSUITests
   MemoriesIOS:
     build:
       targets:
