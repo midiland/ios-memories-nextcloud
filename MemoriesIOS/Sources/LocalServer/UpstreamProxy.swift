@@ -6,6 +6,7 @@ import Foundation
 ///   so no request token is needed in the local page);
 /// - keeps Nextcloud session cookies in `HTTPCookieStorage.shared`: subsequent requests
 ///   skip a full server-side login (~17× faster according to Android);
+/// - never serves executable content or follows redirects (see `ProxyResponsePolicy`);
 /// - streams the response (videos, large files) with backpressure;
 /// - network unavailable → 504, which the frontend interprets as "offline".
 final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable {
@@ -13,10 +14,6 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
     private static let skippedRequestHeaders: Set<String> = [
         "host", "content-length", "transfer-encoding", "connection", "cookie",
         "accept-encoding", "expect", "authorization", "origin", "referer",
-    ]
-    /// Upstream headers regenerated locally (URLSession already decompresses the body).
-    private static let skippedResponseHeaders: Set<String> = [
-        "content-encoding", "transfer-encoding", "content-length", "connection", "keep-alive", "set-cookie",
     ]
 
     private lazy var session: URLSession = {
@@ -72,17 +69,13 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
     private func response(
         for head: HTTPURLResponse, stream: ResponseStream, config: LocalAppConfig, localOrigin: String
     ) -> HTTPResponse {
-        var headers: [(String, String)] = []
-        let serverOrigin = config.server.origin.absoluteString
-        for case let (name as String, value as String) in head.allHeaderFields {
-            let lower = name.lowercased()
-            if Self.skippedResponseHeaders.contains(lower) { continue }
-            if lower == "location", value.hasPrefix(serverOrigin) {
-                headers.append((name, localOrigin + value.dropFirst(serverOrigin.count)))
-            } else {
-                headers.append((name, value))
-            }
+        let upstream = head.allHeaderFields.compactMap { key, value -> (String, String)? in
+            guard let name = key as? String, let value = value as? String else { return nil }
+            return (name, value)
         }
+        let headers = ProxyResponsePolicy.headers(
+            from: upstream, serverOrigin: config.server.origin.absoluteString, localOrigin: localOrigin
+        )
 
         // Length is known only if the body was not decompressed along the way.
         let compressed = head.value(forHTTPHeaderField: "Content-Encoding").map { !$0.isEmpty && $0 != "identity" } ?? false
@@ -102,6 +95,16 @@ final class UpstreamProxy: NSObject, URLSessionDataDelegate, @unchecked Sendable
     }
 
     // MARK: - URLSessionDataDelegate (serial queue)
+
+    /// Redirects are never followed: the 3xx goes back to the page (with `Location` pointing to
+    /// the local origin), so a hostile server cannot make the app fetch other hosts, and the
+    /// credentials never leave the account's origin.
+    func urlSession(
+        _ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        completionHandler(nil)
+    }
 
     func urlSession(
         _ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse,
