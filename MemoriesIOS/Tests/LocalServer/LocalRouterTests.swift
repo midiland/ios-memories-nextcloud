@@ -52,6 +52,21 @@ final class LocalRouterTests: XCTestCase {
         XCTAssertEqual(localhost.status, 200)
     }
 
+    func testRefusesCrossSiteMutations() async {
+        let crossSiteGet = await get("/api/days", headers: ["Sec-Fetch-Site": "cross-site"])
+        XCTAssertEqual(crossSiteGet.status, 404) // a GET is not a mutation: routed (not 403)
+        let foreignPost = Fixtures.request("/x", method: "POST", headers: [
+            "Host": host, "Cookie": "local-auth=\(secret)", "Origin": "https://evil.example.org",
+        ])
+        let refused = await router.handle(foreignPost)
+        XCTAssertEqual(refused.status, 403)
+        let foreignSite = Fixtures.request("/x", method: "DELETE", headers: [
+            "Host": host, "Cookie": "local-auth=\(secret)", "Sec-Fetch-Site": "cross-site",
+        ])
+        let foreignSiteResponse = await router.handle(foreignSite)
+        XCTAssertEqual(foreignSiteResponse.status, 403)
+    }
+
     func testPreflightRefusesUnauthorizedHeadsBeforeTheBody() throws {
         let anonymous = try XCTUnwrap(HTTPRequestHead("POST /x HTTP/1.1\r\nHost: \(host)\r\nContent-Length: 500000000"))
         XCTAssertEqual(router.preflight(anonymous)?.status, 403)

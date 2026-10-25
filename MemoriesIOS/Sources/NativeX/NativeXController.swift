@@ -24,10 +24,13 @@ final class NativeXController: NSObject {
     private let share: NativeXShareService
     let photos: NativeXPhotoService
     private let router: NativeXLoopbackRouter
+    /// Port of the local server: messages are only accepted from its main frame.
+    private let localPort: @MainActor () -> UInt16
 
-    init(share: NativeXShareService, photos: NativeXPhotoService, serverOrigin: URL) {
+    init(share: NativeXShareService, photos: NativeXPhotoService, serverOrigin: URL, localPort: @escaping @MainActor () -> UInt16) {
         self.share = share
         self.photos = photos
+        self.localPort = localPort
         router = NativeXLoopbackRouter(share: share, photos: photos, serverOrigin: serverOrigin)
     }
 
@@ -87,7 +90,8 @@ final class NativeXController: NSObject {
 extension NativeXController: WKScriptMessageHandler, WKScriptMessageHandlerWithReply {
     /// Fire-and-forget calls: `{ method, args }`.
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let body = message.body as? [String: Any],
+        guard isTrusted(message.frameInfo),
+              let body = message.body as? [String: Any],
               let name = body["method"] as? String,
               let method = NativeXMethod(rawValue: name)
         else { return }
@@ -101,7 +105,8 @@ extension NativeXController: WKScriptMessageHandler, WKScriptMessageHandlerWithR
         didReceive message: WKScriptMessage,
         replyHandler: @escaping @MainActor @Sendable (Any?, String?) -> Void
     ) {
-        guard let body = message.body as? [String: Any],
+        guard isTrusted(message.frameInfo),
+              let body = message.body as? [String: Any],
               let urlString = body["url"] as? String,
               let url = URL(string: urlString)
         else { return replyHandler(NativeXResponse.error.dictionary, nil) }
@@ -111,6 +116,14 @@ extension NativeXController: WKScriptMessageHandler, WKScriptMessageHandlerWithR
             let response = await router.handle(method: method, url: url)
             replyHandler(response.dictionary, nil)
         }
+    }
+
+    /// Handlers are exposed to every frame: only the local server's main frame may call native code.
+    private func isTrusted(_ frame: WKFrameInfo) -> Bool {
+        let origin = frame.securityOrigin
+        return LocalOrigin.isTrustedFrame(
+            isMainFrame: frame.isMainFrame, scheme: origin.protocol, host: origin.host, port: origin.port, localPort: localPort()
+        )
     }
 
     private func dispatch(_ method: NativeXMethod, args: NativeXArguments) {

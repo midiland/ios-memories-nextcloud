@@ -6,12 +6,17 @@ final class NavigationPolicyTests: XCTestCase {
 
     private var policy: NavigationPolicy {
         NavigationPolicy(
-            isLocal: { $0.host == "127.0.0.1" },
+            isLocal: { LocalOrigin.matches($0, localPort: 62079) },
             serverPage: { [filesPage] in $0.path.contains("/apps/files") ? filesPage : nil }
         )
     }
 
     private func url(_ text: String) -> URL { URL(string: text)! }
+
+    func testAnotherLoopbackPortIsExternal() {
+        let foreign = url("http://127.0.0.1:9999/")
+        XCTAssertEqual(policy.decide(foreign), .external(foreign))
+    }
 
     func testLocalAppPagesStay() {
         XCTAssertEqual(policy.decide(url("http://127.0.0.1:62079/nextcloud/index.php/apps/memories/")), .allow)

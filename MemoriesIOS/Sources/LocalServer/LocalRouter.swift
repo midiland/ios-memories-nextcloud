@@ -99,12 +99,14 @@ final class LocalRouter: @unchecked Sendable {
 
     // MARK: - Private
 
-    /// Secret cookie + loopback `Host` header (protection against DNS rebinding).
+    /// Secret cookie + loopback `Host` header (protection against DNS rebinding) + no cross-site
+    /// state-changing request (CSRF).
     private func isAuthorized(_ request: HTTPRequest) -> Bool {
         let host = request.header("host") ?? ""
         let port = self.port
         guard host == "\(LocalHTTPServer.host):\(port)" || host == "localhost:\(port)" else { return false }
-        return request.cookies["local-auth"] == secret
+        guard request.cookies["local-auth"] == secret else { return false }
+        return !LocalOrigin.isCrossSiteMutation(method: request.method, headers: request.headers, localPort: port)
     }
 
     /// `path` equals `prefix` or starts with `prefix/`.

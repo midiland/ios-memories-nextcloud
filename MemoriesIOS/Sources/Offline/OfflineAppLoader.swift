@@ -43,9 +43,10 @@ final class OfflineAppLoader {
         entryURL.appendingPathComponent("nxsetup")
     }
 
-    /// Whether `url` points to the local server (loopback host).
+    /// Whether `url` points to the local server: loopback host AND its port (another loopback
+    /// server must not receive the `local-auth` cookie).
     func isLocal(_ url: URL) -> Bool {
-        url.host == LocalHTTPServer.host || url.host == "localhost"
+        LocalOrigin.matches(url, localPort: server.port)
     }
 
     /// Real server page for a proxied local path (e.g. a link to another Nextcloud app),
@@ -170,6 +171,7 @@ final class OfflineAppLoader {
             .domain: LocalHTTPServer.host,
             .path: "/",
             HTTPCookiePropertyKey("HttpOnly"): "TRUE",
+            .sameSitePolicy: HTTPCookieStringPolicy.sameSiteStrict,
         ]
         if let cookie = HTTPCookie(properties: properties) {
             await cookieStore.setCookie(cookie)
