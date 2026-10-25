@@ -12,6 +12,7 @@
 		0329E0EAB836857A6249C83A /* shell-overrides.css in Resources */ = {isa = PBXBuildFile; fileRef = 1C728FC7B67583E5ED70EEFE /* shell-overrides.css */; };
 		085E97E11E28F5873DBA5F65 /* DownloadURLPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68C05328DE514FF5582C0E24 /* DownloadURLPolicy.swift */; };
 		09997F3E9CEE6DD656DB6FCF /* swipe-select.css in Resources */ = {isa = PBXBuildFile; fileRef = 4C26A74D86F56165252960CB /* swipe-select.css */; };
+		09B9DD0CDD76FE1B18D078FC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D0EED694251F1AE8608715C3 /* PrivacyInfo.xcprivacy */; };
 		0CE168AC980D63EAFFD236CC /* CSSPathRewriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A91D0B273ECF35F87F871E99 /* CSSPathRewriterTests.swift */; };
 		0E02A493FCB73E545C79563C /* NativeXShareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584963AC705E453ED4BB1D2B /* NativeXShareService.swift */; };
 		0FBA02B989471D0BD90955C5 /* NativeXHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89823EC4465556A2C7DADB0F /* NativeXHost.swift */; };
@@ -39,6 +40,7 @@
 		3A56FEE0A08A24D422F271D8 /* PhotoMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D422473FD7DE808D32BFE2E /* PhotoMatcher.swift */; };
 		3A782C590A803C97B1F2F3B5 /* DataWiper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB30E25F1427896B8FE8C47 /* DataWiper.swift */; };
 		3AB177365972787A60580C02 /* HTTPRequestParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C102B79CEEB243DA03CD657 /* HTTPRequestParserTests.swift */; };
+		3C0ED02BEBAE7A278DC17F56 /* PrivacyManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED906DC8ECDBA7993E1B14BB /* PrivacyManifestTests.swift */; };
 		3E79508C4A14FA135A12D007 /* PhotosAccessPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3624590DC6648B306737A47A /* PhotosAccessPrompt.swift */; };
 		3EC73D98DBF7F22D20685D17 /* NavigationPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8174267D8D9F1D2443A1F01F /* NavigationPolicyTests.swift */; };
 		413112E9547AE1F5F8AF4F49 /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB961FEAFE715CB9D5D5CFF /* CredentialStore.swift */; };
@@ -314,6 +316,7 @@
 		CD4D7BFC45D492A6DB401166 /* URLRequest+Nextcloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+Nextcloud.swift"; sourceTree = "<group>"; };
 		CE9A7CDC96AD868A95681460 /* ManifestPinTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManifestPinTests.swift; sourceTree = "<group>"; };
 		CF128F55B6FD07F44DC5AD3C /* WebViewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewFactory.swift; sourceTree = "<group>"; };
+		D0EED694251F1AE8608715C3 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D26E4329F93753F78269FB95 /* HTTPConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPConnection.swift; sourceTree = "<group>"; };
 		D3B109855539A71E9F4227E6 /* MemoriesIOSTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MemoriesIOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3D45A4A9873C05453B52893 /* PendingWipeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingWipeStoreTests.swift; sourceTree = "<group>"; };
@@ -332,6 +335,7 @@
 		EC25928F66C5B8D6F52683F4 /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
 		EC31B71637A0A4B4853BCD27 /* BackButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackButton.swift; sourceTree = "<group>"; };
 		ECEB9D7993CB70E1CE7C346E /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		ED906DC8ECDBA7993E1B14BB /* PrivacyManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivacyManifestTests.swift; sourceTree = "<group>"; };
 		EE3856F17558DBE20B159436 /* RemoteCopyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCopyStore.swift; sourceTree = "<group>"; };
 		EE55DBD777BEE8501F92A425 /* PhotosSaver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosSaver.swift; sourceTree = "<group>"; };
 		EEB961FEAFE715CB9D5D5CFF /* CredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStore.swift; sourceTree = "<group>"; };
@@ -482,6 +486,7 @@
 				DBE394490710151EAA9893CD /* InfoPlist.xcstrings */,
 				35EE2AE740C81030FFD724A9 /* Localizable.xcstrings */,
 				8C60C16C55D86D78274624E7 /* nativex.js */,
+				D0EED694251F1AE8608715C3 /* PrivacyInfo.xcprivacy */,
 				1C728FC7B67583E5ED70EEFE /* shell-overrides.css */,
 				4C26A74D86F56165252960CB /* swipe-select.css */,
 				67ADE568C6F78DD2C75F30FA /* swipe-select.js */,
@@ -674,6 +679,7 @@
 			children = (
 				5D577D3390908913EDE68A38 /* AppErrorTests.swift */,
 				52D938B70F5F1F8A3AA5FCA3 /* DataWiperTests.swift */,
+				ED906DC8ECDBA7993E1B14BB /* PrivacyManifestTests.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -832,6 +838,7 @@
 				D14B2B187E70C644AC2A6D94 /* Assets.xcassets in Resources */,
 				82D509754A4343651C5DCA9A /* InfoPlist.xcstrings in Resources */,
 				E0DF2BB0D41049766A675C9D /* Localizable.xcstrings in Resources */,
+				09B9DD0CDD76FE1B18D078FC /* PrivacyInfo.xcprivacy in Resources */,
 				8FD49D87F27EF4142964CCA6 /* nativex.js in Resources */,
 				0329E0EAB836857A6249C83A /* shell-overrides.css in Resources */,
 				09997F3E9CEE6DD656DB6FCF /* swipe-select.css in Resources */,
@@ -879,6 +886,7 @@
 				814F3074819D5E56D914716F /* PendingWipeStoreTests.swift in Sources */,
 				6172EF24BB56904E610101BD /* PhotoIDsTests.swift in Sources */,
 				9A25BB180F7E44A5BE8B5EA8 /* PhotoMatcherTests.swift in Sources */,
+				3C0ED02BEBAE7A278DC17F56 /* PrivacyManifestTests.swift in Sources */,
 				2F274925B88D4C179FFCC965 /* ProxyResponsePolicyTests.swift in Sources */,
 				14259EA624536FBE79A9E9FC /* RemoteCopyStoreTests.swift in Sources */,
 				E00760EF3AFD232B330DDBF8 /* RemoteWipeClientTests.swift in Sources */,
