@@ -52,6 +52,15 @@ final class LocalRouterTests: XCTestCase {
         XCTAssertEqual(localhost.status, 200)
     }
 
+    func testPreflightRefusesUnauthorizedHeadsBeforeTheBody() throws {
+        let anonymous = try XCTUnwrap(HTTPRequestHead("POST /x HTTP/1.1\r\nHost: \(host)\r\nContent-Length: 500000000"))
+        XCTAssertEqual(router.preflight(anonymous)?.status, 403)
+        let wrongHost = try XCTUnwrap(HTTPRequestHead("GET / HTTP/1.1\r\nHost: evil.example.org:62079\r\nCookie: local-auth=\(secret)"))
+        XCTAssertEqual(router.preflight(wrongHost)?.status, 403)
+        let allowed = try XCTUnwrap(HTTPRequestHead("PUT /x HTTP/1.1\r\nHost: \(host)\r\nCookie: local-auth=\(secret)"))
+        XCTAssertNil(router.preflight(allowed))
+    }
+
     // MARK: - Local routes
 
     func testBridgeRoutesAreNotServed() async {

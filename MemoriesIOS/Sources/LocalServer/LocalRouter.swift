@@ -33,6 +33,13 @@ final class LocalRouter: @unchecked Sendable {
 
     // MARK: - Routing
 
+    /// Access control on the headers alone, before the body is read: refuses unauthorized
+    /// requests without buffering anything they send.
+    func preflight(_ head: HTTPRequestHead) -> HTTPResponse? {
+        let request = HTTPRequest(method: head.method, target: head.target, version: head.version, headers: head.headers, body: Data())
+        return isAuthorized(request) ? nil : .forbidden
+    }
+
     func handle(_ request: HTTPRequest) async -> HTTPResponse {
         guard isAuthorized(request) else {
             // Requests not made by the page itself, e.g. a media loader without the page's cookies.

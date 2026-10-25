@@ -9,19 +9,33 @@ import Network
 /// at a time: reading only resumes once the response has been sent.
 final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
     typealias Handler = @Sendable (HTTPRequest) async -> HTTPResponse
+    /// Called as soon as the headers are complete, before the body is read: a non-nil response
+    /// is sent as-is and the connection is closed (access control without buffering the body).
+    typealias Preflight = @Sendable (HTTPRequestHead) -> HTTPResponse?
 
     private let connection: NWConnection
     private let queue = DispatchQueue(label: "memories.localserver.connection")
     private let handler: Handler
+    private let preflight: Preflight
+    private let onClose: @Sendable () -> Void
     private var buffer = Data()
     private var chunked = false
+    private var preflightPassed = false
+    private var timeout: DispatchWorkItem?
 
-    /// Max size of a request's headers and body (web uploads go through WebDAV chunks).
-    private let maxHeaderSize = 64 * 1024
-    private let maxBodySize = 512 * 1024 * 1024
+    /// Max time without bytes: in the middle of a request (slowloris), and between two requests.
+    static let requestTimeout: TimeInterval = 30
+    static let idleTimeout: TimeInterval = 120
 
-    init(_ connection: NWConnection, handler: @escaping Handler) {
+    init(
+        _ connection: NWConnection,
+        preflight: @escaping Preflight = { _ in nil },
+        onClose: @escaping @Sendable () -> Void = {},
+        handler: @escaping Handler
+    ) {
         self.connection = connection
+        self.preflight = preflight
+        self.onClose = onClose
         self.handler = handler
     }
 
@@ -34,6 +48,8 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
                 self.connection.cancel()
             case .cancelled:
                 self.connection.stateUpdateHandler = nil // breaks the retain cycle
+                self.timeout?.cancel()
+                self.onClose()
             default:
                 break
             }
@@ -45,6 +61,7 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
     // MARK: - Reading
 
     private func receive() {
+        armTimeout(buffer.isEmpty ? Self.idleTimeout : Self.requestTimeout)
         connection.receive(minimumIncompleteLength: 1, maximumLength: 256 * 1024) { data, _, isComplete, error in
             if let data { self.buffer.append(data) }
             if error != nil { return self.connection.cancel() }
@@ -54,27 +71,37 @@ final class HTTPConnection: HTTPBodyWriter, @unchecked Sendable {
         }
     }
 
+    /// Closes the connection if no byte arrives in time (cancelled once a request is being handled).
+    private func armTimeout(_ interval: TimeInterval) {
+        timeout?.cancel()
+        let item = DispatchWorkItem { [weak self] in self?.connection.cancel() }
+        timeout = item
+        queue.asyncAfter(deadline: .now() + interval, execute: item)
+    }
+
     /// Handles a request if it is complete in the buffer. Returns `true` if it was handled.
     private func tryHandleRequest() -> Bool {
-        let separator = Data("\r\n\r\n".utf8)
-        guard let headerEnd = buffer.range(of: separator) else {
-            if buffer.count > maxHeaderSize { respondAndClose(.text(431, "headers too large")) ; return true }
+        switch HTTPRequestParser.parse(buffer) {
+        case .incomplete:
             return false
+        case .rejected(let status, let message):
+            respondAndClose(.text(status, message)); return true
+        case .head(let head, let bodyOffset, let length):
+            return handle(head, bodyOffset: bodyOffset, length: length)
         }
-        guard let text = String(data: buffer[buffer.startIndex..<headerEnd.lowerBound], encoding: .utf8),
-              let head = HTTPRequestHead(text)
-        else { respondAndClose(.text(400, "bad request")); return true }
+    }
 
-        if head.headers["transfer-encoding"] != nil {
-            respondAndClose(.text(411, "length required")); return true
+    private func handle(_ head: HTTPRequestHead, bodyOffset: Int, length: Int) -> Bool {
+        if !preflightPassed {
+            if let response = preflight(head) { respondAndClose(response); return true }
+            preflightPassed = true
         }
-        let length = Int(head.headers["content-length"] ?? "0") ?? 0
-        guard length <= maxBodySize else { respondAndClose(.text(413, "too large")); return true }
-
-        let bodyStart = headerEnd.upperBound
-        guard buffer.count - (bodyStart - buffer.startIndex) >= length else { return false }
+        guard buffer.count - bodyOffset >= length else { return false }
+        let bodyStart = buffer.startIndex + bodyOffset
         let body = buffer.subdata(in: bodyStart..<(bodyStart + length))
         buffer = Data(buffer[(bodyStart + length)...])
+        preflightPassed = false
+        timeout?.cancel()
 
         let request = HTTPRequest(
             method: head.method, target: head.target, version: head.version, headers: head.headers, body: body

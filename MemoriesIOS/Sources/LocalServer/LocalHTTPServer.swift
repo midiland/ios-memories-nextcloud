@@ -29,6 +29,7 @@ final class LocalHTTPServer {
     /// Start in progress, awaited by concurrent `ensureStarted()` calls.
     private var starting: Task<UInt16, Error>?
     private let queue = DispatchQueue(label: "memories.localserver.listener")
+    private let connectionLimiter = ConnectionLimiter(maxConnections: 128)
 
     init(preferredPort: UInt16 = 62079) {
         self.preferredPort = preferredPort
@@ -90,8 +91,16 @@ final class LocalHTTPServer {
         )
         let listener = try NWListener(using: parameters)
         let router = self.router
+        let limiter = self.connectionLimiter
         listener.newConnectionHandler = { connection in
-            HTTPConnection(connection) { request in await router.handle(request) }.start()
+            // Any local app can connect: bound the number of open connections.
+            guard limiter.acquire() else { return connection.cancel() }
+            HTTPConnection(
+                connection,
+                preflight: { head in router.preflight(head) },
+                onClose: { limiter.release() },
+                handler: { request in await router.handle(request) }
+            ).start()
         }
 
         let bound: UInt16 = try await withCheckedThrowingContinuation { continuation in
@@ -138,5 +147,29 @@ private final class OnceFlag: @unchecked Sendable {
             defer { claimed = true }
             return !claimed
         }
+    }
+}
+
+/// Caps simultaneous connections (a connection holds buffers and a timer).
+final class ConnectionLimiter: @unchecked Sendable {
+    private let lock = NSLock()
+    private let maxConnections: Int
+    private var open = 0
+
+    init(maxConnections: Int) {
+        self.maxConnections = maxConnections
+    }
+
+    /// `false` when the cap is reached; otherwise the caller must `release()` once.
+    func acquire() -> Bool {
+        lock.withLock {
+            guard open < maxConnections else { return false }
+            open += 1
+            return true
+        }
+    }
+
+    func release() {
+        lock.withLock { open = max(0, open - 1) }
     }
 }
