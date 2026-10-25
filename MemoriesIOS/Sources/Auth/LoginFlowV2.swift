@@ -22,13 +22,24 @@ struct LoginFlowV2 {
         guard let entered = ServerURL(userInput: userInput) else { throw AppError.invalidURL }
 
         let describe = try await client.describe(entered)
-        // The server knows its canonical URL (overwrite.cli.url, protocol…): prefer it.
-        let server = ServerURL(memoriesBaseURL: describe.baseUrl) ?? entered
-        guard let loginFlowURL = URL(string: describe.loginFlowUrl) else {
-            throw AppError.invalidResponse
+        // The server knows its canonical URL (overwrite.cli.url, protocol…): prefer it, as long
+        // as it stays on the entered host (the app password goes to the host chosen here).
+        var server = entered
+        if ServerURL(memoriesBaseURL: describe.baseUrl) != nil {
+            guard let canonical = LoginURLPolicy.canonicalServer(baseUrl: describe.baseUrl, entered: entered) else {
+                throw AppError.invalidResponse
+            }
+            server = canonical
         }
+        guard let loginFlowURL = URL(string: describe.loginFlowUrl),
+              LoginURLPolicy.isAcceptable(loginFlowURL, for: server)
+        else { throw AppError.invalidResponse }
 
         let flow = try await client.startLoginFlow(loginFlowURL)
+        // Opened in Safari and polled: both must be web URLs on the server's host.
+        guard LoginURLPolicy.isAcceptable(flow.login, for: server),
+              LoginURLPolicy.isAcceptable(flow.poll.endpoint, for: server)
+        else { throw AppError.invalidResponse }
         return Pending(loginPage: flow.login, poll: flow.poll, server: server)
     }
 
