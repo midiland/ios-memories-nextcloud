@@ -65,6 +65,7 @@
 		58814F213BD3C92E5E74CE54 /* LocalServerAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1075A28F45BCCDCDACC40351 /* LocalServerAccess.swift */; };
 		5C6A921546810A1AF7020E3C /* AlbumDownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A68E7BEB442E975E8E65A4E /* AlbumDownloadProgressView.swift */; };
 		5C8CFB0409A612EE71C7A6C6 /* DataWiperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D938B70F5F1F8A3AA5FCA3 /* DataWiperTests.swift */; };
+		5FD9F66700B80AE8AF6FFB36 /* InstallMarkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B485C3D73D952FC52FD5A23B /* InstallMarkerTests.swift */; };
 		616C5F2497D8EE2F45C9EF52 /* NativeXArguments.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0A15C8DB79A413AF2B5057A /* NativeXArguments.swift */; };
 		6172EF24BB56904E610101BD /* PhotoIDsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BDAF18CBE1FE0F77D444FD6 /* PhotoIDsTests.swift */; };
 		62CE9D8F13F0BA3FD5B72CA1 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8EF4BCBE1B183645CD1737 /* DownloadProgressView.swift */; };
@@ -121,6 +122,7 @@
 		C49265FD3021601C302CA5E1 /* CSSPathRewriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46B2F58E3B813012A1F0CE4F /* CSSPathRewriter.swift */; };
 		C4BF9872624746982B73ED82 /* memories-10.0.0-manifest.dsse.json in Resources */ = {isa = PBXBuildFile; fileRef = 88BA9B8C5BCFF859B452903F /* memories-10.0.0-manifest.dsse.json */; };
 		C4C58626190581A2A99D4BE3 /* SnapshotStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0269CD2B24DBF8CE71ABE4E5 /* SnapshotStore.swift */; };
+		C4F95C4D83B886A540D02B08 /* InstallMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9ED04B101D59D27736C9A3 /* InstallMarker.swift */; };
 		C5773AEDCF54F6D7CFC4DFD0 /* ProxyResponsePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D24462FD52F13901065AEE6 /* ProxyResponsePolicy.swift */; };
 		C738DA7D92E894EA5A2239E4 /* SwipeSelectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319B16F13BD620053AA5B9A2 /* SwipeSelectTests.swift */; };
 		C844691BA38A3E48E7620455 /* PendingWipeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F3DEEB936C6FECBA306E52 /* PendingWipeStore.swift */; };
@@ -195,6 +197,7 @@
 		0BAF48A1102A5E5C47A366B0 /* NavigationPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationPolicy.swift; sourceTree = "<group>"; };
 		0C209FB55BFAA8E96027D1BC /* Memories.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Memories.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0DCE51A11A078EEDA410F981 /* LocalFolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalFolder.swift; sourceTree = "<group>"; };
+		0E9ED04B101D59D27736C9A3 /* InstallMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallMarker.swift; sourceTree = "<group>"; };
 		0EB30E25F1427896B8FE8C47 /* DataWiper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataWiper.swift; sourceTree = "<group>"; };
 		1075A28F45BCCDCDACC40351 /* LocalServerAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalServerAccess.swift; sourceTree = "<group>"; };
 		10E8BEE182634C3C7239875F /* PhotoIDs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoIDs.swift; sourceTree = "<group>"; };
@@ -298,6 +301,7 @@
 		B0A36D6568685189E036A167 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		B1D822DDAB4B1EEECC1DB434 /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
 		B46E95639045DC5413921FF4 /* ServerPhoto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerPhoto.swift; sourceTree = "<group>"; };
+		B485C3D73D952FC52FD5A23B /* InstallMarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallMarkerTests.swift; sourceTree = "<group>"; };
 		B4AFBAC08817F20902BE298E /* ServerPhotoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerPhotoTests.swift; sourceTree = "<group>"; };
 		B74A4A6531629FD15E2E4086 /* SemanticVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticVersion.swift; sourceTree = "<group>"; };
 		B7BFC7755AB3815C23E60312 /* ProxyResponsePolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyResponsePolicyTests.swift; sourceTree = "<group>"; };
@@ -375,6 +379,7 @@
 				2212DA2CDC57AC2548D23532 /* AppConstants.swift */,
 				51523A13AA1DC5DA3171F621 /* AppError.swift */,
 				0EB30E25F1427896B8FE8C47 /* DataWiper.swift */,
+				0E9ED04B101D59D27736C9A3 /* InstallMarker.swift */,
 				93BFE100B41E08DA9D601855 /* Log.swift */,
 				F43AC8C11C4F54E363481FE4 /* MemoriesApp.swift */,
 				CC8F46DAF454C89AF55728EF /* RootView.swift */,
@@ -685,6 +690,7 @@
 			children = (
 				5D577D3390908913EDE68A38 /* AppErrorTests.swift */,
 				52D938B70F5F1F8A3AA5FCA3 /* DataWiperTests.swift */,
+				B485C3D73D952FC52FD5A23B /* InstallMarkerTests.swift */,
 				ED906DC8ECDBA7993E1B14BB /* PrivacyManifestTests.swift */,
 			);
 			path = App;
@@ -876,6 +882,7 @@
 				6AF336532974C7CFEA37D89A /* Fixtures.swift in Sources */,
 				3AB177365972787A60580C02 /* HTTPRequestParserTests.swift in Sources */,
 				49BB9D06CD58C29DB1D483CA /* HTTPTypesTests.swift in Sources */,
+				5FD9F66700B80AE8AF6FFB36 /* InstallMarkerTests.swift in Sources */,
 				681B6F5E44F7473173D7E61F /* LocalFolderTests.swift in Sources */,
 				6FD3623FFA305B2FFB08C98E /* LocalHTTPServerTests.swift in Sources */,
 				D5369D6D1D1B8C6656336E9C /* LocalOriginTests.swift in Sources */,
@@ -950,6 +957,7 @@
 				7DF3C93C24860D652861F2D0 /* HTTPRequestHead.swift in Sources */,
 				30719AA87E8C1E1691336E5F /* HTTPRequestParser.swift in Sources */,
 				62F7F8D88EA9F24B007BB463 /* HTTPTypes.swift in Sources */,
+				C4F95C4D83B886A540D02B08 /* InstallMarker.swift in Sources */,
 				44EAD9F120A6E90C8A88A792 /* LocalAppConfig.swift in Sources */,
 				67A02E114B34F03BF54AE6A6 /* LocalAsset.swift in Sources */,
 				CB638A06BC3738238CD726E9 /* LocalFolder.swift in Sources */,

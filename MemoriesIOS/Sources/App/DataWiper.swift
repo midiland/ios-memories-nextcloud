@@ -96,9 +96,12 @@ struct DataWiper {
     /// Removes the app's whole UserDefaults domain, so a key added later is erased too.
     /// Only the app's own persistent domain is cleared: unlike iterating over
     /// `dictionaryRepresentation()`, this leaves the system's global keys alone.
+    /// Keeps the install marker (a bare flag, no personal data): see `InstallMarker`.
     private func removeUserDefaults() {
         guard !defaultsDomain.isEmpty else { return }
+        let marker = defaults.bool(forKey: InstallMarker.key)
         defaults.removePersistentDomain(forName: defaultsDomain)
+        if marker { defaults.set(true, forKey: InstallMarker.key) }
     }
 
     /// WebView data: localStorage, IndexedDB, service workers, disk cache…

@@ -12,6 +12,11 @@ struct SnapshotStore {
         return base.appendingPathComponent("offline", isDirectory: true)
     }
 
+    /// Whether any snapshot was ever stored: tells an existing install from a fresh one.
+    var hasData: Bool {
+        fileManager.fileExists(atPath: root.path)
+    }
+
     /// Per-server folder: `scheme_host_port`, sanitized into a safe path segment.
     func serverDirectory(for server: ServerURL) -> URL {
         let origin = server.origin

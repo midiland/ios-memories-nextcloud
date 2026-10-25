@@ -10,6 +10,8 @@ struct MemoriesApp: App {
         #if DEBUG
         DebugAutomation.seedCredentials()
         #endif
+        // Before the session is restored from the Keychain.
+        InstallMarker().purgeKeychainIfReinstalled()
         let server = LocalHTTPServer.shared
         self.server = server
         let teardown = SessionTeardown(server: server)
