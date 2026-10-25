@@ -2,7 +2,8 @@ import Foundation
 
 /// Downloads a file from the Nextcloud server into a temporary folder.
 ///
-/// Credentials are sent **only** if the URL points to the account's server
+/// Only http(s) URLs on the account's server or the local server are downloaded
+/// (`DownloadURLPolicy`). Credentials are sent **only** if the URL points to the account's server
 /// (never to a third-party host). URLs on the app's local server (what the frontend passes:
 /// it builds them on the page origin) carry the `local-auth` cookie, and the local server relays
 /// them to Nextcloud with the credentials.
@@ -20,7 +21,11 @@ struct AuthenticatedDownloader {
         preferredName: String? = nil,
         progress: (@Sendable (Int64, Int64) -> Void)? = nil
     ) async throws -> URL {
-        let request = URLRequest(url: url, authorizedFor: credentials, localServer: await localServer())
+        let access = await localServer()
+        guard DownloadURLPolicy.isAllowed(url, serverOrigin: credentials.server.origin, local: access) else {
+            throw AppError.invalidURL
+        }
+        let request = URLRequest(url: url, authorizedFor: credentials, localServer: access)
 
         // A dedicated session with a delegate so we can track the download progress.
         let delegate = DownloadDelegate(progress: progress)
