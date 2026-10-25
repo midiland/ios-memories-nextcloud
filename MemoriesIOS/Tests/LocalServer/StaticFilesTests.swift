@@ -44,6 +44,33 @@ final class StaticFilesTests: XCTestCase {
         XCTAssertEqual(StaticFiles.file(Fixtures.request("/x/app.js", method: "POST"), in: directory).status, 404)
     }
 
+    func testRejectsPercentEncodedTraversal() throws {
+        // A secret sitting next to the served directory must not be reachable.
+        let secret = directory.deletingLastPathComponent().appendingPathComponent("secret-\(UUID().uuidString).txt")
+        try Data("secret".utf8).write(to: secret)
+        defer { try? FileManager.default.removeItem(at: secret) }
+
+        let encoded = [
+            "%2e%2e%2f", "%2E%2E%2F", "%2e%2e/", "..%2f", "%2e%2e%5c", "%2e%2e%2f%2e%2e%2f",
+        ]
+        for prefix in encoded {
+            let response = StaticFiles.file(Fixtures.request("/x/\(prefix)\(secret.lastPathComponent)"), in: directory)
+            XCTAssertEqual(response.status, 404, prefix)
+            XCTAssertNotEqual(response.text, "secret", prefix)
+        }
+        XCTAssertEqual(StaticFiles.file(Fixtures.request("/x/app.js%00.txt"), in: directory).status, 404)
+        XCTAssertEqual(StaticFiles.file(Fixtures.request("/x/%2fetc%2fhosts"), in: directory).status, 404)
+        XCTAssertEqual(StaticFiles.bundled(Fixtures.request("/local/static/%2e%2e%2fInfo.plist")).status, 404)
+    }
+
+    func testSafeNames() {
+        XCTAssertTrue(StaticFiles.isSafeName("memories-main.js"))
+        XCTAssertTrue(StaticFiles.isSafeName("00_server.css"))
+        for bad in ["", "..", "a/b", "a\\b", "../x", "a..b", "a\u{0}b", "a\nb"] {
+            XCTAssertFalse(StaticFiles.isSafeName(bad), bad)
+        }
+    }
+
     func testServesBundledOverrides() {
         let response = StaticFiles.bundled(Fixtures.request("/local/static/shell-overrides.css"))
         XCTAssertEqual(response.status, 200)

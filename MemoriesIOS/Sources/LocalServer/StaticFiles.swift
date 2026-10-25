@@ -1,7 +1,7 @@
 import Foundation
 
 /// Locally served files (port of `StaticController.kt`). Lookup by file name only
-/// (last path segment): no directory traversal possible.
+/// (last path segment, percent-decoded then validated): no directory traversal possible.
 enum StaticFiles {
     /// File bundled in the app (`Resources/`), e.g. `shell-overrides.css`.
     static func bundled(_ request: HTTPRequest) -> HTTPResponse {
@@ -26,7 +26,9 @@ enum StaticFiles {
     ) -> HTTPResponse {
         guard let name = fileName(request) else { return .notFound }
         let url = directory.appendingPathComponent(name)
-        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+        // Defence in depth: the resolved file must stay directly inside `directory`.
+        guard url.standardizedFileURL.deletingLastPathComponent().path == directory.standardizedFileURL.path,
+              let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
               let size = attributes[.size] as? Int
         else { return .notFound }
 
@@ -47,10 +49,19 @@ enum StaticFiles {
     /// Requested file name; `nil` (→ 404) if empty, suspicious, or the method is not GET/HEAD.
     private static func fileName(_ request: HTTPRequest) -> String? {
         guard request.method == "GET" || request.method == "HEAD" else { return nil }
-        guard let name = request.path.split(separator: "/").last.map(String.init),
-              !name.isEmpty, !name.contains("..")
+        guard let segment = request.path.split(separator: "/").last.map(String.init),
+              let name = segment.removingPercentEncoding,
+              isSafeName(name)
         else { return nil }
-        return name.removingPercentEncoding ?? name
+        return name
+    }
+
+    /// A plain file name, checked AFTER percent-decoding (`%2e%2e%2f` must not slip through):
+    /// no separator, no `..`, no control character (NUL included).
+    static func isSafeName(_ name: String) -> Bool {
+        !name.isEmpty
+            && !name.contains("/") && !name.contains("\\") && !name.contains("..")
+            && !name.unicodeScalars.contains { $0.value < 0x20 || $0.value == 0x7f }
     }
 
     private static func mimeType(_ ext: String) -> String {
