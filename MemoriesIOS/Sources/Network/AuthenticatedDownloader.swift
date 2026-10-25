@@ -7,7 +7,24 @@ import Foundation
 /// (never to a third-party host). URLs on the app's local server (what the frontend passes:
 /// it builds them on the page origin) carry the `local-auth` cookie, and the local server relays
 /// them to Nextcloud with the credentials.
-struct AuthenticatedDownloader {
+/// Downloads a URL to a local file (the network implementation, or a stub in tests).
+protocol FileDownloading {
+    func download(
+        _ url: URL, preferredName: String?, progress: (@Sendable (Int64, Int64) -> Void)?
+    ) async throws -> URL
+}
+
+extension FileDownloading {
+    func download(_ url: URL) async throws -> URL {
+        try await download(url, preferredName: nil, progress: nil)
+    }
+
+    func download(_ url: URL, preferredName: String?, progress: (@Sendable (Int64, Int64) -> Void)? = nil) async throws -> URL {
+        try await download(url, preferredName: preferredName, progress: progress)
+    }
+}
+
+struct AuthenticatedDownloader: FileDownloading {
     let credentials: Credentials
     /// Current port and secret of the local server, `nil` when it is not running.
     var localServer: @MainActor () -> LocalServerAccess? = { nil }

@@ -27,6 +27,7 @@ struct PhotosSaver {
         var done = 0
 
         for (index, file) in media.enumerated() {
+            if Task.isCancelled { break } // files already saved stay saved
             done += 1
             if duplicates.duplicates.contains(index) {
                 progress?(done, total)
@@ -41,7 +42,7 @@ struct PhotosSaver {
             progress?(done, total)
         }
 
-        if let title = title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty,
+        if !Task.isCancelled, let title = title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty,
            !albumAssets.isEmpty, await PhotosAccessPrompt.hasFullAccess {
             await addToAlbum(named: title, assets: albumAssets)
         }

@@ -15,16 +15,19 @@ final class NativeXShareService {
 
     /// Receives the toasts (download started / failed) and the download progress (issue #14).
     weak var host: NativeXHost?
-    private let downloader: AuthenticatedDownloader
+    private let downloader: any FileDownloading
     private let photoLibrary: PhotoLibrary
     /// Shows the share sheet for files or links.
     private let presentShareSheet: @MainActor ([Any]) -> Void
     private var stagedBlobs: [Blob] = []
     /// The ongoing album download (issue #14), cancelled by `cancelDownload`.
     private var downloadTask: Task<Void, Never>?
+    /// Identifies the current download: a cancelled one that finishes late must not hide the
+    /// overlay, report progress or clear the task of the one that replaced it.
+    private var activeDownloadID: UUID?
 
     init(
-        downloader: AuthenticatedDownloader,
+        downloader: any FileDownloading,
         photoLibrary: PhotoLibrary,
         presentShareSheet: @escaping @MainActor ([Any]) -> Void
     ) {
@@ -72,6 +75,11 @@ final class NativeXShareService {
     /// (issue #14) shows the download → extract → save phases.
     func download(urlString: String?, filename: String?, title: String?) {
         guard let urlString, let url = URL(string: urlString), let host else { return }
+        // One download at a time: a new request replaces (and cancels) the previous one.
+        downloadTask?.cancel()
+        let id = UUID()
+        activeDownloadID = id
+
         if let title, !title.isEmpty {
             host.nativeXToast(String(localized: "Downloading \(title)…"), long: false)
         } else {
@@ -84,24 +92,30 @@ final class NativeXShareService {
         let name = filename?.isEmpty == false ? filename : nil
         downloadTask = Task { [weak self] in
             guard let self else { return }
+            var folder: URL?
             do {
                 // Phase 1: download the file (ZIP for an album) with byte progress.
                 let file = try await downloader.download(url, preferredName: name) { [weak self] done, total in
                     Task { @MainActor in
-                        self?.host?.nativeXSetDownloadProgress(
-                            .init(phase: .downloading, done: Int(done), total: Int(total), title: title)
-                        )
+                        self?.report(.init(phase: .downloading, done: Int(done), total: Int(total), title: title), for: id)
                     }
                 }
+                folder = file.deletingLastPathComponent()
                 try Task.checkCancellation()
-                await saveOrShare(file, album: title)
+                await saveOrShare(file, album: title, id: id)
             } catch is CancellationError {
-                // Cancelled by the user (issue #14): the overlay is already hidden.
+                // Cancelled by the user (issue #14) or replaced by a newer download.
+                if let folder { try? FileManager.default.removeItem(at: folder) }
             } catch {
-                self.host?.nativeXToast(String(localized: "Download failed: \(error.localizedDescription)"), long: true)
+                if self.activeDownloadID == id {
+                    self.host?.nativeXToast(String(localized: "Download failed: \(error.localizedDescription)"), long: true)
+                }
             }
-            self.host?.nativeXSetDownloadProgress(nil)
-            self.downloadTask = nil
+            if self.activeDownloadID == id {
+                self.host?.nativeXSetDownloadProgress(nil)
+                self.downloadTask = nil
+                self.activeDownloadID = nil
+            }
         }
     }
 
@@ -110,45 +124,61 @@ final class NativeXShareService {
         downloadTask?.cancel()
     }
 
+    /// Progress of download `id`; ignored once another download took over.
+    private func report(_ progress: WebViewModel.DownloadProgress, for id: UUID) {
+        guard activeDownloadID == id, !Task.isCancelled else { return }
+        host?.nativeXSetDownloadProgress(progress)
+    }
+
     /// Photos and videos (also inside an album ZIP) go to the photo library, like Android saves
     /// them to Downloads; other files, or no access to Photos, open the share sheet.
-    private func saveOrShare(_ file: URL, album: String?) async {
+    ///
+    /// Cancellation is checked between the phases: once cancelled, nothing more is extracted,
+    /// saved or announced (photos already saved stay saved).
+    private func saveOrShare(_ file: URL, album: String?, id: UUID) async {
         let folder = file.deletingLastPathComponent()
-        let media = await extractMedia(in: file, folder: folder, album: album)
+        let media = await extractMedia(in: file, folder: folder, album: album, id: id)
+        guard !Task.isCancelled else {
+            try? FileManager.default.removeItem(at: folder)
+            return
+        }
         guard !media.isEmpty, await PhotosAccessPrompt.requestAccess() else {
-            presentShareSheet([file])
+            if !Task.isCancelled { presentShareSheet([file]) }
             return
         }
         let result = await PhotosSaver(library: photoLibrary).save(media, album: album) { [weak self] done, total in
             Task { @MainActor in
-                self?.host?.nativeXSetDownloadProgress(
-                    .init(phase: .savingToPhotos, done: done, total: total, title: album)
-                )
+                self?.report(.init(phase: .savingToPhotos, done: done, total: total, title: album), for: id)
             }
         }
         try? FileManager.default.removeItem(at: folder)
+        guard !Task.isCancelled else { return }
         host?.nativeXToast(Self.message(for: result), long: result.failed > 0)
     }
 
     /// Extracts the media files of a downloaded file (itself, or the photos/videos of a ZIP),
     /// reporting the extraction progress (issue #14). Runs off the main actor so a large
     /// archive does not freeze the UI.
-    private func extractMedia(in file: URL, folder: URL, album: String?) async -> [MediaFile] {
+    private func extractMedia(in file: URL, folder: URL, album: String?, id: UUID) async -> [MediaFile] {
         guard ZipExtractor.isZip(file) else {
             return MediaFile(url: file).map { [$0] } ?? []
         }
         let extracted = folder.appendingPathComponent("extracted", isDirectory: true)
         do {
             try FileManager.default.createDirectory(at: extracted, withIntermediateDirectories: true)
-            let files = try await Task.detached { [weak self] in
+            // A detached task is not cancelled with its parent: forward the cancellation.
+            let extraction = Task.detached { [weak self] in
                 try ZipExtractor.extract(file, into: extracted) { done, total in
                     Task { @MainActor in
-                        self?.host?.nativeXSetDownloadProgress(
-                            .init(phase: .extracting, done: done, total: total, title: album)
-                        )
+                        self?.report(.init(phase: .extracting, done: done, total: total, title: album), for: id)
                     }
                 }
-            }.value
+            }
+            let files = try await withTaskCancellationHandler {
+                try await extraction.value
+            } onCancel: {
+                extraction.cancel()
+            }
             return files.compactMap(MediaFile.init(url:))
         } catch {
             Log.nativex.error("ZIP extraction failed: \(String(describing: error), privacy: .public)")
