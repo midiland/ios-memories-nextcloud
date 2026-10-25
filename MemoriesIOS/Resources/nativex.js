@@ -25,6 +25,8 @@
 
   window.nativex = {
     isNative: () => true,
+    // Lets the frontend pick platform-specific links (e.g. the App Store link of the setup page).
+    getPlatform: () => 'ios',
     setThemeColor: (color, isDark) => post('setThemeColor', color == null ? null : String(color), !!isDark),
     playTouchSound: () => post('playTouchSound'),
     toast: (message, long) => post('toast', String(message), !!long),

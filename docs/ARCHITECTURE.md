@@ -259,6 +259,7 @@ erase the user's photo library silently).
 ### Media Features
 - **`playVideo`/`playVideo2`/`destroyVideo` not exposed**: Frontend keeps web player
 - **`playTouchSound`**: Mapped to haptic feedback
+- **`getPlatform`**: Returns `'ios'` so the frontend picks the App Store link on the setup page (upstream issue pulsejet/memories#1750). `NavigationPolicy` still swaps the hardcoded Play Store link for servers that predate it
 - **`downloadFromUrl`**: Download, then:
   - Photos → **Photos app** (originals + album)
   - Videos → **Photos app**
