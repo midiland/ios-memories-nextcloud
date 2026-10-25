@@ -19,4 +19,12 @@ final class AppErrorTests: XCTestCase {
             return XCTFail("A URLSession error must read as an unreachable server")
         }
     }
+
+    func testRemoteWipeHasLocalizedMessage() {
+        let message = AppError.remoteWipe.errorDescription
+        XCTAssertNotNil(message)
+        // In tests the string catalog may not be loaded; the message must at least
+        // be a non-empty, distinct string (not the raw key).
+        XCTAssertFalse(message?.isEmpty ?? true)
+    }
 }

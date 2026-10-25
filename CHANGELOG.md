@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## Unreleased
+
+### Added
+- **Remote wipe support**: The app now supports Nextcloud's remote wipe (Settings → Security → Devices & sessions → "Wipe device"). When a wipe is requested, the app detects it at startup, when returning to the foreground, or when the server rejects the credentials, erases all local data (offline snapshots, cached metadata, temporary files, WebView data, cookies, and Keychain credentials), confirms the wipe to the server, and returns to the login screen with an explanatory message. Photos already saved to the iOS Photos library are left untouched. (Issue #15)
+
+---
+
 ## 1.0.0-rc.13
 
 ### Added

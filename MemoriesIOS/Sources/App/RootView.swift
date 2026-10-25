@@ -14,7 +14,8 @@ struct RootView: View {
                 credentials: credentials,
                 server: server,
                 onSessionRevoked: { [weak session] in session?.sessionRevoked() },
-                onLogout: { [weak session] in session?.logout() }
+                onLogout: { [weak session] in session?.logout() },
+                onCheckRemoteWipe: { [weak session] in session?.checkForRemoteWipe() }
             )
                 // New view identity per account: the WebView is recreated on every login.
                 .id(credentials.loginName + "@" + credentials.server.memoriesURL.absoluteString)

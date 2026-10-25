@@ -7,7 +7,9 @@
 #   --fresh   uninstall the app first (no cached snapshot: tests the first launch)
 #   --build   rebuild the Debug app before installing
 #
-# Scenarios: valid, unsigned, tampered, dsse, dsse-expired, dsse-tampered, dsse-old, none (see server.mjs).
+# Scenarios: valid, unsigned, tampered, dsse, dsse-expired, dsse-tampered, dsse-old, none, wipe (see server.mjs).
+#   wipe           a remote wipe is pending for the test app password (issue #15):
+#                  the app erases its local data and returns to the login screen.
 # Screenshots and the server log go to build16/fake-nextcloud/.
 set -euo pipefail
 

@@ -152,6 +152,7 @@ node server.mjs
 ./test-scenario.sh dsse-tampered    # Tampered DSSE manifest
 ./test-scenario.sh dsse-old         # Older TUF version
 ./test-scenario.sh none             # No Memories app
+./test-scenario.sh wipe             # Remote wipe pending (issue #15)
 ```
 
 ### Scenario Behaviors
@@ -165,6 +166,17 @@ node server.mjs
 | `dsse-tampered` | Error screen | ⚠️ JS files **are** requested |
 | `dsse-old` | Fake page loads | ✅ Older TUF version accepted |
 | `none` | Error screen | ❌ |
+| `wipe` | Login screen with wipe message | 🧹 App erases local data and confirms the wipe (issue #15) |
+
+### Remote Wipe Scenario (Issue #15)
+```bash
+# First launch normally, then request a wipe:
+./test-scenario.sh valid --fresh    # Sign in and load the app
+WAIT=4 ./test-scenario.sh wipe      # Wipe is detected: data erased, back to login
+```
+The app calls `POST /index.php/core/wipe/check`, erases all local data, calls
+`POST /index.php/core/wipe/success`, and shows "This device was remotely wiped from Nextcloud."
+on the login screen.
 
 ### Advanced Testing
 ```bash

@@ -69,6 +69,9 @@ final class WebViewModel: ObservableObject {
     let onSessionRevoked: () -> Void
     /// Called when the user logs out (web UI or error screen).
     let onLogout: () -> Void
+    /// Called to proactively check for a pending remote wipe (issue #15):
+    /// at startup and when the app returns to the foreground.
+    let onCheckRemoteWipe: () -> Void
 
     /// The NativeX bridge (internal so the view can cancel an ongoing download, issue #14).
     private(set) var nativeX: NativeXController
@@ -94,11 +97,13 @@ final class WebViewModel: ObservableObject {
         credentials: Credentials,
         server: LocalHTTPServer,
         onSessionRevoked: @escaping () -> Void,
-        onLogout: @escaping () -> Void
+        onLogout: @escaping () -> Void,
+        onCheckRemoteWipe: @escaping () -> Void = {}
     ) {
         self.credentials = credentials
         self.onSessionRevoked = onSessionRevoked
         self.onLogout = onLogout
+        self.onCheckRemoteWipe = onCheckRemoteWipe
         let library = PhotoLibrary()
         localPhotos = LocalTimeline(credentials: credentials, library: library)
         offline = OfflineAppLoader(credentials: credentials, server: server, media: localPhotos)
@@ -165,6 +170,9 @@ final class WebViewModel: ObservableObject {
         refreshTask?.cancel()
         hasStarted = true
         state = .loading
+        // Proactive remote-wipe check (issue #15): one cheap POST, well within the
+        // server's rate limit (10 / 5 min / IP).
+        onCheckRemoteWipe()
         loadTask = Task { [weak self] in await self?.load() }
     }
 
@@ -232,10 +240,12 @@ final class WebViewModel: ObservableObject {
     }
 
     /// Back in the foreground: listens again (same port, so the page keeps working), then
-    /// reloads what the background broke (see `LocalReloadRule`).
+    /// reloads what the background broke (see `LocalReloadRule`). Also checks for a
+    /// pending remote wipe (issue #15).
     func appDidBecomeActive() {
         isActive = true
         guard hasStarted else { return }
+        onCheckRemoteWipe()
         Task { await recoverLocalPage() }
     }
 

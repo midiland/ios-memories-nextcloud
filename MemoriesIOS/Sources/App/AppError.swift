@@ -17,6 +17,8 @@ enum AppError: LocalizedError, Equatable {
     case loginFlowUnavailable(Int)
     case loginTimeout
     case notAuthenticated
+    /// The device was remotely wiped from the Nextcloud settings (Security → Devices & sessions).
+    case remoteWipe
     case keychain(OSStatus)
 
     var errorDescription: String? {
@@ -45,6 +47,8 @@ enum AppError: LocalizedError, Equatable {
             return String(localized: "Login timed out. Please try again.")
         case .notAuthenticated:
             return String(localized: "Session expired or revoked. Please sign in again.")
+        case .remoteWipe:
+            return String(localized: "This device was remotely wiped from Nextcloud. All local data has been erased.")
         case .keychain(let status):
             return String(localized: "iOS Keychain error (\(status)).")
         }

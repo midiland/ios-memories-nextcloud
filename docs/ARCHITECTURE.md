@@ -131,6 +131,9 @@ Settings > Device Folders > "Run initial device setup" (/nxsetup)
 ### 6. Session Management
 - Relay sends Basic auth on every request → expired sessions renewed transparently
 - Authenticated `describe` (startup or background check) returning 401 or `uid == null` → credentials erased, back to login
+- A 401 first triggers a remote-wipe check (see §8): a token marked for wipe is rejected
+  with 401 exactly like a revoked password, so the wipe must be detected before the
+  Keychain is cleared
 
 ### 7. Logout
 **Triggers:**
@@ -141,6 +144,61 @@ Settings > Device Folders > "Run initial device setup" (/nxsetup)
 - Revoke app password: `DELETE /ocs/v2.php/core/apppassword`
 - Clear Keychain + WebView data + relay cookies + local server config
 - Snapshots remain on disk
+
+### 8. Remote Wipe (Issue #15)
+Supports Nextcloud's remote wipe (Settings → Security → Devices & sessions → "Wipe device").
+
+**Protocol** (Nextcloud `core/Controller/WipeController.php`):
+- `POST /index.php/core/wipe/check` with `token=<app password>` (form param, no Basic auth —
+  the endpoint is `#[PublicPage]` and the token is the credential)
+  - `200 {"wipe": true}` → a wipe is pending
+  - `404` → no wipe pending
+- `POST /index.php/core/wipe/success` with the same `token` → confirms the wipe
+- Rate limit: 10 requests / 5 minutes / IP (`#[AnonRateLimit]`)
+
+**Detection points** (one cheap POST each, well within the rate limit):
+1. App startup (`WebViewModel.start` → `SessionStore.checkForRemoteWipe`)
+2. Return to foreground (`WebViewModel.appDidBecomeActive` → same). Proactive checks are
+   throttled to one per minute (the server allows 10 requests / 5 minutes / IP).
+3. On a 401 from `describe` (`SessionStore.sessionRevoked`): the wipe is checked **before**
+   the Keychain is cleared, because a wiped token is rejected with 401 and the token is
+   needed to call `wipe/check`. `sessionRevoked` is idempotent (`load()` and the background
+   refresh can both report the 401).
+4. Next launch, for a pending entry (see *Pending wipe*).
+
+Only one wipe runs at a time (`isWiping`): at startup the proactive check and the 401 handler
+can both detect the same wipe.
+
+**Flow when a wipe is detected** (`SessionStore.performRemoteWipe`):
+1. The credentials are saved in `PendingWipeStore` **before** anything is erased (the purge
+   deletes the Keychain credentials: if the app died in between, the confirmation would be lost).
+2. The UI goes back to the login screen (message "This device was remotely wiped from
+   Nextcloud."), so the web view and its background tasks stop writing to the disk.
+3. `DataWiper.run()` erases all local data:
+   - `Application Support/offline/` (web snapshots)
+   - `Application Support/photos/` (RemoteCopyStore)
+   - `temporaryDirectory/` and `Caches/`
+   - `URLCache.shared`
+   - the app's whole `UserDefaults` persistent domain (any key, present or future)
+   - WebView data (`WKWebsiteDataStore`, on the main actor: WebKit crashes when first used
+     from another thread), cookies (`HTTPCookieStorage`)
+   - Keychain credentials
+4. `POST /core/wipe/success` confirms the wipe. `200` and `404` (token already gone) both
+   count as confirmed; network errors, `429` and `5xx` do not.
+5. `DataWiper.run()` runs a second time (idempotent) to sweep anything a task still in flight
+   wrote meanwhile, then the usual session teardown runs.
+
+**Pending wipe** (`PendingWipeStore`, separate Keychain entry): kept when the confirmation
+failed, or when a 401 arrived and the wipe check itself failed (network error: the session
+still ends, the user is not stuck). On the next launch `SessionStore.resolvePendingWipe`
+checks again: wipe requested → purge + confirm; no wipe (plain revocation) → the entry is
+deleted. The entry is also deleted after a successful confirmation.
+
+**Limits**: the check only runs while the app is open (no background task): a device that is
+offline, or never reopened, is not wiped until the app is launched with network access.
+
+**Not erased**: photos already saved to the iOS Photos library (the app has no right to
+erase the user's photo library silently).
 
 ---
 

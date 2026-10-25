@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ / %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
     "%@ / %@ files" : {
       "localizations" : {
         "en" : {
@@ -438,6 +448,17 @@
         }
       }
     },
+    "Tap to see details" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toucher pour voir les détails"
+          }
+        }
+      }
+    },
     "The app could not start its internal web server. Try again, or restart the app." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -471,13 +492,12 @@
         }
       }
     },
-    "Tap to see details" : {
-      "extractionState" : "stale",
+    "This device was remotely wiped from Nextcloud. All local data has been erased." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toucher pour voir les détails"
+            "value" : "Cet appareil a été effacé à distance depuis Nextcloud. Toutes les données locales ont été supprimées."
           }
         }
       }

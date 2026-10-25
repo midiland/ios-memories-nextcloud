@@ -14,13 +14,15 @@ struct WebContainerView: View {
         credentials: Credentials,
         server: LocalHTTPServer,
         onSessionRevoked: @escaping () -> Void,
-        onLogout: @escaping () -> Void
+        onLogout: @escaping () -> Void,
+        onCheckRemoteWipe: @escaping () -> Void = {}
     ) {
         _model = StateObject(wrappedValue: WebViewModel(
             credentials: credentials,
             server: server,
             onSessionRevoked: onSessionRevoked,
-            onLogout: onLogout
+            onLogout: onLogout,
+            onCheckRemoteWipe: onCheckRemoteWipe
         ))
     }
 

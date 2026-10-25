@@ -18,13 +18,19 @@
 //   dsse-old       DSSE envelope, lower TUF version than `dsse` → page loads on a fresh install;
 //                  after `dsse`, refused as a rollback (banner), like `valid` after `dsse`
 //   none           no manifest at all                           → "could not be verified" error
+//   wipe           like `valid`, but `core/wipe/check` returns a pending wipe (issue #15)
 import { createHash, createPrivateKey, sign } from 'node:crypto';
 import { createServer } from 'node:http';
 
 const PORT = Number(process.env.PORT ?? 18090);
 const ORIGIN = `http://localhost:${PORT}`;
-const SCENARIOS = ['valid', 'unsigned', 'tampered', 'dsse', 'dsse-expired', 'dsse-tampered', 'dsse-old', 'none'];
+const SCENARIOS = ['valid', 'unsigned', 'tampered', 'dsse', 'dsse-expired', 'dsse-tampered', 'dsse-old', 'none', 'wipe'];
 let scenario = process.env.SCENARIO ?? 'valid';
+
+/** Tokens that have a pending remote wipe (scenario `wipe` marks the test app password). */
+const WIPE_TOKENS = new Set();
+/** The app password the fake login flow hands out (any token works for the fake server). */
+const TEST_APP_PASSWORD = 'test-app-password';
 
 // Development signing key: the public default seed of webpack.manifest-sign-plugin.ts.
 const DEV_SEED = Buffer.from('BfC97bs84avvLGpUfd0SkOuugTifNffExQ1IS88z58s=', 'base64');
@@ -108,7 +114,16 @@ const send = (res, status, type, body) => {
   res.end(body);
 };
 
-createServer((req, res) => {
+/** Reads a form-encoded POST body (`token=…`) into a plain object. */
+function readFormBody(req) {
+  return new Promise((resolve) => {
+    let body = '';
+    req.on('data', (chunk) => (body += chunk));
+    req.on('end', () => resolve(Object.fromEntries(new URLSearchParams(body))));
+  });
+}
+
+createServer(async (req, res) => {
   const url = new URL(req.url, ORIGIN);
   const path = url.pathname;
   console.log(`[${scenario}] ${req.method} ${req.url}`);
@@ -117,11 +132,28 @@ createServer((req, res) => {
     const next = path.slice('/__scenario/'.length);
     if (!SCENARIOS.includes(next)) return send(res, 400, 'text/plain', `unknown scenario, use: ${SCENARIOS.join(', ')}\n`);
     scenario = next;
+    if (scenario === 'wipe') WIPE_TOKENS.add(TEST_APP_PASSWORD);
     return send(res, 200, 'text/plain', `scenario: ${scenario}\n`);
   }
   if (path === '/index.php/apps/memories/api/describe') {
     return send(res, 200, 'application/json', JSON.stringify(describe(url, Boolean(req.headers.authorization))));
   }
+
+  // Remote wipe endpoints (issue #15): #[PublicPage], the token is the credential.
+  if (path === '/index.php/core/wipe/check' && req.method === 'POST') {
+    const { token } = await readFormBody(req);
+    if (scenario === 'wipe' && WIPE_TOKENS.has(token)) {
+      return send(res, 200, 'application/json', JSON.stringify({ wipe: true }));
+    }
+    return send(res, 404, 'application/json', '[]');
+  }
+  if (path === '/index.php/core/wipe/success' && req.method === 'POST') {
+    const { token } = await readFormBody(req);
+    WIPE_TOKENS.delete(token);
+    console.log(`[${scenario}] wipe confirmed for token`);
+    return send(res, 200, 'application/json', '[]');
+  }
+
   const file = path.match(/^\/apps\/memories\/js\/([\w.-]+)$/)?.[1];
   if (file && files[file]) {
     const name = url.searchParams.get('v') ?? scenario;

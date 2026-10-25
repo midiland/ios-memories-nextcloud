@@ -1,6 +1,6 @@
 ---
 name: github-issue-response
-description: Rules for responding to GitHub issues on the ios-memories-nextcloud project. Use when drafting comments, replies, or closing notes for issues. No emojis, short replies, no heavy technical details, always in English, always sign with the model name (Mistral or Claude).
+description: Rules for responding to GitHub issues on the ios-memories-nextcloud project. Use when drafting comments, replies, or closing notes for issues. No emojis, short replies, no heavy technical details, always in English, always sign with the model name (Mistral or Claude). Never close an issue automatically: only close when the user explicitly asks, and never use closing keywords (e.g. "fixes #14") in commit messages or PR descriptions.
 ---
 
 # GitHub Issue Response Rules
@@ -17,6 +17,7 @@ When responding to GitHub issues (comments, replies, closing notes, PR descripti
    - If using a **Mistral** model: `— Team iOS Memories (powered by Mistral)`
    - If using a **Claude** model: `— Team iOS Memories (powered by Claude)`
 6. **Future features** — When mentioning a feature that is not yet available, add: "This will be available in the next version."
+7. **Never close an issue automatically** — Only close an issue when the user explicitly asks for it. Never use GitHub closing keywords (`close`, `closes`, `closed`, `fix`, `fixes`, `fixed`, `resolve`, `resolves`, `resolved`) followed by an issue number (e.g. `fixes #14`) in commit messages, branch names, PR titles, or PR descriptions, because GitHub closes the issue automatically. To reference an issue without closing it, use neutral wording (e.g. `related to #14`). After pushing commits, check that no issue was closed unintentionally.
 
 ## Tone
 
@@ -107,3 +108,5 @@ When mentioning planned but not-yet-available features:
 - [ ] Written in English
 - [ ] Future features mention: "This will be available in the next version."
 - [ ] Ends with the correct signature (Mistral or Claude depending on the model)
+- [ ] Issue is not closed (or reopened) unless the user explicitly asked for it
+- [ ] No closing keywords (e.g. "fixes #14", "closes #14") in commit messages, PR titles, or PR descriptions
