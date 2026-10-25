@@ -105,4 +105,91 @@ final class ZipExtractorTests: XCTestCase {
         let files = try ZipExtractor.extract(zip, into: folder)
         XCTAssertEqual(files.count, 3)
     }
+
+    // MARK: - Robustness (disk full, zip bomb, cancellation)
+
+    /// Minimal ZIP of stored entries; `declared` is the uncompressed size written in the
+    /// directory (it can lie about the real content to simulate a bomb).
+    private func makeStoredZip(_ entries: [(name: String, content: Data, declared: UInt32)]) -> Data {
+        func le<T: FixedWidthInteger>(_ value: T) -> Data {
+            withUnsafeBytes(of: value.littleEndian) { Data($0) }
+        }
+        var body = Data()
+        var directory = Data()
+        for entry in entries {
+            let name = Data(entry.name.utf8)
+            let offset = UInt32(body.count)
+            body += le(UInt32(0x0403_4B50)) + le(UInt16(20)) + le(UInt16(0x0800)) + le(UInt16(0)) + le(UInt16(0)) + le(UInt16(0))
+            body += le(UInt32(0)) + le(UInt32(entry.content.count)) + le(entry.declared) + le(UInt16(name.count)) + le(UInt16(0)) + name
+            body += entry.content
+            directory += le(UInt32(0x0201_4B50)) + le(UInt16(20)) + le(UInt16(20)) + le(UInt16(0x0800)) + le(UInt16(0)) + le(UInt16(0)) + le(UInt16(0))
+            directory += le(UInt32(0)) + le(UInt32(entry.content.count)) + le(entry.declared)
+            directory += le(UInt16(name.count)) + le(UInt16(0)) + le(UInt16(0)) + le(UInt16(0)) + le(UInt16(0)) + le(UInt32(0)) + le(offset) + name
+        }
+        var end = le(UInt32(0x0605_4B50)) + le(UInt16(0)) + le(UInt16(0)) + le(UInt16(entries.count)) + le(UInt16(entries.count))
+        end += le(UInt32(directory.count)) + le(UInt32(body.count)) + le(UInt16(0))
+        return body + directory + end
+    }
+
+    private func write(_ data: Data) throws -> URL {
+        let url = try Fixtures.temporaryDirectory().appendingPathComponent("test.zip")
+        try data.write(to: url)
+        return url
+    }
+
+    private func contents(of folder: URL) -> [String] {
+        ((try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []).sorted()
+    }
+
+    func testHandMadeZipExtracts() throws {
+        let zip = try write(makeStoredZip([("a.jpg", Data("hello".utf8), 5)]))
+        let folder = try Fixtures.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder); try? FileManager.default.removeItem(at: zip.deletingLastPathComponent()) }
+        let files = try ZipExtractor.extract(zip, into: folder)
+        XCTAssertEqual(try Data(contentsOf: files[0]), Data("hello".utf8))
+    }
+
+    func testEntryLargerThanDeclaredIsRejectedAndRemoved() throws {
+        // Declares 10 bytes but holds 1000: must stop at the declared size, not fill the disk.
+        let zip = try write(makeStoredZip([
+            ("ok.jpg", Data("fine".utf8), 4),
+            ("bomb.jpg", Data(repeating: 0x41, count: 1000), 10),
+        ]))
+        let folder = try Fixtures.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder); try? FileManager.default.removeItem(at: zip.deletingLastPathComponent()) }
+        XCTAssertThrowsError(try ZipExtractor.extract(zip, into: folder)) { error in
+            guard case ZipArchive.ZipError.sizeExceeded = error else { return XCTFail("\(error)") }
+        }
+        XCTAssertEqual(contents(of: folder), [], "partial and earlier files are removed")
+    }
+
+    func testNotEnoughFreeSpaceFailsBeforeWritingAnything() throws {
+        let zip = try fixture("zipstreamer-album") // 3 × 18,304 bytes
+        let folder = try Fixtures.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        XCTAssertThrowsError(try ZipExtractor.extract(zip, into: folder, availableCapacity: { _ in 50_000 })) { error in
+            guard case ZipArchive.ZipError.insufficientSpace = error else { return XCTFail("\(error)") }
+        }
+        XCTAssertEqual(contents(of: folder), [])
+        XCTAssertEqual(try ZipExtractor.extract(zip, into: folder, availableCapacity: { _ in 60_000 }).count, 3)
+        XCTAssertEqual(try ZipExtractor.extract(zip, into: try Fixtures.temporaryDirectory(), availableCapacity: { _ in nil }).count, 3)
+    }
+
+    func testCancellationStopsTheExtraction() async throws {
+        let zip = try fixture("zipstreamer-album")
+        let folder = try Fixtures.temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let task = Task { () throws -> [URL] in
+            while !Task.isCancelled { await Task.yield() }
+            return try ZipExtractor.extract(zip, into: folder)
+        }
+        task.cancel()
+        do {
+            _ = try await task.value
+            XCTFail("must be cancelled")
+        } catch {
+            XCTAssertTrue(error is CancellationError, "\(error)")
+        }
+        XCTAssertEqual(contents(of: folder), [])
+    }
 }

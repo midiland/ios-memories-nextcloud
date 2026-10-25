@@ -21,6 +21,9 @@ struct ZipArchive {
         case notAZip
         case corrupted(String)
         case unsupported(String)
+        /// An entry holds more data than its directory declares (zip bomb or corruption).
+        case sizeExceeded(String)
+        case insufficientSpace
     }
 
     let url: URL
@@ -49,27 +52,53 @@ struct ZipArchive {
 
         FileManager.default.createFile(atPath: destination.path, contents: nil)
         let output = try FileHandle(forWritingTo: destination)
-        defer { try? output.close() }
+        var completed = false
+        defer {
+            try? output.close()
+            if !completed { try? FileManager.default.removeItem(at: destination) } // no partial file
+        }
+
+        // `write(contentsOf:)` throws (ENOSPC, …); the legacy `write(_:)` raises an Objective-C
+        // exception that crashes the app. The decompression callback cannot throw: the first
+        // failure is kept and rethrown below, and nothing more is written after it.
+        let declared = entry.uncompressedSize
         var written: UInt64 = 0
+        var failure: Error?
+        func append(_ data: Data) {
+            guard failure == nil else { return }
+            guard written + UInt64(data.count) <= declared else {
+                failure = ZipError.sizeExceeded(entry.path)
+                return
+            }
+            do {
+                try output.write(contentsOf: data)
+                written += UInt64(data.count)
+            } catch {
+                failure = error
+            }
+        }
         let filter = entry.method == 8
             ? try OutputFilter(.decompress, using: .zlib) { data in
-                if let data { output.write(data); written += UInt64(data.count) }
+                if let data { append(data) }
             }
             : nil
 
         var remaining = entry.compressedSize
         while remaining > 0 {
+            try Task.checkCancellation()
             let chunk = try Self.read(handle, Int(min(remaining, 1 << 20)))
             remaining -= UInt64(chunk.count)
             if let filter {
                 try filter.write(chunk)
             } else {
-                output.write(chunk)
-                written += UInt64(chunk.count)
+                append(chunk)
             }
+            if let failure { throw failure }
         }
         try filter?.finalize()
-        guard written == entry.uncompressedSize else { throw ZipError.corrupted("size of \(entry.path)") }
+        if let failure { throw failure }
+        guard written == declared else { throw ZipError.corrupted("size of \(entry.path)") }
+        completed = true
     }
 
     // MARK: - Central directory
