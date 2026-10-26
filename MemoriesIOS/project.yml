@@ -60,6 +60,11 @@ targets:
         # Export compliance: only Apple's built-in cryptography (TLS, CryptoKit, Keychain).
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
+        # `memories-ios://memory?...`: opens a photo from the widget (`MemoryDeepLink`).
+        CFBundleURLTypes:
+          - CFBundleURLName: fr.midiland.memories
+            CFBundleURLSchemes:
+              - memories-ios
         # Periodic refresh of the widget's memories (`MemoryRefreshService`).
         UIBackgroundModes:
           - fetch
@@ -91,6 +96,7 @@ targets:
       - Widget
       - Sources/OnThisDay/MemoryCache.swift
       - Sources/OnThisDay/MemoryDay.swift
+      - Sources/OnThisDay/MemoryDeepLink.swift
       - Sources/OnThisDay/MemoryTimeline.swift
     settings:
       base:

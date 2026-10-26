@@ -27,6 +27,7 @@ struct OnThisDayWidget: Widget {
 
 struct MemoryImage {
     let fileid: Int64
+    let dayid: Int
     let image: UIImage
     let yearsAgo: Int
 }
@@ -68,7 +69,7 @@ struct OnThisDayProvider: TimelineProvider {
         }
         let entries = schedule.items.map { item in
             let images = ([item.memory] + item.upcoming).compactMap { entry in
-                Self.thumbnail(at: cache.imageURL(for: entry)).map { MemoryImage(fileid: entry.fileid, image: $0, yearsAgo: entry.yearsAgo) }
+                Self.thumbnail(at: cache.imageURL(for: entry)).map { MemoryImage(fileid: entry.fileid, dayid: entry.dayid, image: $0, yearsAgo: entry.yearsAgo) }
             }
             return OnThisDayEntry(date: item.date, content: images.isEmpty ? .notLoaded : .memories(images))
         }
@@ -101,7 +102,8 @@ struct OnThisDayView: View {
             // The photos are the widget's background: from iOS 17 the content is inset by the
             // system margins, only the background reaches the edges (no black borders).
             let shown = Array(images.prefix(family == .systemMedium ? 3 : 1))
-            Foreground(memory: images[0], canSkip: images.count > 1)
+            Foreground(images: shown, canSkip: images.count > 1)
+                .widgetURL(shown[0].link)
                 .widgetBackground(Photos(images: shown))
         case .noMemories:
             Message(text: "No memories today").widgetBackground(Color(.systemBackground))
@@ -139,22 +141,23 @@ private struct Photos: View {
     }
 }
 
-/// What sits over the photos: the Apple Photos style caption and the "next" button.
+/// What sits over the photos: the caption, the cross and the "next" button.
 private struct Foreground: View {
-    let memory: MemoryImage
+    let images: [MemoryImage]
     let canSkip: Bool
+
+    private var memory: MemoryImage { images[0] }
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            LinearGradient(colors: [.clear, .black.opacity(0.5)], startPoint: .center, endPoint: .bottom)
-                .opacity(0.9)
+            smallPhotoLinks
             HideButton(fileid: memory.fileid)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             HStack(alignment: .bottom) {
                 Text("\(memory.yearsAgo) years ago")
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.white)
-                    .shadow(radius: 2)
+                    .shadow(color: .black.opacity(0.6), radius: 3)
                 Spacer(minLength: 0)
                 if canSkip { NextButton() }
             }
@@ -177,6 +180,31 @@ private struct NextButton: View {
             .buttonStyle(.plain)
         }
     }
+}
+
+extension Foreground {
+    /// Tapping the main photo opens it (`widgetURL`); the small photos of the medium widget
+    /// open themselves. Links sit in the foreground: the background cannot be tapped.
+    @ViewBuilder
+    fileprivate var smallPhotoLinks: some View {
+        if images.count > 1 {
+            GeometryReader { proxy in
+                HStack(spacing: 2) {
+                    Color.clear.frame(width: proxy.size.width * 0.58)
+                    VStack(spacing: 2) {
+                        ForEach(Array(images.dropFirst().enumerated()), id: \.offset) { _, image in
+                            Link(destination: image.link) { Color.clear.contentShape(Rectangle()) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+extension MemoryImage {
+    /// Opens this photo in the app.
+    var link: URL { MemoryDeepLink(dayid: dayid, fileid: fileid).url }
 }
 
 /// Small cross on the main photo: removes it from the widget for good (iOS 17+).

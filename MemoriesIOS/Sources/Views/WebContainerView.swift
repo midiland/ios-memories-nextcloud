@@ -8,6 +8,7 @@ import SwiftUI
 /// - Logout happens in the web UI (Settings > Account), or from the error screen.
 struct WebContainerView: View {
     @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var deepLinks: DeepLinkRouter
     @StateObject private var model: WebViewModel
 
     init(
@@ -101,7 +102,9 @@ struct WebContainerView: View {
         .animation(.easeInOut(duration: 0.2), value: model.showsDownloadProgressModal)
         .onAppear {
             model.startIfNeeded()
+            openPendingLink()
         }
+        .onChange(of: deepLinks.memory) { _ in openPendingLink() }
         .onDisappear(perform: model.stop)
         .onChange(of: scenePhase) { phase in
             switch phase {
@@ -110,6 +113,11 @@ struct WebContainerView: View {
             default: break
             }
         }
+    }
+
+    /// Opens the photo a widget tap asked for.
+    private func openPendingLink() {
+        if let link = deepLinks.takeMemory() { model.open(link) }
     }
 
     private var background: Color {

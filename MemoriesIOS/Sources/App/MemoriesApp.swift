@@ -7,6 +7,7 @@ struct MemoriesApp: App {
     private let server: LocalHTTPServer
     @StateObject private var session: SessionStore
     private let memories = MemoryRefreshService()
+    @StateObject private var deepLinks = DeepLinkRouter()
 
     init() {
         #if DEBUG
@@ -24,6 +25,8 @@ struct MemoriesApp: App {
         WindowGroup {
             RootView(server: server, memories: memories)
                 .environmentObject(session)
+                .environmentObject(deepLinks)
+                .onOpenURL { deepLinks.handle($0) }
         }
         // Periodic refresh of the widget's memories; iOS picks the actual time.
         .backgroundTask(.appRefresh(MemoryRefreshService.backgroundTaskIdentifier)) {
