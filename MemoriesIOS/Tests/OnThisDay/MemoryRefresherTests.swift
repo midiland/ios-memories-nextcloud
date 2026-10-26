@@ -126,6 +126,14 @@ final class MemoryRefresherTests: XCTestCase {
         }
     }
 
+    func testHiddenPhotosAreNotPickedAgain() async throws {
+        cache.hide(fileid: 1)
+        fetcher.photosByRequest = [[photo(1, dayid: today - 365), photo(2, dayid: today - 365)]]
+        try await refresher.refresh(credentials: Fixtures.credentials, now: now)
+        XCTAssertEqual(cache.entries(forDay: today).map(\.fileid), [2])
+        XCTAssertFalse(fetcher.previewed.contains(1), "A hidden photo must not be downloaded")
+    }
+
     func testSameDayYieldsSamePicks() async throws {
         let photos = (1...30).map { photo(Int64($0), dayid: today - 365) }
         fetcher.photosByRequest = [photos]

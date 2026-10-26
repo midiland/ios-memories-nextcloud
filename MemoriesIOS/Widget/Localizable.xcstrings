@@ -60,6 +60,23 @@
         }
       }
     },
+    "Next memory": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next memory"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Souvenir suivant"
+          }
+        }
+      }
+    },
     "No memories today": {
       "extractionState": "stale",
       "localizations": {
@@ -111,18 +128,34 @@
         }
       }
     },
-    "Next memory": {
+    "Hide memory": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Next memory"
+            "value": "Hide memory"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Souvenir suivant"
+            "value": "Masquer ce souvenir"
+          }
+        }
+      }
+    },
+    "Photo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photo"
           }
         }
       }

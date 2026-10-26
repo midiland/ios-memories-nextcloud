@@ -35,6 +35,7 @@ struct MemoryRefresher {
         let today = OnThisDay.dayId(of: now, calendar: calendar)
         var days: [Int: [MemoryEntry]] = [:]
         var images: [String: Data] = [:]
+        let hidden = cache.hiddenFileIDs()
 
         for offset in 0..<Self.daysAhead {
             guard let date = calendar.date(byAdding: .day, value: offset, to: now) else { continue }
@@ -52,7 +53,8 @@ struct MemoryRefresher {
                 continue
             }
 
-            let years = OnThisDay.groupByYear(photos, todayDayId: displayDay)
+            // Photos hidden from the widget are not picked again.
+            let years = OnThisDay.groupByYear(photos.filter { !hidden.contains($0.fileid) }, todayDayId: displayDay)
             var entries: [MemoryEntry] = []
             for pick in OnThisDay.pick(from: years, seed: displayDay) {
                 let name = MemoryCache.imageName(fileid: pick.photo.fileid)

@@ -118,4 +118,46 @@ final class MemoryCacheTests: XCTestCase {
         try Data("nope".utf8).write(to: root.appendingPathComponent("onthisday/cursor.json"))
         XCTAssertEqual(cache.cursor(forDay: 5), 0)
     }
+
+    // MARK: - Hidden photos
+
+    func testHiddenPhotosAreLeftOutOfTheEntries() throws {
+        try cache.store(days: [5: [entry(1), entry(2), entry(3)]], images: [:])
+        cache.hide(fileid: 2)
+        XCTAssertEqual(cache.entries(forDay: 5).map(\.fileid), [1, 3])
+        XCTAssertEqual(cache.hiddenFileIDs(), [2])
+    }
+
+    func testHidingEveryPhotoLeavesAPreparedEmptyDay() throws {
+        try cache.store(days: [5: [entry(1)]], images: [:])
+        cache.hide(fileid: 1)
+        XCTAssertTrue(cache.hasDay(5))
+        XCTAssertTrue(cache.entries(forDay: 5).isEmpty)
+    }
+
+    func testHiddenPhotosApplyToEveryDayAndSurviveStore() throws {
+        try cache.store(days: [5: [entry(1)], 6: [entry(1), entry(2)]], images: [:])
+        cache.hide(fileid: 1)
+        try cache.store(days: [7: [entry(1), entry(3)]], images: [:])
+        XCTAssertEqual(cache.entries(forDay: 6).map(\.fileid), [2])
+        XCTAssertEqual(cache.entries(forDay: 7).map(\.fileid), [3])
+    }
+
+    func testHidingTwiceKeepsOneEntry() {
+        cache.hide(fileid: 4)
+        cache.hide(fileid: 4)
+        XCTAssertEqual(cache.hiddenFileIDs(), [4])
+    }
+
+    func testRemoveAllForgetsHiddenPhotos() {
+        cache.hide(fileid: 4)
+        cache.removeAll()
+        XCTAssertTrue(cache.hiddenFileIDs().isEmpty)
+    }
+
+    func testCorruptHiddenListReadsAsEmpty() throws {
+        cache.hide(fileid: 4)
+        try Data("nope".utf8).write(to: root.appendingPathComponent("onthisday/hidden.json"))
+        XCTAssertTrue(cache.hiddenFileIDs().isEmpty)
+    }
 }

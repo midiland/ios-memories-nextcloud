@@ -17,7 +17,7 @@ struct MemoryEntry: Codable, Equatable {
 /// Entries are keyed by the day they are displayed on, so a few days can be prepared ahead
 /// and the widget stays useful when a background refresh is skipped.
 ///
-/// Layout: `<root>/onthisday/{index.json, images/<name>}`. This file is shared with the widget
+/// Layout: `<root>/onthisday/{index.json, hidden.json, cursor.json, images/<name>}`. This file is shared with the widget
 /// target, so it must stay free of app-only dependencies.
 struct MemoryCache {
     /// App Group shared by the app and the widget.
@@ -48,6 +48,7 @@ struct MemoryCache {
     }
 
     private var indexURL: URL { directory.appendingPathComponent("index.json") }
+    private var hiddenURL: URL { directory.appendingPathComponent("hidden.json") }
     private var cursorURL: URL { directory.appendingPathComponent("cursor.json") }
     private var imagesURL: URL { directory.appendingPathComponent("images", isDirectory: true) }
 
@@ -56,9 +57,11 @@ struct MemoryCache {
 
     // MARK: - Read
 
-    /// Memories to show on `dayId`; empty when nothing was prepared for that day.
+    /// Memories to show on `dayId`, without the photos the user hid; empty when nothing was
+    /// prepared for that day.
     func entries(forDay dayId: Int) -> [MemoryEntry] {
-        readIndex().days[String(dayId)] ?? []
+        let hidden = hiddenFileIDs()
+        return (readIndex().days[String(dayId)] ?? []).filter { !hidden.contains($0.fileid) }
     }
 
     /// Whether memories are already prepared for `dayId` (an empty list counts: "nothing that day").
@@ -96,6 +99,24 @@ struct MemoryCache {
         for name in files where !used.contains(name) {
             try? fileManager.removeItem(at: imagesURL.appendingPathComponent(name))
         }
+    }
+
+    // MARK: - Hidden photos
+
+    /// Photos the user removed from the widget with its cross.
+    func hiddenFileIDs() -> Set<Int64> {
+        guard let data = try? Data(contentsOf: hiddenURL),
+              let ids = try? JSONDecoder().decode([Int64].self, from: data)
+        else { return [] }
+        return Set(ids)
+    }
+
+    /// Never shows this photo again (the list is erased with the memories on logout or wipe).
+    func hide(fileid: Int64) {
+        var ids = hiddenFileIDs()
+        ids.insert(fileid)
+        try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try? JSONEncoder().encode(ids.sorted()).write(to: hiddenURL, options: .atomic)
     }
 
     // MARK: - Cursor

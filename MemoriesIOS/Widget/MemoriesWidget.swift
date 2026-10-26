@@ -26,6 +26,7 @@ struct OnThisDayWidget: Widget {
 // MARK: - Timeline
 
 struct MemoryImage {
+    let fileid: Int64
     let image: UIImage
     let yearsAgo: Int
 }
@@ -67,7 +68,7 @@ struct OnThisDayProvider: TimelineProvider {
         }
         let entries = schedule.items.map { item in
             let images = ([item.memory] + item.upcoming).compactMap { entry in
-                Self.thumbnail(at: cache.imageURL(for: entry)).map { MemoryImage(image: $0, yearsAgo: entry.yearsAgo) }
+                Self.thumbnail(at: cache.imageURL(for: entry)).map { MemoryImage(fileid: entry.fileid, image: $0, yearsAgo: entry.yearsAgo) }
             }
             return OnThisDayEntry(date: item.date, content: images.isEmpty ? .notLoaded : .memories(images))
         }
@@ -100,7 +101,7 @@ struct OnThisDayView: View {
             // The photos are the widget's background: from iOS 17 the content is inset by the
             // system margins, only the background reaches the edges (no black borders).
             let shown = Array(images.prefix(family == .systemMedium ? 3 : 1))
-            Foreground(caption: images[0].yearsAgo, canSkip: images.count > 1)
+            Foreground(memory: images[0], canSkip: images.count > 1)
                 .widgetBackground(Photos(images: shown))
         case .noMemories:
             Message(text: "No memories today").widgetBackground(Color(.systemBackground))
@@ -140,15 +141,17 @@ private struct Photos: View {
 
 /// What sits over the photos: the Apple Photos style caption and the "next" button.
 private struct Foreground: View {
-    let caption: Int
+    let memory: MemoryImage
     let canSkip: Bool
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             LinearGradient(colors: [.clear, .black.opacity(0.5)], startPoint: .center, endPoint: .bottom)
                 .opacity(0.9)
+            HideButton(fileid: memory.fileid)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             HStack(alignment: .bottom) {
-                Text("\(caption) years ago")
+                Text("\(memory.yearsAgo) years ago")
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.white)
                     .shadow(radius: 2)
@@ -169,6 +172,24 @@ private struct NextButton: View {
                     .font(.footnote.weight(.bold))
                     .foregroundColor(.white)
                     .frame(width: 28, height: 28)
+                    .background(.black.opacity(0.35), in: Circle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+}
+
+/// Small cross on the main photo: removes it from the widget for good (iOS 17+).
+private struct HideButton: View {
+    let fileid: Int64
+
+    var body: some View {
+        if #available(iOS 17.0, *) {
+            Button(intent: HideMemoryIntent(fileid: Int(fileid))) {
+                Image(systemName: "xmark")
+                    .font(.caption2.weight(.bold))
+                    .foregroundColor(.white)
+                    .frame(width: 24, height: 24)
                     .background(.black.opacity(0.35), in: Circle())
             }
             .buttonStyle(.plain)
