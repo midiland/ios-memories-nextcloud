@@ -58,6 +58,11 @@ targets:
         # Export compliance: only Apple's built-in cryptography (TLS, CryptoKit, Keychain).
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
+        # Periodic refresh of the widget's memories (`MemoryRefreshService`).
+        UIBackgroundModes:
+          - fetch
+        BGTaskSchedulerPermittedIdentifiers:
+          - fr.midiland.memories.refresh-memories
         UIApplicationSupportsIndirectInputEvents: true
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

@@ -163,6 +163,8 @@
 		E57917992E46CE0FE18F6861 /* mixed-entries.zip in Resources */ = {isa = PBXBuildFile; fileRef = 2B01FD5A21312057FA292E04 /* mixed-entries.zip */; };
 		E9F21054B26305EBB6B9E0EE /* DeviceSetupRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40C1AC91381AB6DCF955A075 /* DeviceSetupRule.swift */; };
 		EAEFED0801470FD0D15C08B5 /* DeviceSetupRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DFD628F4137736C1D2B6028 /* DeviceSetupRuleTests.swift */; };
+		EAFDFF23FAA73F3AFACBF43C /* MemoryRefreshServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0A26986675E7B0AF677EB2 /* MemoryRefreshServiceTests.swift */; };
+		EBE9898C23B32841DC80A54F /* MemoryRefreshService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D99C406A69D2E373898023 /* MemoryRefreshService.swift */; };
 		EC756466FA3AE955193B2AC7 /* StaticFilesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 932B49D93B318D8E503CB78D /* StaticFilesTests.swift */; };
 		EC8E4D66928F62EF4337A034 /* DownloadURLPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E68DBA145358010842E8F73 /* DownloadURLPolicyTests.swift */; };
 		EF5DD300DDFCC0D537D0712D /* LocalReloadRuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD57D4A87BB439E16821A397 /* LocalReloadRuleTests.swift */; };
@@ -243,6 +245,7 @@
 		46C8EEA5BC2FBE203014DF88 /* Memories.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Memories.entitlements; sourceTree = "<group>"; };
 		46FD0D765E7FD9161964C7F1 /* RequestHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestHelpersTests.swift; sourceTree = "<group>"; };
 		4943A8B728F2AC6298F5AC6F /* NativeXScriptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeXScriptTests.swift; sourceTree = "<group>"; };
+		49D99C406A69D2E373898023 /* MemoryRefreshService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryRefreshService.swift; sourceTree = "<group>"; };
 		4C26A74D86F56165252960CB /* swipe-select.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = "swipe-select.css"; sourceTree = "<group>"; };
 		4D24462FD52F13901065AEE6 /* ProxyResponsePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyResponsePolicy.swift; sourceTree = "<group>"; };
 		51523A13AA1DC5DA3171F621 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -335,6 +338,7 @@
 		C98A7A2ADF3EB9D130679C1B /* MediaFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFile.swift; sourceTree = "<group>"; };
 		C9DF8A804E73BB9491833939 /* AppWebPathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppWebPathTests.swift; sourceTree = "<group>"; };
 		C9E2C1CF7261009A52D14C10 /* AuthenticatedDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticatedDownloader.swift; sourceTree = "<group>"; };
+		CA0A26986675E7B0AF677EB2 /* MemoryRefreshServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryRefreshServiceTests.swift; sourceTree = "<group>"; };
 		CC8F46DAF454C89AF55728EF /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		CD4D7BFC45D492A6DB401166 /* URLRequest+Nextcloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+Nextcloud.swift"; sourceTree = "<group>"; };
 		CE9A7CDC96AD868A95681460 /* ManifestPinTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManifestPinTests.swift; sourceTree = "<group>"; };
@@ -473,6 +477,7 @@
 			children = (
 				5BA596DC5D1F93115A5C39C7 /* MemoryCache.swift */,
 				8284AAC4E7CFCEF3080418F1 /* MemoryRefresher.swift */,
+				49D99C406A69D2E373898023 /* MemoryRefreshService.swift */,
 				222B85A10F688AC22E4970BE /* OnThisDay.swift */,
 			);
 			path = OnThisDay;
@@ -607,6 +612,7 @@
 			children = (
 				971FBD6EC5E59CF6CDE9BC1B /* MemoryCacheTests.swift */,
 				5B8832F3BE334A42CF66852C /* MemoryRefresherTests.swift */,
+				CA0A26986675E7B0AF677EB2 /* MemoryRefreshServiceTests.swift */,
 				17C22DE52E636F0C9B43E03B /* OnThisDayTests.swift */,
 			);
 			path = OnThisDay;
@@ -931,6 +937,7 @@
 				47D0C2059908251D0464C025 /* ManifestPinTests.swift in Sources */,
 				D7891FCDD506DA1996EE1F00 /* ManifestVerifierTests.swift in Sources */,
 				0F0C38A47B5A28D442BA4E8D /* MemoryCacheTests.swift in Sources */,
+				EAFDFF23FAA73F3AFACBF43C /* MemoryRefreshServiceTests.swift in Sources */,
 				7786EC610CC240E81E698AD6 /* MemoryRefresherTests.swift in Sources */,
 				E1E42724FC9406896E2BD8D9 /* MockURLProtocol.swift in Sources */,
 				DC4F7A9FA9E881F3FA49BA5F /* NativeXArgumentsTests.swift in Sources */,
@@ -1025,6 +1032,7 @@
 				98A70BF29AF50356242D7AE7 /* MemoriesApp.swift in Sources */,
 				1BE9D9968E6A07791C9E7C71 /* MemoriesWebView.swift in Sources */,
 				958F48F812E23858FCF1F2B0 /* MemoryCache.swift in Sources */,
+				EBE9898C23B32841DC80A54F /* MemoryRefreshService.swift in Sources */,
 				72476E952E00D63B6E4E2F9E /* MemoryRefresher.swift in Sources */,
 				616C5F2497D8EE2F45C9EF52 /* NativeXArguments.swift in Sources */,
 				F0F282E15D155A261DD466B5 /* NativeXController.swift in Sources */,
