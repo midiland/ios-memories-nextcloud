@@ -43,7 +43,7 @@ The app currently supports **device photos** in the timeline (read-only). Phase 
 | Offline upload queue | Queue photos for upload when offline |
 | Advanced deduplication | Improve matching algorithm for edge cases |
 | iPad optimization | Better iPad UI/UX |
-| Widget support | iOS widgets for quick access |
+| Widget support | "On this day" widget done (see ARCHITECTURE §9); next: tap opens the photo, "next photo" button (iOS 17), more widgets |
 | Siri integration | Voice commands for common actions |
 | Watch app | Companion Apple Watch app |
 
