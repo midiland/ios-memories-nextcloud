@@ -221,31 +221,44 @@ extension MemoryImage {
 /// The widget's own "modal": widgets cannot show alerts or react to a long press, so the cross
 /// turns the widget into a question with two buttons (iOS 17+, like the cross itself).
 private struct HideQuestion: View {
+    @Environment(\.widgetFamily) private var family
     let fileid: Int64
 
     var body: some View {
         if #available(iOS 17.0, *) {
-            VStack(spacing: 10) {
-                Text("Remove this photo from the widget?")
+            VStack(spacing: 8) {
+                Text("Remove this photo?")
                     .font(.footnote.weight(.semibold))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.white)
-                HStack(spacing: 8) {
-                    Button(intent: CancelHideMemoryIntent()) {
-                        Text("Cancel").frame(maxWidth: .infinity)
-                    }
-                    .tint(.gray)
+                // Side by side only when there is room: in the small widget the words would break.
+                let layout = family == .systemSmall
+                    ? AnyLayout(VStackLayout(spacing: 6)) : AnyLayout(HStackLayout(spacing: 8))
+                layout {
                     Button(intent: ConfirmHideMemoryIntent(fileid: Int(fileid))) {
-                        Text("Remove").frame(maxWidth: .infinity)
+                        label("Remove")
                     }
                     .tint(.red)
+                    Button(intent: CancelHideMemoryIntent()) {
+                        label("Cancel")
+                    }
+                    .tint(.gray)
                 }
-                .font(.footnote.weight(.semibold))
                 .buttonStyle(.borderedProminent)
+                .controlSize(.small)
             }
+            .padding(.horizontal, 4)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.black.opacity(0.65))
         }
+    }
+
+    private func label(_ text: LocalizedStringKey) -> some View {
+        Text(text)
+            .font(.footnote.weight(.semibold))
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
+            .frame(maxWidth: .infinity)
     }
 }
 
