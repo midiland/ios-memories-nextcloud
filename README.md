@@ -41,6 +41,15 @@ Memories and Nextcloud versions, and the steps to reproduce.
 - **Downloads saved to Photos**: downloaded photos and videos go straight to the photo library; an album
   download is extracted and recreated as an album in Photos, skipping the photos you already have (full
   photo library access, explained before iOS asks for it).
+- **Remote wipe**: Nextcloud's "Wipe device" (Settings → Security → Devices & sessions) is honored: the app
+  erases its local data (snapshots, caches, WebView data, Keychain credentials), confirms the wipe to the
+  server and returns to the login screen. Photos already saved to the iOS Photos library are left untouched.
+- **Swipe-to-select**: long-press a photo, then swipe across several photos to select them in one gesture,
+  like the iOS Photos app (swiping over selected photos deselects them; near the screen edge it auto-scrolls).
+- **Download progress**: album downloads show a persistent banner (downloading, extracting, saving to Photos)
+  with progress, counters and a cancel button; the app stays usable meanwhile.
+- **Full-screen photo viewer**: a zoomed photo fills the whole screen, behind the Dynamic Island and home
+  indicator; pinch-to-zoom scales the photo, never the whole interface.
 - **Native integrations**: iOS share sheet for photos and links (and for downloaded files that are not
   photos or videos), native toasts and haptic feedback.
 - **English and French** user interface (follows the iOS language setting).
