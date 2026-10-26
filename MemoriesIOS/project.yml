@@ -90,6 +90,7 @@ targets:
     sources:
       - Widget
       - Sources/OnThisDay/MemoryCache.swift
+      - Sources/OnThisDay/MemoryDay.swift
       - Sources/OnThisDay/MemoryTimeline.swift
     settings:
       base:

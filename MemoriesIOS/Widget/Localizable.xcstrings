@@ -1,8 +1,9 @@
 {
   "sourceLanguage": "en",
-  "version": "1.0",
   "strings": {
+    "%@ years ago": {},
     "%lld years ago": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "variations": {
@@ -42,7 +43,25 @@
         }
       }
     },
+    "Memories": {
+      "extractionState": "stale",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memories"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memories"
+          }
+        }
+      }
+    },
     "No memories today": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -59,6 +78,7 @@
       }
     },
     "Open Memories to load your memories": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -74,23 +94,8 @@
         }
       }
     },
-    "Memories": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Memories"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Memories"
-          }
-        }
-      }
-    },
     "Your photos from past years, on this day.": {
+      "extractionState": "stale",
       "localizations": {
         "en": {
           "stringUnit": {
@@ -105,6 +110,23 @@
           }
         }
       }
+    },
+    "Next memory": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next memory"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Souvenir suivant"
+          }
+        }
+      }
     }
-  }
+  },
+  "version": "1.0"
 }

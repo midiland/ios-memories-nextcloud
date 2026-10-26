@@ -29,6 +29,11 @@ struct MemoryCache {
         var days: [String: [MemoryEntry]] = [:]
     }
 
+    private struct Cursor: Codable {
+        let day: Int
+        let offset: Int
+    }
+
     private let fileManager = FileManager.default
     private let directory: URL
 
@@ -43,6 +48,7 @@ struct MemoryCache {
     }
 
     private var indexURL: URL { directory.appendingPathComponent("index.json") }
+    private var cursorURL: URL { directory.appendingPathComponent("cursor.json") }
     private var imagesURL: URL { directory.appendingPathComponent("images", isDirectory: true) }
 
     /// Thumbnail file name of a photo.
@@ -90,6 +96,25 @@ struct MemoryCache {
         for name in files where !used.contains(name) {
             try? fileManager.removeItem(at: imagesURL.appendingPathComponent(name))
         }
+    }
+
+    // MARK: - Cursor
+
+    /// How many memories the user skipped with the widget's "next" button on `dayId`.
+    /// Only the widget writes it, so it lives next to the memories and goes with them.
+    func cursor(forDay dayId: Int) -> Int {
+        guard let data = try? Data(contentsOf: cursorURL),
+              let cursor = try? JSONDecoder().decode(Cursor.self, from: data),
+              cursor.day == dayId
+        else { return 0 }
+        return max(0, cursor.offset)
+    }
+
+    /// Moves on to the next memory (the cursor restarts at 0 on a new day).
+    func advanceCursor(forDay dayId: Int) {
+        let cursor = Cursor(day: dayId, offset: self.cursor(forDay: dayId) + 1)
+        try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try? JSONEncoder().encode(cursor).write(to: cursorURL, options: .atomic)
     }
 
     /// Removes everything (logout, remote wipe).

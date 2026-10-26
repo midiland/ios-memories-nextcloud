@@ -12,21 +12,9 @@ enum OnThisDay {
         let photos: [ServerPhoto]
     }
 
-    /// Seconds in a day: server `dayid`s are `floor(epoch / 86400)`.
-    private static let secondsPerDay = 86_400
-
-    /// Fixed UTC calendar: day ids are UTC-based, the frontend shifts "now" to local time first.
-    private static let utc: Calendar = {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "UTC")!
-        return calendar
-    }()
-
     /// Server day id of the calendar day of `date` in `calendar` (the user's local day).
     static func dayId(of date: Date, calendar: Calendar = .current) -> Int {
-        let c = calendar.dateComponents([.year, .month, .day], from: date)
-        let local = DateComponents(calendar: utc, year: c.year, month: c.month, day: c.day)
-        return Int(utc.date(from: local)!.timeIntervalSince1970) / secondsPerDay
+        MemoryDay.id(of: date, calendar: calendar)
     }
 
     /// Day ids to query: for each of the last `maxYears` years, the days within `range` of
@@ -39,9 +27,9 @@ enum OnThisDay {
         var ids: [Int] = []
         for ago in 1...maxYears {
             // Out-of-range days (29 Feb) are resolved leniently by `Calendar.date(from:)`.
-            let anniversary = DateComponents(calendar: utc, year: year - ago, month: month, day: day)
-            guard let base = utc.date(from: anniversary) else { continue }
-            let baseId = Int(base.timeIntervalSince1970) / secondsPerDay
+            let anniversary = DateComponents(calendar: MemoryDay.utc, year: year - ago, month: month, day: day)
+            guard let base = MemoryDay.utc.date(from: anniversary) else { continue }
+            let baseId = Int(base.timeIntervalSince1970) / MemoryDay.seconds
             for offset in -range...range { ids.append(baseId + offset) }
         }
         return ids

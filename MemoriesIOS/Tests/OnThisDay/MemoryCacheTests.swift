@@ -80,4 +80,42 @@ final class MemoryCacheTests: XCTestCase {
         try Data(#"{"version":2,"days":{"5":[]}}"#.utf8).write(to: root.appendingPathComponent("onthisday/index.json"))
         XCTAssertFalse(cache.hasDay(5))
     }
+
+    // MARK: - Cursor
+
+    func testCursorStartsAtZero() {
+        XCTAssertEqual(cache.cursor(forDay: 5), 0)
+    }
+
+    func testAdvanceCursorCounts() {
+        cache.advanceCursor(forDay: 5)
+        cache.advanceCursor(forDay: 5)
+        XCTAssertEqual(cache.cursor(forDay: 5), 2)
+    }
+
+    func testCursorRestartsOnANewDay() {
+        cache.advanceCursor(forDay: 5)
+        XCTAssertEqual(cache.cursor(forDay: 6), 0)
+        cache.advanceCursor(forDay: 6)
+        XCTAssertEqual(cache.cursor(forDay: 6), 1)
+        XCTAssertEqual(cache.cursor(forDay: 5), 0)
+    }
+
+    func testCursorSurvivesStoringMemories() throws {
+        cache.advanceCursor(forDay: 5)
+        try cache.store(days: [5: [entry(1)]], images: ["1.jpg": Data([1])])
+        XCTAssertEqual(cache.cursor(forDay: 5), 1)
+    }
+
+    func testRemoveAllResetsTheCursor() {
+        cache.advanceCursor(forDay: 5)
+        cache.removeAll()
+        XCTAssertEqual(cache.cursor(forDay: 5), 0)
+    }
+
+    func testCorruptCursorReadsAsZero() throws {
+        cache.advanceCursor(forDay: 5)
+        try Data("nope".utf8).write(to: root.appendingPathComponent("onthisday/cursor.json"))
+        XCTAssertEqual(cache.cursor(forDay: 5), 0)
+    }
 }

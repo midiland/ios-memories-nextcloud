@@ -58,28 +58,20 @@ struct OnThisDayProvider: TimelineProvider {
 
     private func timeline(now: Date) -> Timeline<OnThisDayEntry> {
         let cache = MemoryCache()
-        let today = Self.dayId(of: now)
-        let schedule = MemoryTimeline.schedule(entries: cache.entries(forDay: today), now: now)
+        let today = MemoryDay.id(of: now)
+        let schedule = MemoryTimeline.schedule(
+            entries: cache.entries(forDay: today), now: now, offset: cache.cursor(forDay: today))
         guard !schedule.items.isEmpty else {
             let content: OnThisDayEntry.Content = cache.hasDay(today) ? .noMemories : .notLoaded
             return Timeline(entries: [OnThisDayEntry(date: now, content: content)], policy: .after(schedule.reloadAt))
         }
         let entries = schedule.items.map { item in
-            let images = [item.memory, item.next].compactMap { $0 }.compactMap { entry in
+            let images = ([item.memory] + item.upcoming).compactMap { entry in
                 Self.thumbnail(at: cache.imageURL(for: entry)).map { MemoryImage(image: $0, yearsAgo: entry.yearsAgo) }
             }
             return OnThisDayEntry(date: item.date, content: images.isEmpty ? .notLoaded : .memories(images))
         }
         return Timeline(entries: entries, policy: .after(schedule.reloadAt))
-    }
-
-    /// Same day id as the app (`OnThisDay.dayId`): the UTC day number of the local calendar day.
-    private static func dayId(of date: Date) -> Int {
-        let c = Calendar.current.dateComponents([.year, .month, .day], from: date)
-        var utc = Calendar(identifier: .gregorian)
-        utc.timeZone = TimeZone(identifier: "UTC")!
-        let day = utc.date(from: DateComponents(year: c.year, month: c.month, day: c.day))!
-        return Int(day.timeIntervalSince1970) / 86_400
     }
 
     /// Decodes a downscaled image: a widget extension has a small memory budget.
@@ -105,16 +97,11 @@ struct OnThisDayView: View {
     var body: some View {
         switch entry.content {
         case .memories(let images):
-            if family == .systemMedium, images.count > 1 {
-                HStack(spacing: 2) {
-                    MemoryTile(memory: images[0])
-                    MemoryTile(memory: images[1])
-                }
-                .widgetBackground(Color.black)
-            } else {
-                MemoryTile(memory: images[0])
-                    .widgetBackground(Color.black)
-            }
+            // The photos are the widget's background: from iOS 17 the content is inset by the
+            // system margins, only the background reaches the edges (no black borders).
+            let shown = Array(images.prefix(family == .systemMedium ? 3 : 1))
+            Foreground(caption: images[0].yearsAgo, canSkip: images.count > 1)
+                .widgetBackground(Photos(images: shown))
         case .noMemories:
             Message(text: "No memories today").widgetBackground(Color(.systemBackground))
         case .notLoaded:
@@ -123,30 +110,69 @@ struct OnThisDayView: View {
     }
 }
 
-/// A photo filling its space, with the Apple Photos style caption over a gradient.
-private struct MemoryTile: View {
-    let memory: MemoryImage
+/// The photos edge to edge: one for the small widget; on the medium one the main photo on the
+/// left and the next ones stacked on the right.
+private struct Photos: View {
+    let images: [MemoryImage]
 
     var body: some View {
-        // The image is a background so it fills the tile without growing the layout.
-        Color.clear
-            .overlay(
-                Image(uiImage: memory.image)
-                    .resizable()
-                    .scaledToFill()
-            )
-            .overlay(alignment: .bottomLeading) {
-                Text("\(memory.yearsAgo) years ago")
+        GeometryReader { proxy in
+            HStack(spacing: 2) {
+                tile(images[0])
+                    .frame(width: images.count > 1 ? proxy.size.width * 0.58 : proxy.size.width)
+                if images.count > 1 {
+                    VStack(spacing: 2) {
+                        ForEach(Array(images.dropFirst().enumerated()), id: \.offset) { _, image in
+                            tile(image)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func tile(_ memory: MemoryImage) -> some View {
+        Color.black
+            .overlay(Image(uiImage: memory.image).resizable().scaledToFill())
+            .clipped()
+    }
+}
+
+/// What sits over the photos: the Apple Photos style caption and the "next" button.
+private struct Foreground: View {
+    let caption: Int
+    let canSkip: Bool
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            LinearGradient(colors: [.clear, .black.opacity(0.5)], startPoint: .center, endPoint: .bottom)
+                .opacity(0.9)
+            HStack(alignment: .bottom) {
+                Text("\(caption) years ago")
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.white)
                     .shadow(radius: 2)
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        LinearGradient(colors: [.clear, .black.opacity(0.55)], startPoint: .top, endPoint: .bottom)
-                    )
+                Spacer(minLength: 0)
+                if canSkip { NextButton() }
             }
-            .clipped()
+        }
+    }
+}
+
+/// Interactive widgets (iOS 17) can run an intent on tap: shows the next photo. Widgets cannot
+/// be swiped, and older systems keep the automatic rotation only.
+private struct NextButton: View {
+    var body: some View {
+        if #available(iOS 17.0, *) {
+            Button(intent: NextMemoryIntent()) {
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.bold))
+                    .foregroundColor(.white)
+                    .frame(width: 28, height: 28)
+                    .background(.black.opacity(0.35), in: Circle())
+            }
+            .buttonStyle(.plain)
+        }
     }
 }
 
@@ -163,13 +189,14 @@ private struct Message: View {
 }
 
 private extension View {
-    /// `containerBackground` is required from iOS 17 (it also gives the full-bleed photo).
+    /// `containerBackground` is required from iOS 17 and goes edge to edge. Before, the widget
+    /// has no margins and the background is simply stacked behind the content.
     @ViewBuilder
     func widgetBackground<Background: View>(_ background: Background) -> some View {
         if #available(iOS 17.0, *) {
             containerBackground(for: .widget) { background }
         } else {
-            ZStack { background; self }
+            ZStack { background; padding(12) }
         }
     }
 }

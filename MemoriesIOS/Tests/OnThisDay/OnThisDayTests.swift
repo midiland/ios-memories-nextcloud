@@ -31,6 +31,11 @@ final class OnThisDayTests: XCTestCase {
         XCTAssertEqual(OnThisDay.dayId(of: evening, calendar: newYork), 20_752)
     }
 
+    func testMemoryDayMatchesOnThisDay() {
+        let now = date(2026, 10, 26)
+        XCTAssertEqual(MemoryDay.id(of: now, calendar: utc), OnThisDay.dayId(of: now, calendar: utc))
+    }
+
     // MARK: - dayIds
 
     func testDayIdsCountAndOrder() {
