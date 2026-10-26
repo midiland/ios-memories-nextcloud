@@ -38,7 +38,8 @@ struct OnThisDayEntry: TimelineEntry {
         case notLoaded
         /// Prepared, but no photo was taken on this date in past years.
         case noMemories
-        case memories([MemoryImage])
+        /// `confirmingHide`: the main photo is the one the user asked to remove.
+        case memories([MemoryImage], confirmingHide: Bool)
     }
 
     let date: Date
@@ -63,6 +64,7 @@ struct OnThisDayProvider: TimelineProvider {
         let today = MemoryDay.id(of: now)
         let schedule = MemoryTimeline.schedule(
             entries: cache.entries(forDay: today), now: now, offset: cache.cursor(forDay: today))
+        let asked = cache.photoAskedToHide(now: now)
         guard !schedule.items.isEmpty else {
             let content: OnThisDayEntry.Content = cache.hasDay(today) ? .noMemories : .notLoaded
             return Timeline(entries: [OnThisDayEntry(date: now, content: content)], policy: .after(schedule.reloadAt))
@@ -71,7 +73,10 @@ struct OnThisDayProvider: TimelineProvider {
             let images = ([item.memory] + item.upcoming).compactMap { entry in
                 Self.thumbnail(at: cache.imageURL(for: entry)).map { MemoryImage(fileid: entry.fileid, dayid: entry.dayid, image: $0, yearsAgo: entry.yearsAgo) }
             }
-            return OnThisDayEntry(date: item.date, content: images.isEmpty ? .notLoaded : .memories(images))
+            return OnThisDayEntry(
+                date: item.date,
+                content: images.isEmpty
+                    ? .notLoaded : .memories(images, confirmingHide: images[0].fileid == asked))
         }
         return Timeline(entries: entries, policy: .after(schedule.reloadAt))
     }
@@ -98,13 +103,19 @@ struct OnThisDayView: View {
 
     var body: some View {
         switch entry.content {
-        case .memories(let images):
+        case .memories(let images, let confirmingHide):
             // The photos are the widget's background: from iOS 17 the content is inset by the
             // system margins, only the background reaches the edges (no black borders).
             let shown = Array(images.prefix(family == .systemMedium ? 3 : 1))
-            Foreground(images: shown, canSkip: images.count > 1)
-                .widgetURL(shown[0].link)
-                .widgetBackground(Photos(images: shown))
+            Group {
+                if confirmingHide {
+                    HideQuestion(fileid: shown[0].fileid)
+                } else {
+                    Foreground(images: shown, canSkip: images.count > 1)
+                }
+            }
+            .widgetURL(confirmingHide ? nil : shown[0].link)
+            .widgetBackground(Photos(images: shown))
         case .noMemories:
             Message(text: "No memories today").widgetBackground(Color(.systemBackground))
         case .notLoaded:
@@ -207,6 +218,37 @@ extension MemoryImage {
     var link: URL { MemoryDeepLink(dayid: dayid, fileid: fileid).url }
 }
 
+/// The widget's own "modal": widgets cannot show alerts or react to a long press, so the cross
+/// turns the widget into a question with two buttons (iOS 17+, like the cross itself).
+private struct HideQuestion: View {
+    let fileid: Int64
+
+    var body: some View {
+        if #available(iOS 17.0, *) {
+            VStack(spacing: 10) {
+                Text("Remove this photo from the widget?")
+                    .font(.footnote.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.white)
+                HStack(spacing: 8) {
+                    Button(intent: CancelHideMemoryIntent()) {
+                        Text("Cancel").frame(maxWidth: .infinity)
+                    }
+                    .tint(.gray)
+                    Button(intent: ConfirmHideMemoryIntent(fileid: Int(fileid))) {
+                        Text("Remove").frame(maxWidth: .infinity)
+                    }
+                    .tint(.red)
+                }
+                .font(.footnote.weight(.semibold))
+                .buttonStyle(.borderedProminent)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.black.opacity(0.65))
+        }
+    }
+}
+
 /// Small cross on the main photo: removes it from the widget for good (iOS 17+).
 private struct HideButton: View {
     let fileid: Int64
@@ -215,10 +257,10 @@ private struct HideButton: View {
         if #available(iOS 17.0, *) {
             Button(intent: HideMemoryIntent(fileid: Int(fileid))) {
                 Image(systemName: "xmark")
-                    .font(.caption2.weight(.bold))
-                    .foregroundColor(.white)
-                    .frame(width: 24, height: 24)
-                    .background(.black.opacity(0.35), in: Circle())
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.white.opacity(0.9))
+                    .frame(width: 22, height: 22)
+                    .background(.black.opacity(0.3), in: Circle())
             }
             .buttonStyle(.plain)
         }

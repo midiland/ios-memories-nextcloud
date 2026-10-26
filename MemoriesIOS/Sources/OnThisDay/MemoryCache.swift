@@ -49,6 +49,7 @@ struct MemoryCache {
 
     private var indexURL: URL { directory.appendingPathComponent("index.json") }
     private var hiddenURL: URL { directory.appendingPathComponent("hidden.json") }
+    private var pendingHideURL: URL { directory.appendingPathComponent("pending-hide.json") }
     private var cursorURL: URL { directory.appendingPathComponent("cursor.json") }
     private var imagesURL: URL { directory.appendingPathComponent("images", isDirectory: true) }
 
@@ -111,8 +112,37 @@ struct MemoryCache {
         return Set(ids)
     }
 
+    /// How long a "remove this photo?" question stays open.
+    static let confirmationTimeout: TimeInterval = 5 * 60
+
+    private struct PendingHide: Codable {
+        let fileid: Int64
+        let askedAt: Date
+    }
+
+    /// The cross was tapped: the widget asks for confirmation before hiding `fileid`.
+    func askToHide(fileid: Int64, now: Date = Date()) {
+        try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+        try? JSONEncoder().encode(PendingHide(fileid: fileid, askedAt: now)).write(to: pendingHideURL, options: .atomic)
+    }
+
+    /// The photo the widget is asking about, unless the question is stale (the user walked away).
+    func photoAskedToHide(now: Date = Date()) -> Int64? {
+        guard let data = try? Data(contentsOf: pendingHideURL),
+              let pending = try? JSONDecoder().decode(PendingHide.self, from: data),
+              now.timeIntervalSince(pending.askedAt) < Self.confirmationTimeout
+        else { return nil }
+        return pending.fileid
+    }
+
+    /// "Cancel" in the widget.
+    func cancelHide() {
+        try? fileManager.removeItem(at: pendingHideURL)
+    }
+
     /// Never shows this photo again (the list is erased with the memories on logout or wipe).
     func hide(fileid: Int64) {
+        cancelHide()
         var ids = hiddenFileIDs()
         ids.insert(fileid)
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)

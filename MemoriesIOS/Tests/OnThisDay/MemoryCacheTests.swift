@@ -160,4 +160,50 @@ final class MemoryCacheTests: XCTestCase {
         try Data("nope".utf8).write(to: root.appendingPathComponent("onthisday/hidden.json"))
         XCTAssertTrue(cache.hiddenFileIDs().isEmpty)
     }
+
+    // MARK: - Confirmation before hiding
+
+    func testAskingDoesNotHideYet() throws {
+        try cache.store(days: [5: [entry(1)]], images: [:])
+        cache.askToHide(fileid: 1)
+        XCTAssertEqual(cache.photoAskedToHide(), 1)
+        XCTAssertEqual(cache.entries(forDay: 5).map(\.fileid), [1])
+    }
+
+    func testNothingIsAskedByDefault() {
+        XCTAssertNil(cache.photoAskedToHide())
+    }
+
+    func testCancelClosesTheQuestion() {
+        cache.askToHide(fileid: 1)
+        cache.cancelHide()
+        XCTAssertNil(cache.photoAskedToHide())
+        XCTAssertTrue(cache.hiddenFileIDs().isEmpty)
+    }
+
+    func testConfirmingHidesAndClosesTheQuestion() {
+        cache.askToHide(fileid: 1)
+        cache.hide(fileid: 1)
+        XCTAssertNil(cache.photoAskedToHide())
+        XCTAssertEqual(cache.hiddenFileIDs(), [1])
+    }
+
+    func testAStaleQuestionIsIgnored() {
+        let asked = Date()
+        cache.askToHide(fileid: 1, now: asked)
+        XCTAssertEqual(cache.photoAskedToHide(now: asked.addingTimeInterval(MemoryCache.confirmationTimeout - 1)), 1)
+        XCTAssertNil(cache.photoAskedToHide(now: asked.addingTimeInterval(MemoryCache.confirmationTimeout)))
+    }
+
+    func testAskingAgainReplacesTheQuestion() {
+        cache.askToHide(fileid: 1)
+        cache.askToHide(fileid: 2)
+        XCTAssertEqual(cache.photoAskedToHide(), 2)
+    }
+
+    func testRemoveAllClosesTheQuestion() {
+        cache.askToHide(fileid: 1)
+        cache.removeAll()
+        XCTAssertNil(cache.photoAskedToHide())
+    }
 }
