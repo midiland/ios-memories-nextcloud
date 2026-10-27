@@ -1,6 +1,6 @@
 # Privacy Policy
 
-_Last updated: October 4, 2026_
+_Last updated: October 27, 2026_
 
 This policy covers **Memories for iOS** (the "app"), an unofficial iOS client for the
 [Memories](https://github.com/pulsejet/memories) photo app for Nextcloud, published by Midiland.
@@ -25,6 +25,11 @@ responsible for the data it stores, under its own privacy policy.
 - **Memories interface files**: a copy of the Memories web interface, downloaded from your server so the
   app opens quickly.
 - **Session data and cache**: cookies and cached content of the web interface, deleted when you sign out.
+- **"On this day" widget photos**: if you add the widget to your home screen, small copies of a few
+  photos taken on this date in past years are downloaded from your server and stored in a folder shared
+  between the app and its widget, with the list of photos you removed from it. They are not backed up,
+  are never sent anywhere except from your own server, and are deleted when you sign out or remove the
+  widget.
 - **Device photo settings and matches**: which device folders you chose to show, and which device photos
   were found to already exist on your server.
 

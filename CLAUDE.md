@@ -69,6 +69,7 @@ xcodebuild -project MemoriesIOS/MemoriesIOS.xcodeproj -scheme MemoriesIOS \
 MemoriesIOS/
 ├── project.yml              # XcodeGen spec (source of truth)
 ├── Resources/               # nativex.js, String Catalogs (en, fr)
+├── Widget/                  # Home screen widget (WidgetKit extension, no networking)
 ├── Sources/
 │   ├── App/                 # Entry point, LocalHTTPServer
 │   ├── Auth/                # Keychain, Login Flow v2
@@ -77,6 +78,7 @@ MemoriesIOS/
 │   ├── LocalServer/         # Loopback HTTP server
 │   ├── Web/                 # WKWebView setup
 │   ├── NativeX/             # window.nativex bridge
+│   ├── OnThisDay/           # "On this day" memories, cache shared with the widget
 │   ├── Views/               # SwiftUI screens
 │   ├── Downloads/           # Photos integration
 │   └── Photos/              # Device photos (read-only)

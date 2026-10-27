@@ -50,6 +50,11 @@ Memories and Nextcloud versions, and the steps to reproduce.
   with progress, counters and a cancel button; the app stays usable meanwhile.
 - **Full-screen photo viewer**: a zoomed photo fills the whole screen, behind the Dynamic Island and home
   indicator; pinch-to-zoom scales the photo, never the whole interface.
+- **"On this day" widget**: a home screen widget (small and medium) shows your photos from past years on
+  the current date, in the style of Apple Photos. The photo changes every 30 minutes; on iOS 17 a button
+  shows the next one, a cross removes a photo from the widget (after a confirmation), and tapping a photo
+  opens it in the app. The widget never sees your credentials: the app prepares the memories and the
+  widget only reads them.
 - **Native integrations**: iOS share sheet for photos and links (and for downloaded files that are not
   photos or videos), native toasts and haptic feedback.
 - **English and French** user interface (follows the iOS language setting).
@@ -57,6 +62,7 @@ Memories and Nextcloud versions, and the steps to reproduce.
 ### Not implemented yet on iOS
 
 - Device **videos** in the timeline (device photos only).
+- Device photos in the **widget** (Nextcloud photos only).
 - **Deleting** device photos and **uploading** them to Nextcloud from the app. The upload button of the
   mobile header is hidden until then; automatic upload is left to the official Nextcloud iOS app.
 - Native **video player**: videos play in the web player.
@@ -80,6 +86,7 @@ Memories and Nextcloud versions, and the steps to reproduce.
 | Native video player | ✅ ExoPlayer | ❌ web player |
 | Device photos in the timeline | ✅ MediaStore | ✅ PhotoKit (read-only) |
 | Device videos in the timeline | ✅ | ❌ |
+| "On this day" home screen widget | ❌ | ✅ |
 | Device folder selection and setup screen | ✅ folders | ✅ library + albums |
 | Deduplication with server photos | ✅ auid/buid | ✅ auid/buid + capture date/dimensions |
 | Upload device photos from the app | ✅ | ❌ (button hidden) |
@@ -174,6 +181,7 @@ A detailed analysis of the Android app and of the frontend's native API is avail
 MemoriesIOS/
 ├── project.yml            XcodeGen spec
 ├── Resources/             nativex.js, shell CSS, String Catalogs (en, fr)
+├── Widget/                "On this day" home screen widget (WidgetKit extension)
 ├── Tests/                 unit tests (MemoriesIOSTests)
 └── Sources/
     ├── App/               entry point and wiring, constants, errors, logging
@@ -183,6 +191,7 @@ MemoriesIOS/
     ├── LocalServer/       loopback HTTP server, router, upstream relay
     ├── Web/               WKWebView setup, navigation policy, back button rule
     ├── NativeX/           window.nativex bridge implementation
+    ├── OnThisDay/         "On this day" memories: selection, cache shared with the widget, refresh
     └── Views/             SwiftUI screens
 ```
 

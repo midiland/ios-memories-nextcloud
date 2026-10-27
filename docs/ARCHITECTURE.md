@@ -19,7 +19,10 @@ The app is organized in a modular Swift package under `MemoriesIOS/Sources/`, wi
 | `Downloads/` | Photos library integration | `ZipArchive` (ZIP64 + stored/deflate), `ZipExtractor`, `MediaFile`, `CaptureDate` + `MediaMetadata` (EXIF/QuickTime), `DuplicateFinder` (`PhotoMatcher`), `PhotosSaver`, `PhotosAccessPrompt` |
 | `Views/` | SwiftUI components | `LoginView`, `SafariView`, `WebContainerView` (themed background + toasts), `ErrorView`, `ToastView`, `BackButton`, `DownloadProgressView`, `SharePresenter` |
 | `Photos/` | Device photos (PhotoKit, read-only) | `LocalTimeline` (actor for local timeline routes), `PhotoLibrary` (permissions, folders), `PhotoMatcher` (device ↔ server deduplication), `PhotoIDs`, `ServerDayClient`, `RemoteCopyStore`, `LocalImageRenderer`, `LocalPhotoSettings` |
+| `OnThisDay/` | "On this day" memories | `OnThisDay` (selection), `MemoryCache` (App Group folder, shared with the widget), `MemoryRefresher` + `MemoryRefreshService`, `MemoryTimeline`, `MemoryDeepLink`, `MemoryDay` (see §9) |
 | `NativeX/` | NativeX bridge implementation | `NativeXController`, `NativeXPhotoService`, `NativeXHost`, `NativeXLoopbackRouter`, `NativeXShareService`, `NativeXMethod`, `NativeXArguments`, `NativeXResponse`, `WeakScriptMessageProxy` |
+
+The widget extension lives in `MemoriesIOS/Widget/` (`MemoriesWidget`, `NextMemoryIntent`, its own `Localizable.xcstrings`) and compiles a few shared files from `Sources/OnThisDay/`.
 
 **Resources (outside `Sources/`)**
 | File | Role |

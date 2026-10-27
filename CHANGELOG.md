@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## Unreleased
+## 1.0.0-rc.14
 
 ### Added
+- **"On this day" widget**: A new home screen widget (small and medium, unlocked home screen only) shows your photos from past years on the current date, in the style of Apple Photos. The photo changes every 30 minutes and the medium widget shows three photos. Tapping a photo opens it in the app. On iOS 17 and later, a button shows the next memory and a cross removes a photo from the widget after a confirmation. The widget never sees your credentials: the app prepares the memories (when it comes to the foreground and in the background, only while the widget is on a screen) and the widget only reads them. The photos are erased on sign out, when the credentials are revoked and on remote wipe. Only Nextcloud photos are included for now.
 - **Remote wipe support**: The app now supports Nextcloud's remote wipe (Settings → Security → Devices & sessions → "Wipe device"). When a wipe is requested, the app detects it at startup, when returning to the foreground, or when the server rejects the credentials, erases all local data (offline snapshots, cached metadata, temporary files, WebView data, cookies, and Keychain credentials), confirms the wipe to the server, and returns to the login screen with an explanatory message. Photos already saved to the iOS Photos library are left untouched. (Issue #15)
 
 ---
