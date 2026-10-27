@@ -493,6 +493,7 @@
       }
     },
     "This device was remotely wiped from Nextcloud. All local data has been erased." : {
+      "extractionState" : "stale",
       "localizations" : {
         "fr" : {
           "stringUnit" : {

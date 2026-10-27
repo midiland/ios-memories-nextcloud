@@ -158,6 +158,21 @@ final class WebViewModel: ObservableObject {
 
     // MARK: - Loading
 
+    /// A photo to open once the page is loaded (link received before the first load ended).
+    private var pendingLink: MemoryDeepLink?
+    /// Entry page of the app, once the first load started.
+    private var entryPage: URL?
+
+    /// Opens a photo (widget tap): loads the app's entry page with the viewer fragment, which
+    /// the Memories timeline opens at startup. Waits for the first load when it is not done.
+    func open(_ link: MemoryDeepLink) {
+        guard let entryPage else {
+            pendingLink = link
+            return
+        }
+        webView.load(URLRequest(url: link.opening(entryPage)))
+    }
+
     /// First load (idempotent: `onAppear` may be called several times).
     func startIfNeeded() {
         guard !hasStarted else { return }
@@ -195,7 +210,14 @@ final class WebViewModel: ObservableObject {
             state = .loading
             // Like Android after signing in: offer device photos (and the iOS prompt) once.
             let url = nativeX.photos.takeSetupOffer() ? offline.setupURL : localURL
-            webView.load(URLRequest(url: url))
+            entryPage = localURL
+            // A photo asked for by the widget wins over the first-run setup page.
+            if let link = pendingLink {
+                pendingLink = nil
+                webView.load(URLRequest(url: link.opening(localURL)))
+            } else {
+                webView.load(URLRequest(url: url))
+            }
             refreshTask = Task { [weak self] in await self?.refreshInBackground() }
         } catch is CancellationError {
             // Superseded by a newer load.

@@ -147,6 +147,51 @@ final class NextcloudClient: WipeChecker {
         }
     }
 
+    // MARK: - On this day
+
+    /// Photos taken on the given days (`POST api/days` with `{"dayIds": [...]}`), as the Memories
+    /// frontend does for its "On this day" view. Authenticated with Basic auth.
+    func photos(onDays dayIds: [Int], credentials: Credentials) async throws -> [ServerPhoto] {
+        var request = URLRequest(url: credentials.server.memoriesURL.appendingPathComponent("api/days"),
+                                 authorizedFor: credentials)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["dayIds": dayIds])
+
+        let (data, status) = try await send(request)
+        switch status {
+        case 200: break
+        case 401: throw AppError.notAuthenticated
+        default: throw AppError.unexpectedStatus(status)
+        }
+        guard let photos = try? JSONDecoder().decode([ServerPhoto].self, from: data) else {
+            throw AppError.invalidResponse
+        }
+        return photos
+    }
+
+    /// JPEG thumbnail of a server photo (`GET api/image/preview/{fileid}?x&y&a=1`), at most
+    /// `size` pixels on each side.
+    func preview(fileid: Int64, size: Int, credentials: Credentials) async throws -> Data {
+        var components = URLComponents(
+            url: credentials.server.memoriesURL.appendingPathComponent("api/image/preview/\(fileid)"),
+            resolvingAgainstBaseURL: false)
+        components?.queryItems = [
+            URLQueryItem(name: "x", value: String(size)),
+            URLQueryItem(name: "y", value: String(size)),
+            URLQueryItem(name: "a", value: "1"),
+        ]
+        guard let url = components?.url else { throw AppError.invalidURL }
+
+        let (data, status) = try await send(URLRequest(url: url, authorizedFor: credentials))
+        switch status {
+        case 200: return data
+        case 401: throw AppError.notAuthenticated
+        default: throw AppError.unexpectedStatus(status)
+        }
+    }
+
     // MARK: - Private
 
     /// Form-encoded `POST` for the wipe endpoints: `token=<app password>`, percent-encoded so

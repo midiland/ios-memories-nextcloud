@@ -10,6 +10,7 @@ final class DataWiperTests: XCTestCase {
     private var defaults: UserDefaults!
     private var suiteName: String!
     private var credentialStore: CredentialStore!
+    private var memoryRoot: URL!
     private var wiper: DataWiper!
 
     override func setUp() async throws {
@@ -22,13 +23,15 @@ final class DataWiperTests: XCTestCase {
         defaults = UserDefaults(suiteName: suiteName)!
         // A dedicated Keychain service so the real credentials are never touched.
         credentialStore = CredentialStore(service: "fr.midiland.memories.tests.wiper.\(UUID().uuidString)")
+        memoryRoot = try Fixtures.temporaryDirectory()
         wiper = DataWiper(
             appSupport: appSupport,
             caches: caches,
             temporary: temporary,
             defaults: defaults,
             defaultsDomain: suiteName,
-            credentialStore: credentialStore
+            credentialStore: credentialStore,
+            memoryCache: MemoryCache(root: memoryRoot)
         )
     }
 
@@ -37,6 +40,7 @@ final class DataWiperTests: XCTestCase {
         try? FileManager.default.removeItem(at: appSupport)
         try? FileManager.default.removeItem(at: caches)
         try? FileManager.default.removeItem(at: temporary)
+        try? FileManager.default.removeItem(at: memoryRoot)
         defaults.removePersistentDomain(forName: suiteName)
         wiper = nil
         try await super.tearDown()
@@ -76,6 +80,21 @@ final class DataWiperTests: XCTestCase {
         await wiper.run()
 
         XCTAssertFalse(FileManager.default.fileExists(atPath: photos.path))
+    }
+
+    // MARK: - Widget memories
+
+    func testRemovesWidgetMemories() async throws {
+        let cache = MemoryCache(root: memoryRoot)
+        try cache.store(
+            days: [1: [MemoryEntry(fileid: 1, dayid: 1, yearsAgo: 1, imageName: "1.jpg")]],
+            images: ["1.jpg": Data([1])])
+
+        await wiper.run()
+
+        XCTAssertTrue(cache.entries(forDay: 1).isEmpty)
+        XCTAssertFalse(FileManager.default.fileExists(
+            atPath: memoryRoot.appendingPathComponent("onthisday").path))
     }
 
     // MARK: - Temporary and caches

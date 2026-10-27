@@ -202,6 +202,25 @@ erase the user's photo library silently).
 
 ---
 
+### 9. "On this day" Widget
+
+A home screen widget (small and medium, unlocked home screen only: no lock screen families) shows
+photos taken on this date in past years, in the style of Apple Photos.
+
+- **The widget never sees the credentials and does no networking.** The app prepares the memories
+  and the widget only reads them from a folder shared through the App Group
+  `group.fr.midiland.memories` (`MemoryCache`: `onthisday/index.json` + thumbnails).
+- **Preparation** (`MemoryRefresher`): mirrors the Memories frontend (`dav/onthisday.ts`): one
+  `POST api/days` with the day ids around today's date in the last 40 years, grouping by
+  anniversary, a seeded pick per year (same photos all day), thumbnails from `api/image/preview`.
+  Today and the next 4 days are prepared, so a skipped background refresh stays invisible.
+- **Triggers** (`MemoryRefreshService`): app in the foreground (when the cache is incomplete, at
+  most every 15 min) and a `BGAppRefreshTask` (`fr.midiland.memories.refresh-memories`, ~12 h,
+  actual time chosen by iOS). Nothing is downloaded unless one of our widgets is on a screen.
+- **Rotation**: the widget timeline changes photo every 30 min (`MemoryTimeline`).
+- **Privacy**: the cache is excluded from backups and erased on logout, revoked credentials and
+  remote wipe. Without the App Group entitlement (ad hoc simulator builds) the widget stays empty.
+
 ## 🎯 Key Design Decisions
 
 ### Platform & Compatibility

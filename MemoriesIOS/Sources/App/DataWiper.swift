@@ -23,6 +23,7 @@ struct DataWiper {
     /// Persistent domain cleared by `removeUserDefaults` (the app's bundle id, or a test suite name).
     private let defaultsDomain: String
     private let credentialStore: CredentialStore
+    private let memoryCache: MemoryCache
 
     init(
         fileManager: FileManager = .default,
@@ -31,7 +32,8 @@ struct DataWiper {
         temporary: URL? = nil,
         defaults: UserDefaults = .standard,
         defaultsDomain: String = Bundle.main.bundleIdentifier ?? "",
-        credentialStore: CredentialStore = CredentialStore()
+        credentialStore: CredentialStore = CredentialStore(),
+        memoryCache: MemoryCache = MemoryCache()
     ) {
         self.fileManager = fileManager
         self.appSupport = appSupport
@@ -42,6 +44,7 @@ struct DataWiper {
         self.defaults = defaults
         self.defaultsDomain = defaultsDomain
         self.credentialStore = credentialStore
+        self.memoryCache = memoryCache
     }
 
     /// Erases all local data. Safe to call once; every step is best-effort.
@@ -50,6 +53,7 @@ struct DataWiper {
     func run() async {
         removeSnapshots()
         removeRemoteCopies()
+        memoryCache.removeAll()
         removeTemporaryFiles()
         removeCaches()
         clearURLCache()

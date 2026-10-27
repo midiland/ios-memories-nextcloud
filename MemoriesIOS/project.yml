@@ -38,6 +38,14 @@ targets:
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
         SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+    entitlements:
+      path: Sources/Memories.entitlements
+      properties:
+        # Shared folder between the app and its widget (widget memories cache).
+        com.apple.security.application-groups:
+          - group.fr.midiland.memories
+    dependencies:
+      - target: MemoriesWidget
     info:
       path: Sources/Info.plist
       properties:
@@ -52,6 +60,16 @@ targets:
         # Export compliance: only Apple's built-in cryptography (TLS, CryptoKit, Keychain).
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
+        # `memories-ios://memory?...`: opens a photo from the widget (`MemoryDeepLink`).
+        CFBundleURLTypes:
+          - CFBundleURLName: fr.midiland.memories
+            CFBundleURLSchemes:
+              - memories-ios
+        # Periodic refresh of the widget's memories (`MemoryRefreshService`).
+        UIBackgroundModes:
+          - fetch
+        BGTaskSchedulerPermittedIdentifiers:
+          - fr.midiland.memories.refresh-memories
         UIApplicationSupportsIndirectInputEvents: true
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -69,6 +87,45 @@ targets:
         # Localized in Resources/InfoPlist.xcstrings
         NSLocalNetworkUsageDescription: Memories connects to your Nextcloud server on the local network.
         NSPhotoLibraryUsageDescription: Memories shows the photos of this device in your timeline, next to the ones on your Nextcloud server, and saves the photos you download to your library without duplicates.
+  # Home screen widget ("On this day"). Reads the memories the app prepares in the App Group
+  # folder: it never sees the credentials and does no networking.
+  MemoriesWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Widget
+      - Sources/OnThisDay/MemoryCache.swift
+      - Sources/OnThisDay/MemoryDay.swift
+      - Sources/OnThisDay/MemoryDeepLink.swift
+      - Sources/OnThisDay/MemoryTimeline.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fr.midiland.memories.widget
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_IDENTITY: Apple Development
+        DEVELOPMENT_TEAM: 53LB2CD33L
+        SUPPORTED_PLATFORMS: iphoneos iphonesimulator
+        SUPPORTS_MACCATALYST: NO
+    entitlements:
+      path: Widget/MemoriesWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.fr.midiland.memories
+    info:
+      path: Widget/Info.plist
+      properties:
+        CFBundleDisplayName: Memories
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations:
+          - en
+          - fr
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
   MemoriesIOSTests:
     type: bundle.unit-test
     platform: iOS
