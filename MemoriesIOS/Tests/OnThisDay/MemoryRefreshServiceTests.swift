@@ -102,6 +102,30 @@ final class MemoryRefreshServiceTests: XCTestCase {
         XCTAssertGreaterThan(fetcher.photoCalls, calls)
     }
 
+    /// The reported bug: open the app (no widget yet), add the widget, come back to the app a
+    /// minute later: the memories must load, not wait for the failure back-off.
+    func testAddingTheWidgetThenReturningToTheAppLoadsTheMemories() async {
+        widgetInstalled = false
+        await service.refreshIfNeeded(credentials: Fixtures.credentials)
+        XCTAssertEqual(fetcher.photoCalls, 0)
+
+        widgetInstalled = true
+        clock = clock.addingTimeInterval(60)
+        await service.refreshIfNeeded(credentials: Fixtures.credentials)
+
+        XCTAssertGreaterThan(fetcher.photoCalls, 0)
+        XCTAssertTrue(service.isUpToDate())
+        XCTAssertEqual(reloads, 1)
+    }
+
+    func testCheckingForAWidgetDoesNotStartTheBackOff() async {
+        widgetInstalled = false
+        await service.refreshIfNeeded(credentials: Fixtures.credentials)
+        widgetInstalled = true
+        await service.refreshIfNeeded(credentials: Fixtures.credentials)
+        XCTAssertGreaterThan(fetcher.photoCalls, 0, "No attempt was made without a widget")
+    }
+
     func testRevokedCredentialsClearTheCacheAndReload() async {
         await service.refresh(credentials: Fixtures.credentials)
         fetcher.error = AppError.notAuthenticated

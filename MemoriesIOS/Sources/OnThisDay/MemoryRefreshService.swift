@@ -59,8 +59,8 @@ final class MemoryRefreshService {
         return (0..<MemoryRefresher.daysAhead).allSatisfy { cache.hasDay(today + $0) }
     }
 
-    /// Foreground trigger: refreshes only when the cache is incomplete and the last attempt is
-    /// not recent.
+    /// Foreground trigger: refreshes only when the cache is incomplete and the last attempt (made
+    /// with a widget on screen) is not recent.
     func refreshIfNeeded(credentials: Credentials) async {
         if let lastAttempt, now().timeIntervalSince(lastAttempt) < Self.minimumAttemptInterval { return }
         guard !isUpToDate() else { return }
@@ -73,13 +73,14 @@ final class MemoryRefreshService {
         guard !isRefreshing else { return false }
         isRefreshing = true
         defer { isRefreshing = false }
-        lastAttempt = now()
 
         guard await hasWidget() else {
-            // The widget was removed: free the photos until it is added again.
+            // The widget was removed: free the photos until it is added again. This is not an
+            // attempt: a widget added right after must not wait for the back-off.
             cache.removeAll()
             return false
         }
+        lastAttempt = now()
         do {
             let stored = try await refresher.refresh(credentials: credentials, now: now())
             if stored > 0 { widgetsDidChange() }
