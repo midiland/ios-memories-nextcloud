@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## Unreleased
+## 1.0.0-rc.15
 
 ### Fixed
+- **"On this day" widget**: A freshly added widget no longer stays empty. If the app had been opened before the widget existed, returning to the app after adding it waited up to 15 minutes before loading the memories; they now load right away.
 - **Public album share links**: Links now follow the server's URL style, taken from the `baseUrl` it announces in `api/describe`. Previously the app always produced `/index.php/apps/memories/a/…`, even on servers with pretty URLs, where the link opens the start screen and no photos in a browser. (Issue #7)
 
 ---

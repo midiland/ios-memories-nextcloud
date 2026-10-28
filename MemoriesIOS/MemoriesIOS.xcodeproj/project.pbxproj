@@ -389,7 +389,7 @@
 		CD4D7BFC45D492A6DB401166 /* URLRequest+Nextcloud.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLRequest+Nextcloud.swift"; sourceTree = "<group>"; };
 		CE9A7CDC96AD868A95681460 /* ManifestPinTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManifestPinTests.swift; sourceTree = "<group>"; };
 		CF128F55B6FD07F44DC5AD3C /* WebViewFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewFactory.swift; sourceTree = "<group>"; };
-		D0EED694251F1AE8608715C3 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D0EED694251F1AE8608715C3 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D26E4329F93753F78269FB95 /* HTTPConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPConnection.swift; sourceTree = "<group>"; };
 		D3B109855539A71E9F4227E6 /* MemoriesIOSTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MemoriesIOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3D45A4A9873C05453B52893 /* PendingWipeStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PendingWipeStoreTests.swift; sourceTree = "<group>"; };
@@ -1261,7 +1261,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1000014;
+				CURRENT_PROJECT_VERSION = 1000015;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -1460,7 +1460,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1000014;
+				CURRENT_PROJECT_VERSION = 1000015;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
