@@ -55,6 +55,10 @@ final class NativeXScriptTests: XCTestCase {
         XCTAssertTrue(context.evaluateScript("typeof window.nativex === 'object'").toBool())
     }
 
+    func testBridgeReportsTheIOSPlatform() {
+        XCTAssertEqual(context.evaluateScript("window.nativex.getPlatform()").toString(), "ios")
+    }
+
     // MARK: - Bridge routes
 
     func testBridgeRoutesAreDivertedOnTheLocalOrigin() {
