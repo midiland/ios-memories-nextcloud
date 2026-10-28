@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## Unreleased
+
+### Fixed
+- **Public album share links**: Links now follow the server's URL style, taken from the `baseUrl` it announces in `api/describe`. Previously the app always produced `/index.php/apps/memories/a/…`, even on servers with pretty URLs, where the link opens the start screen and no photos in a browser. (Issue #7)
+
+---
+
 ## 1.0.0-rc.14
 
 ### Added

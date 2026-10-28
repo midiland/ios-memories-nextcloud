@@ -27,11 +27,17 @@ final class NativeXController: NSObject {
     /// Port of the local server: messages are only accepted from its main frame.
     private let localPort: @MainActor () -> UInt16
 
-    init(share: NativeXShareService, photos: NativeXPhotoService, serverOrigin: URL, localPort: @escaping @MainActor () -> UInt16) {
+    init(
+        share: NativeXShareService, photos: NativeXPhotoService, serverOrigin: URL, webRoot: String = "",
+        servesPrettyURLs: @escaping @MainActor () -> Bool? = { nil },
+        localPort: @escaping @MainActor () -> UInt16
+    ) {
         self.share = share
         self.photos = photos
         self.localPort = localPort
-        router = NativeXLoopbackRouter(share: share, photos: photos, serverOrigin: serverOrigin)
+        router = NativeXLoopbackRouter(
+            share: share, photos: photos, serverOrigin: serverOrigin, webRoot: webRoot, servesPrettyURLs: servesPrettyURLs
+        )
     }
 
     /// Cancels the ongoing album download, if any (issue #14).

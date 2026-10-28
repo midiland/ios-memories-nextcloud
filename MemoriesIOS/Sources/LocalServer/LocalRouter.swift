@@ -157,10 +157,11 @@ final class LocalRouter: @unchecked Sendable {
     private func shell(_ config: LocalAppConfig) -> HTTPResponse {
         let nonce = UUID().uuidString
         // `mod_rewrite_working` mirrors the upstream server's URL style (with or without
-        // `index.php`), taken from the canonical `baseUrl` returned by `api/describe`.
-        // The local server accepts both forms (`appPaths`), so this only affects the URLs
-        // the frontend generates (e.g. public share links) — they must match the server.
-        let modRewriteWorking = !config.server.memoriesURL.absoluteString.contains("index.php")
+        // `index.php`), taken from the canonical `baseUrl` of the snapshot's `api/describe`,
+        // not from the stored server URL (which gets `index.php` by default).
+        // Public share links are normalized separately (`NativeXLoopbackRouter.publicURL`):
+        // `@nextcloud/router` reads `window.OC.config.modRewriteWorking`, not this flag.
+        let modRewriteWorking = ServerURL.servesPrettyURLs(baseUrl: config.snapshot.manifest.describe.baseUrl)
         let html = ShellPage.html(manifest: config.snapshot.manifest, webRoot: config.webRoot, user: config.user, nonce: nonce, modRewriteWorking: modRewriteWorking)
         return HTTPResponse(
             status: 200,

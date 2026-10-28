@@ -61,4 +61,21 @@ final class ServerURLTests: XCTestCase {
         let decoded = try JSONDecoder().decode(ServerURL.self, from: JSONEncoder().encode(url))
         XCTAssertEqual(decoded, url)
     }
+
+    func testServesPrettyURLsFollowsTheAnnouncedBaseURL() {
+        XCTAssertTrue(ServerURL.servesPrettyURLs(baseUrl: "https://cloud.example.com/apps/memories/"))
+        XCTAssertTrue(ServerURL.servesPrettyURLs(baseUrl: "https://cloud.example.com/nextcloud/apps/memories/"))
+        XCTAssertFalse(ServerURL.servesPrettyURLs(baseUrl: "https://cloud.example.com/index.php/apps/memories/"))
+        XCTAssertFalse(ServerURL.servesPrettyURLs(baseUrl: "https://cloud.example.com/nextcloud/index.php/apps/memories/"))
+    }
+
+    func testAppPathFollowsTheServerStyle() {
+        XCTAssertEqual(ServerURL.appPath("/index.php/apps/memories/a/abc", prettyURLs: true, webRoot: ""), "/apps/memories/a/abc")
+        XCTAssertEqual(ServerURL.appPath("/nc/index.php/apps/memories/a/abc", prettyURLs: true, webRoot: "/nc"), "/nc/apps/memories/a/abc")
+        XCTAssertEqual(ServerURL.appPath("/apps/memories/a/abc", prettyURLs: false, webRoot: ""), "/index.php/apps/memories/a/abc")
+        // Already in the right style, or outside the app, or only sharing a prefix: unchanged.
+        XCTAssertEqual(ServerURL.appPath("/apps/memories/a/abc", prettyURLs: true, webRoot: ""), "/apps/memories/a/abc")
+        XCTAssertEqual(ServerURL.appPath("/index.php/s/abc", prettyURLs: true, webRoot: ""), "/index.php/s/abc")
+        XCTAssertEqual(ServerURL.appPath("/index.php/apps/memories-other/a", prettyURLs: true, webRoot: ""), "/index.php/apps/memories-other/a")
+    }
 }

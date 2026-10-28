@@ -106,7 +106,8 @@ final class WebViewModel: ObservableObject {
         self.onCheckRemoteWipe = onCheckRemoteWipe
         let library = PhotoLibrary()
         localPhotos = LocalTimeline(credentials: credentials, library: library)
-        offline = OfflineAppLoader(credentials: credentials, server: server, media: localPhotos)
+        let loader = OfflineAppLoader(credentials: credentials, server: server, media: localPhotos)
+        offline = loader
         nativeX = NativeXController(
             share: NativeXShareService(
                 downloader: AuthenticatedDownloader(credentials: credentials) { [weak server] in
@@ -117,6 +118,10 @@ final class WebViewModel: ObservableObject {
             ),
             photos: NativeXPhotoService(library: library),
             serverOrigin: credentials.server.origin,
+            webRoot: credentials.server.webRoot,
+            servesPrettyURLs: { [weak loader] in
+                loader?.current.map { ServerURL.servesPrettyURLs(baseUrl: $0.manifest.describe.baseUrl) }
+            },
             localPort: { [weak server] in server?.port ?? 0 }
         )
         webView = WebViewFactory.make(bridge: nativeX)

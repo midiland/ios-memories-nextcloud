@@ -121,27 +121,40 @@ final class LocalRouterTests: XCTestCase {
     // MARK: - oc_config.mod_rewrite_working (issue #7)
 
     /// The shell must expose `mod_rewrite_working = false` when the upstream server's
-    /// canonical `baseUrl` contains `index.php` (Fixtures.server uses `index.php`).
+    /// canonical `baseUrl` contains `index.php` (the fixture's default).
     func testShellSetsModRewriteWorkingFalseWhenServerUsesIndexPHP() async {
         let response = await get("/", headers: ["Accept": "text/html"])
         XCTAssertEqual(response.status, 200)
         XCTAssertTrue(response.text?.contains("window.oc_config.mod_rewrite_working = false;") == true)
     }
 
-    /// When the upstream server serves pretty URLs (no `index.php` in `baseUrl`),
-    /// the shell must expose `mod_rewrite_working = true` so `generateUrl()` omits
-    /// `index.php` in public share links.
+    /// When the upstream server serves pretty URLs (no `index.php` in its `baseUrl`), the shell
+    /// must expose `mod_rewrite_working = true` so `generateUrl()` omits `index.php` in public
+    /// share links — even though the stored server URL carries `index.php` (the default added to
+    /// the address the user types). Otherwise the public page shows no photos.
     func testShellSetsModRewriteWorkingTrueWhenServerUsesPrettyURLs() async throws {
-        let prettyServer = ServerURL(memoriesBaseURL: "https://cloud.example.com/nextcloud/apps/memories/")!
-        let prettyCredentials = Credentials(server: prettyServer, loginName: "alice", appPassword: "secret")
+        let manifest = try AssetManifest(raw: Fixtures.describe(baseUrl: "https://cloud.example.com/nextcloud/apps/memories/"))
         router.config = LocalAppConfig(
-            credentials: prettyCredentials,
-            snapshot: router.config!.snapshot,
+            credentials: Fixtures.credentials, // stored URL contains `index.php`
+            snapshot: Snapshot(directory: directory, manifest: manifest),
             user: "alice"
         )
+        XCTAssertTrue(Fixtures.credentials.server.memoriesURL.absoluteString.contains("index.php"))
         let response = await get("/", headers: ["Accept": "text/html"])
         XCTAssertEqual(response.status, 200)
         XCTAssertTrue(response.text?.contains("window.oc_config.mod_rewrite_working = true;") == true)
+    }
+
+    /// The stored URL is ignored: a pretty stored URL does not hide a server that needs `index.php`.
+    func testShellIgnoresStoredServerURLStyle() async throws {
+        let pretty = ServerURL(memoriesBaseURL: "https://cloud.example.com/nextcloud/apps/memories/")!
+        router.config = LocalAppConfig(
+            credentials: Credentials(server: pretty, loginName: "alice", appPassword: "secret"),
+            snapshot: router.config!.snapshot, // `baseUrl` with `index.php`
+            user: "alice"
+        )
+        let response = await get("/", headers: ["Accept": "text/html"])
+        XCTAssertTrue(response.text?.contains("window.oc_config.mod_rewrite_working = false;") == true)
     }
 
     func testOtherDocumentNavigationsAreNotRenderedLocally() async {

@@ -30,12 +30,13 @@ enum Fixtures {
         jsManifest: [String: Any] = jsManifest,
         cssManifest: [[String: Any]] = cssManifest,
         signingSeed: Data? = developmentSeed,
-        uid: String? = "alice"
+        uid: String? = "alice",
+        baseUrl: String = "https://cloud.example.com/nextcloud/index.php/apps/memories/"
     ) throws -> Data {
         let manifestBytes = try JSONSerialization.data(withJSONObject: jsManifest, options: .sortedKeys)
         var object: [String: Any] = [
             "version": "9.1.0",
-            "baseUrl": "https://cloud.example.com/nextcloud/index.php/apps/memories/",
+            "baseUrl": baseUrl,
             "loginFlowUrl": "https://cloud.example.com/nextcloud/index.php/login/v2",
             "uid": uid ?? NSNull(),
             "jsManifest": manifestBytes.base64EncodedString(),

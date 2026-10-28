@@ -39,9 +39,14 @@ final class NativeXLoopbackRouterTests: XCTestCase {
     }
 
     /// Shares `link` through the route (double-encoded like the frontend) and returns the presented URL.
-    private func sharedURL(_ link: String, serverOrigin: URL? = nil) async throws -> URL? {
-        if let serverOrigin {
-            router = NativeXLoopbackRouter(share: share, photos: router.photos, serverOrigin: serverOrigin)
+    private func sharedURL(
+        _ link: String, serverOrigin: URL? = nil, webRoot: String = "", prettyURLs: Bool? = nil
+    ) async throws -> URL? {
+        if serverOrigin != nil || prettyURLs != nil {
+            router = NativeXLoopbackRouter(
+                share: share, photos: router.photos, serverOrigin: serverOrigin ?? router.serverOrigin,
+                webRoot: webRoot, servesPrettyURLs: { prettyURLs }
+            )
         }
         let once = try XCTUnwrap(link.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
         let twice = try XCTUnwrap(once.addingPercentEncoding(withAllowedCharacters: .alphanumerics))
@@ -73,6 +78,37 @@ final class NativeXLoopbackRouterTests: XCTestCase {
             serverOrigin: try XCTUnwrap(URL(string: "http://cloud.example.com:8080"))
         )
         XCTAssertEqual(shared, URL(string: "http://cloud.example.com:8080/index.php/s/abc"))
+    }
+
+    /// Issue #7: the page runs under `index.php`, so the frontend builds `/index.php/apps/memories/a/…`
+    /// even on a server with pretty URLs, where the public page shows no photos.
+    func testShareURLDropsIndexPHPOnServersWithPrettyURLs() async throws {
+        let shared = try await sharedURL(
+            "http://127.0.0.1:62079/index.php/apps/memories/a/abc", webRoot: "", prettyURLs: true
+        )
+        XCTAssertEqual(shared, URL(string: "https://cloud.example.com/apps/memories/a/abc"))
+    }
+
+    func testShareURLKeepsWebRootWhenDroppingIndexPHP() async throws {
+        let shared = try await sharedURL(
+            "http://127.0.0.1:62079/nextcloud/index.php/apps/memories/a/abc?x=1", webRoot: "/nextcloud", prettyURLs: true
+        )
+        XCTAssertEqual(shared, URL(string: "https://cloud.example.com/nextcloud/apps/memories/a/abc?x=1"))
+    }
+
+    func testShareURLAddsIndexPHPOnServersWithoutPrettyURLs() async throws {
+        let shared = try await sharedURL("http://127.0.0.1:62079/apps/memories/a/abc", prettyURLs: false)
+        XCTAssertEqual(shared, URL(string: "https://cloud.example.com/index.php/apps/memories/a/abc"))
+    }
+
+    func testShareURLLeavesNonAppPathsAlone() async throws {
+        let shared = try await sharedURL("http://127.0.0.1:62079/index.php/s/abc", prettyURLs: true)
+        XCTAssertEqual(shared, URL(string: "https://cloud.example.com/index.php/s/abc"))
+    }
+
+    func testShareURLKeepsTheLinkStyleWhileTheServerStyleIsUnknown() async throws {
+        let shared = try await sharedURL("http://127.0.0.1:62079/index.php/apps/memories/a/abc")
+        XCTAssertEqual(shared, URL(string: "https://cloud.example.com/index.php/apps/memories/a/abc"))
     }
 
     func testShareURLKeepsOtherHostsUnchanged() async throws {

@@ -8,10 +8,28 @@ struct NativeXLoopbackRouter {
     let share: NativeXShareService
     let photos: NativeXPhotoService
     let serverOrigin: URL
+    /// Nextcloud path prefix (`""` at the domain root, otherwise e.g. `/nextcloud`).
+    let webRoot: String
+    /// Whether the server serves Memories without `index.php`; `nil` while unknown (no snapshot yet).
+    let servesPrettyURLs: @MainActor () -> Bool?
+
+    init(
+        share: NativeXShareService, photos: NativeXPhotoService, serverOrigin: URL,
+        webRoot: String = "", servesPrettyURLs: @escaping @MainActor () -> Bool? = { nil }
+    ) {
+        self.share = share
+        self.photos = photos
+        self.serverOrigin = serverOrigin
+        self.webRoot = webRoot
+        self.servesPrettyURLs = servesPrettyURLs
+    }
 
     /// Public form of a link built by the frontend: it runs on the local server, so links to
-    /// itself point to `127.0.0.1`; they are moved to the real server origin (same path, since
-    /// the local server mirrors the server paths). Other links are returned unchanged.
+    /// itself point to `127.0.0.1`; they are moved to the real server origin, with the app path
+    /// in the server's URL style. The web page itself always runs under `index.php`, so the
+    /// frontend builds `/index.php/apps/memories/a/…` even on servers with pretty URLs, where
+    /// the public page's router does not match it and shows no photos (issue #7).
+    /// Other links are returned unchanged.
     func publicURL(_ url: URL) -> URL {
         guard url.host == LocalHTTPServer.host || url.host == "localhost",
               var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
@@ -19,6 +37,9 @@ struct NativeXLoopbackRouter {
         components.scheme = serverOrigin.scheme
         components.host = serverOrigin.host
         components.port = serverOrigin.port
+        if let pretty = servesPrettyURLs() {
+            components.percentEncodedPath = ServerURL.appPath(components.percentEncodedPath, prettyURLs: pretty, webRoot: webRoot)
+        }
         return components.url ?? url
     }
 

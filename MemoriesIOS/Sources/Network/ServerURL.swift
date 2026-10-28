@@ -44,6 +44,24 @@ struct ServerURL: Equatable, Codable {
         memoriesURL = url
     }
 
+    /// Whether the server serves Memories without `index.php` (pretty URLs), judging by the
+    /// `baseUrl` it announces in `api/describe`. The stored URL cannot tell: it gets `index.php/`
+    /// by default when the user types the address.
+    static func servesPrettyURLs(baseUrl: String) -> Bool {
+        !baseUrl.contains("index.php")
+    }
+
+    /// Rewrites the Memories app prefix of `path` to the server's URL style: with `index.php`
+    /// (`/nextcloud/index.php/apps/memories/…`) or without (`/nextcloud/apps/memories/…`).
+    /// Paths outside the app are returned unchanged.
+    static func appPath(_ path: String, prettyURLs: Bool, webRoot: String) -> String {
+        let withIndex = webRoot + "/index.php/apps/memories"
+        let pretty = webRoot + "/apps/memories"
+        let (from, to) = prettyURLs ? (withIndex, pretty) : (pretty, withIndex)
+        guard path == from || path.hasPrefix(from + "/") else { return path }
+        return to + path.dropFirst(from.count)
+    }
+
     /// Memories' public `api/describe` endpoint (version, baseUrl, loginFlowUrl, uid).
     var describeURL: URL { memoriesURL.appendingPathComponent("api/describe") }
 
