@@ -99,6 +99,7 @@ struct OnThisDayProvider: TimelineProvider {
 
 struct OnThisDayView: View {
     @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetRenderingMode) private var renderingMode
     let entry: OnThisDayEntry
 
     var body: some View {
@@ -107,15 +108,26 @@ struct OnThisDayView: View {
             // The photos are the widget's background: from iOS 17 the content is inset by the
             // system margins, only the background reaches the edges (no black borders).
             let shown = Array(images.prefix(family == .systemMedium ? 3 : 1))
-            Group {
+            // Tinted home screen (issue #20): in `.accented` mode the system strips the container
+            // background, so the photos must live in the main content (they get tinted like all).
+            let tinted = if #available(iOS 18.0, *) { renderingMode == .accented } else { false }
+            let foreground = Group {
                 if confirmingHide {
-                    HideQuestion(fileid: shown[0].fileid)
+                    HideQuestion(fileid: shown[0].fileid, tinted: tinted)
                 } else {
-                    Foreground(images: shown, canSkip: images.count > 1)
+                    Foreground(images: shown, canSkip: images.count > 1, tinted: tinted)
                 }
             }
             .widgetURL(confirmingHide ? nil : shown[0].link)
-            .widgetBackground(Photos(images: shown))
+            if tinted {
+                ZStack {
+                    Photos(images: shown, tinted: true)
+                    foreground
+                }
+            } else {
+                foreground
+                    .widgetBackground(Photos(images: shown))
+            }
         case .noMemories:
             Message(text: "No memories today").widgetBackground(Color(.systemBackground))
         case .notLoaded:
@@ -128,6 +140,8 @@ struct OnThisDayView: View {
 /// left and the next ones stacked on the right.
 private struct Photos: View {
     let images: [MemoryImage]
+    /// Tinted mode: the system renders images as alpha masks, so no black backing is needed.
+    var tinted: Bool = false
 
     var body: some View {
         GeometryReader { proxy in
@@ -146,8 +160,14 @@ private struct Photos: View {
     }
 
     private func tile(_ memory: MemoryImage) -> some View {
-        Color.black
-            .overlay(Image(uiImage: memory.image).resizable().scaledToFill())
+        // Tinted mode: the system masks images by alpha, so turn the photo into a white
+        // mask whose alpha is its luminance — the accent color then shows through with
+        // the photo's shades (an opaque photo would become a flat block).
+        let base: Image = tinted
+            ? Image(uiImage: MemoryImageMask.luminanceMask(of: memory.image)).renderingMode(.template)
+            : Image(uiImage: memory.image)
+        return (tinted ? Color.clear : Color.black)
+            .overlay(base.resizable().scaledToFill())
             .clipped()
     }
 }
@@ -156,21 +176,23 @@ private struct Photos: View {
 private struct Foreground: View {
     let images: [MemoryImage]
     let canSkip: Bool
+    /// Tinted mode: white text/buttons would vanish on the tinted photo, use the primary color.
+    var tinted: Bool = false
 
     private var memory: MemoryImage { images[0] }
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
             smallPhotoLinks
-            HideButton(fileid: memory.fileid)
+            HideButton(fileid: memory.fileid, tinted: tinted)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             HStack(alignment: .bottom) {
                 Text("\(memory.yearsAgo) years ago")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.6), radius: 3)
+                    .foregroundColor(tinted ? .primary : .white)
+                    .shadow(color: tinted ? .clear : .black.opacity(0.6), radius: 3)
                 Spacer(minLength: 0)
-                if canSkip { NextButton() }
+                if canSkip { NextButton(tinted: tinted) }
             }
         }
     }
@@ -179,14 +201,16 @@ private struct Foreground: View {
 /// Interactive widgets (iOS 17) can run an intent on tap: shows the next photo. Widgets cannot
 /// be swiped, and older systems keep the automatic rotation only.
 private struct NextButton: View {
+    var tinted: Bool = false
+
     var body: some View {
         if #available(iOS 17.0, *) {
             Button(intent: NextMemoryIntent()) {
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(tinted ? .primary : .white)
                     .frame(width: 28, height: 28)
-                    .background(.black.opacity(0.35), in: Circle())
+                    .background(tinted ? Color.primary.opacity(0.25) : Color.black.opacity(0.35), in: Circle())
             }
             .buttonStyle(.plain)
         }
@@ -223,6 +247,7 @@ extension MemoryImage {
 private struct HideQuestion: View {
     @Environment(\.widgetFamily) private var family
     let fileid: Int64
+    var tinted: Bool = false
 
     var body: some View {
         if #available(iOS 17.0, *) {
@@ -230,7 +255,7 @@ private struct HideQuestion: View {
                 Text("Remove this photo?")
                     .font(.footnote.weight(.semibold))
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.white)
+                    .foregroundColor(tinted ? .primary : .white)
                 // Side by side only when there is room: in the small widget the words would break.
                 let layout = family == .systemSmall
                     ? AnyLayout(VStackLayout(spacing: 6)) : AnyLayout(HStackLayout(spacing: 8))
@@ -249,7 +274,7 @@ private struct HideQuestion: View {
             }
             .padding(.horizontal, 4)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.black.opacity(0.65))
+            .background(tinted ? Color(.systemBackground).opacity(0.85) : Color.black.opacity(0.65))
         }
     }
 
@@ -265,15 +290,16 @@ private struct HideQuestion: View {
 /// Small cross on the main photo: removes it from the widget for good (iOS 17+).
 private struct HideButton: View {
     let fileid: Int64
+    var tinted: Bool = false
 
     var body: some View {
         if #available(iOS 17.0, *) {
             Button(intent: HideMemoryIntent(fileid: Int(fileid))) {
                 Image(systemName: "xmark")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.white.opacity(0.9))
+                    .foregroundColor(tinted ? .primary : .white.opacity(0.9))
                     .frame(width: 22, height: 22)
-                    .background(.black.opacity(0.3), in: Circle())
+                    .background(tinted ? Color.primary.opacity(0.25) : Color.black.opacity(0.3), in: Circle())
             }
             .buttonStyle(.plain)
         }

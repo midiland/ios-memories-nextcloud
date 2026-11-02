@@ -97,6 +97,7 @@ targets:
       - Sources/OnThisDay/MemoryCache.swift
       - Sources/OnThisDay/MemoryDay.swift
       - Sources/OnThisDay/MemoryDeepLink.swift
+      - Sources/OnThisDay/MemoryImageMask.swift
       - Sources/OnThisDay/MemoryTimeline.swift
     settings:
       base:
