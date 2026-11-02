@@ -111,8 +111,8 @@ final class NextcloudClient: WipeChecker {
     /// the endpoint is `#[PublicPage]` and the token itself is the credential).
     /// Returns `true` on `200 {"wipe": true}`, `false` on `404` (no wipe pending).
     /// Throws on transport errors or unexpected statuses so the caller can retry later.
-    func checkWipe(_ credentials: Credentials) async throws -> Bool {
-        let request = wipeRequest("index.php/core/wipe/check", credentials)
+    func checkWipe(server: ServerURL, token: String) async throws -> Bool {
+        let request = wipeRequest("index.php/core/wipe/check", server: server, token: token)
 
         let (data, status) = try await send(request)
         switch status {
@@ -136,8 +136,8 @@ final class NextcloudClient: WipeChecker {
     /// (the wipe was already confirmed, the token no longer exists — nothing left to do).
     /// Returns `false` only on transient errors (network, 429 rate limit, 5xx) so the
     /// caller can retry later.
-    func confirmWipe(_ credentials: Credentials) async -> Bool {
-        let request = wipeRequest("index.php/core/wipe/success", credentials)
+    func confirmWipe(server: ServerURL, token: String) async -> Bool {
+        let request = wipeRequest("index.php/core/wipe/success", server: server, token: token)
         do {
             let (_, status) = try await send(request)
             // 200: wipe confirmed. 404: already confirmed (token gone) — both are success.
@@ -197,15 +197,15 @@ final class NextcloudClient: WipeChecker {
     /// Form-encoded `POST` for the wipe endpoints: `token=<app password>`, percent-encoded so
     /// a `+`, `&` or `=` in the password cannot corrupt the body. No Basic auth: the
     /// endpoints are `#[PublicPage]` and the token itself is the credential.
-    private func wipeRequest(_ path: String, _ credentials: Credentials) -> URLRequest {
-        var request = URLRequest(url: credentials.server.nextcloudRoot.appendingPathComponent(path))
+    private func wipeRequest(_ path: String, server: ServerURL, token: String) -> URLRequest {
+        var request = URLRequest(url: server.nextcloudRoot.appendingPathComponent(path))
         request.httpMethod = "POST"
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue(AppConstants.userAgentSuffix, forHTTPHeaderField: "User-Agent")
         var allowed = CharacterSet.urlQueryAllowed
         allowed.remove(charactersIn: "+&=?")
-        let token = credentials.appPassword.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
-        request.httpBody = Data("token=\(token)".utf8)
+        let encoded = token.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+        request.httpBody = Data("token=\(encoded)".utf8)
         return request
     }
 

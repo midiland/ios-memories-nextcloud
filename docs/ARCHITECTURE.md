@@ -173,13 +173,16 @@ Only one wipe runs at a time (`isWiping`): at startup the proactive check and th
 can both detect the same wipe.
 
 **Flow when a wipe is detected** (`SessionStore.performRemoteWipe`):
-1. The credentials are saved in `PendingWipeStore` **before** anything is erased (the purge
-   deletes the Keychain credentials: if the app died in between, the confirmation would be lost).
+1. A pending entry is saved in `PendingWipeStore` **before** anything is erased (the purge
+   deletes the Keychain credentials: if the app died in between, the confirmation would be
+   lost). The entry holds only the server URL and the app password (the `token`) — never the
+   login name.
 2. The UI goes back to the login screen (message "This device was remotely wiped from
    Nextcloud."), so the web view and its background tasks stop writing to the disk.
 3. `DataWiper.run()` erases all local data:
-   - `Application Support/offline/` (web snapshots)
+   - `Application Support/offline/` (web snapshots, including `describe.json`)
    - `Application Support/photos/` (RemoteCopyStore)
+   - the App Group cache of the "On this day" widget (`MemoryCache.removeAll()`)
    - `temporaryDirectory/` and `Caches/`
    - `URLCache.shared`
    - the app's whole `UserDefaults` persistent domain (any key, present or future)
@@ -195,7 +198,9 @@ can both detect the same wipe.
 failed, or when a 401 arrived and the wipe check itself failed (network error: the session
 still ends, the user is not stuck). On the next launch `SessionStore.resolvePendingWipe`
 checks again: wipe requested → purge + confirm; no wipe (plain revocation) → the entry is
-deleted. The entry is also deleted after a successful confirmation.
+deleted. The entry is also deleted after a successful confirmation, and after
+`PendingWipeStore.maxAttempts` failed attempts (the token is already invalidated and the
+local purge has run, so a dead entry must not linger in the Keychain).
 
 **Limits**: the check only runs while the app is open (no background task): a device that is
 offline, or never reopened, is not wiped until the app is launched with network access.
@@ -221,8 +226,10 @@ photos taken on this date in past years, in the style of Apple Photos.
   most every 15 min) and a `BGAppRefreshTask` (`fr.midiland.memories.refresh-memories`, ~12 h,
   actual time chosen by iOS). Nothing is downloaded unless one of our widgets is on a screen.
 - **Rotation**: the widget timeline changes photo every 30 min (`MemoryTimeline`).
-- **Privacy**: the cache is excluded from backups and erased on logout, revoked credentials and
-  remote wipe. Without the App Group entitlement (ad hoc simulator builds) the widget stays empty.
+- **Privacy**: the cache is excluded from backups, every file written is pinned to the
+  `.complete` file protection class (readable only after the first unlock), and the cache is
+  erased on logout, revoked credentials and remote wipe (`DataWiper` included). Without the
+  App Group entitlement (ad hoc simulator builds) the widget stays empty.
 
 ## 🎯 Key Design Decisions
 

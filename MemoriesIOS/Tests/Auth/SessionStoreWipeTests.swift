@@ -6,26 +6,37 @@ import XCTest
 /// Not `@MainActor`: `SessionStore` is `@MainActor`, so we hop to the main actor
 /// explicitly with `await MainActor.run { }` to avoid deadlocking the test runner.
 final class SessionStoreWipeTests: XCTestCase {
+    /// One recorded wipe call (server + token).
+    private struct WipeCall: Equatable {
+        let server: ServerURL
+        let token: String
+    }
+
     /// Mock wipe checker: records calls and returns canned results.
     private final class MockWipeChecker: WipeChecker {
         var checkWipeResult: Result<Bool, Error> = .success(false)
-        var checkWipeCalls: [Credentials] = []
-        var confirmWipeCalls: [Credentials] = []
+        var checkWipeCalls: [WipeCall] = []
+        var confirmWipeCalls: [WipeCall] = []
         var confirmWipeResult: Bool = true
         /// Runs when `confirmWipe` is called, to observe the state at that moment.
         var onConfirm: (@MainActor () -> Void)?
 
-        func checkWipe(_ credentials: Credentials) async throws -> Bool {
-            checkWipeCalls.append(credentials)
+        func checkWipe(server: ServerURL, token: String) async throws -> Bool {
+            checkWipeCalls.append(WipeCall(server: server, token: token))
             return try checkWipeResult.get()
         }
 
-        func confirmWipe(_ credentials: Credentials) async -> Bool {
-            confirmWipeCalls.append(credentials)
+        func confirmWipe(server: ServerURL, token: String) async -> Bool {
+            confirmWipeCalls.append(WipeCall(server: server, token: token))
             await onConfirm?()
             return confirmWipeResult
         }
     }
+
+    /// The pending entry matching `Fixtures.credentials` (server + token only).
+    private var pending: PendingWipe { PendingWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword) }
+    /// The call the mock must be called with.
+    private var expectedCall: WipeCall { WipeCall(server: Fixtures.server, token: Fixtures.credentials.appPassword) }
 
     private var sessionEndCount = 0
     private var mockChecker: MockWipeChecker!
@@ -107,7 +118,7 @@ final class SessionStoreWipeTests: XCTestCase {
         await waitFor { self.mockChecker.checkWipeCalls.count == 1 }
         await waitFor { self.sessionEndCount == 1 }
 
-        XCTAssertEqual(mockChecker.checkWipeCalls, [Fixtures.credentials])
+        XCTAssertEqual(mockChecker.checkWipeCalls, [expectedCall])
         XCTAssertEqual(sessionEndCount, 1)
         let error = await MainActor.run { store.loginError }
         XCTAssertEqual(error, .notAuthenticated)
@@ -128,8 +139,8 @@ final class SessionStoreWipeTests: XCTestCase {
         await waitFor { self.mockChecker.confirmWipeCalls.count == 1 }
         await waitFor { self.sessionEndCount == 1 }
 
-        XCTAssertEqual(mockChecker.checkWipeCalls, [Fixtures.credentials])
-        XCTAssertEqual(mockChecker.confirmWipeCalls, [Fixtures.credentials])
+        XCTAssertEqual(mockChecker.checkWipeCalls, [expectedCall])
+        XCTAssertEqual(mockChecker.confirmWipeCalls, [expectedCall])
         XCTAssertEqual(sessionEndCount, 1)
         let error = await MainActor.run { store.loginError }
         XCTAssertEqual(error, .remoteWipe)
@@ -154,7 +165,7 @@ final class SessionStoreWipeTests: XCTestCase {
         XCTAssertEqual(phase, .loggedOut)
         let error = await MainActor.run { store.loginError }
         XCTAssertEqual(error, .notAuthenticated)
-        XCTAssertEqual(pendingWipeStore.load(), Fixtures.credentials, "credentials must be saved for retry")
+        XCTAssertEqual(pendingWipeStore.load(), pending, "pending must be saved for retry")
         XCTAssertTrue(mockChecker.confirmWipeCalls.isEmpty)
     }
 
@@ -163,7 +174,7 @@ final class SessionStoreWipeTests: XCTestCase {
         // Keychain credentials are gone) and the UI must already be on the login screen.
         let store = await makeStore()
         mockChecker.checkWipeResult = .success(true)
-        var pendingDuringConfirm: Credentials?
+        var pendingDuringConfirm: PendingWipe?
         var credentialsDuringConfirm: Credentials?
         var phaseDuringConfirm: SessionStore.Phase?
         mockChecker.onConfirm = { [self] in
@@ -175,7 +186,7 @@ final class SessionStoreWipeTests: XCTestCase {
         await MainActor.run { store.sessionRevoked() }
         await waitFor { self.sessionEndCount == 1 }
 
-        XCTAssertEqual(pendingDuringConfirm, Fixtures.credentials, "pending saved before the purge")
+        XCTAssertEqual(pendingDuringConfirm, pending, "pending saved before the purge")
         XCTAssertNil(credentialsDuringConfirm, "Keychain credentials erased before the confirmation")
         XCTAssertEqual(phaseDuringConfirm, .loggedOut, "UI left before the purge")
         XCTAssertNil(pendingWipeStore.load(), "pending cleared after a successful confirmation")
@@ -209,7 +220,9 @@ final class SessionStoreWipeTests: XCTestCase {
         XCTAssertEqual(sessionEndCount, 1)
         let error = await MainActor.run { store.loginError }
         XCTAssertEqual(error, .remoteWipe)
-        XCTAssertEqual(pendingWipeStore.load(), Fixtures.credentials, "credentials must be saved for retry")
+        var expected = pending
+        expected.attempts = 1
+        XCTAssertEqual(pendingWipeStore.load(), expected, "pending must be saved (counted) for retry")
     }
 
     func testSessionRevokedWhenLoggedOutIsImmediate() async {
@@ -250,7 +263,7 @@ final class SessionStoreWipeTests: XCTestCase {
         await MainActor.run { store.checkForRemoteWipe() }
         await waitFor { self.mockChecker.checkWipeCalls.count == 1 }
 
-        XCTAssertEqual(mockChecker.checkWipeCalls, [Fixtures.credentials])
+        XCTAssertEqual(mockChecker.checkWipeCalls, [expectedCall])
         XCTAssertEqual(sessionEndCount, 0, "no wipe → session stays")
         let phase = await MainActor.run { store.phase }
         XCTAssertEqual(phase, .loggedIn(Fixtures.credentials))
@@ -266,8 +279,8 @@ final class SessionStoreWipeTests: XCTestCase {
         await waitFor { self.mockChecker.confirmWipeCalls.count == 1 }
         await waitFor { self.sessionEndCount == 1 }
 
-        XCTAssertEqual(mockChecker.checkWipeCalls, [Fixtures.credentials])
-        XCTAssertEqual(mockChecker.confirmWipeCalls, [Fixtures.credentials])
+        XCTAssertEqual(mockChecker.checkWipeCalls, [expectedCall])
+        XCTAssertEqual(mockChecker.confirmWipeCalls, [expectedCall])
         XCTAssertEqual(sessionEndCount, 1)
         let error = await MainActor.run { store.loginError }
         XCTAssertEqual(error, .remoteWipe)
@@ -334,7 +347,7 @@ final class SessionStoreWipeTests: XCTestCase {
 
     func testResolvePendingWipePerformsWipeWhenStillRequested() async throws {
         // Simulate a previous launch that saved a pending entry (401 + network error).
-        try pendingWipeStore.save(Fixtures.credentials)
+        try pendingWipeStore.save(pending)
         mockChecker.checkWipeResult = .success(true)
         mockChecker.confirmWipeResult = true
 
@@ -350,7 +363,7 @@ final class SessionStoreWipeTests: XCTestCase {
 
     func testResolvePendingWipeDeletesWhenNoWipeRequested() async throws {
         // Simulate a pending entry for a plain revocation (no wipe).
-        try pendingWipeStore.save(Fixtures.credentials)
+        try pendingWipeStore.save(pending)
         mockChecker.checkWipeResult = .success(false) // no wipe
 
         let store = await makeStore(credentials: nil)
@@ -365,13 +378,75 @@ final class SessionStoreWipeTests: XCTestCase {
     }
 
     func testResolvePendingWipeKeepsEntryOnNetworkError() async throws {
-        try pendingWipeStore.save(Fixtures.credentials)
+        try pendingWipeStore.save(pending)
         mockChecker.checkWipeResult = .failure(AppError.serverUnreachable("offline"))
 
-        _ = await makeStore(credentials: nil)
+        let store = await makeStore(credentials: nil) // retained: the resolving task is [weak self]
         await waitFor { self.mockChecker.checkWipeCalls.count == 1 }
         try? await Task.sleep(nanoseconds: 100_000_000)
 
         XCTAssertNotNil(pendingWipeStore.load(), "pending must be kept on network error")
+        _ = store
+    }
+
+    // MARK: - Pending entry: only server + token, bounded retries (issue #15 review)
+
+    func testPendingEntryStoresOnlyServerAndToken() async throws {
+        try pendingWipeStore.save(pending)
+        mockChecker.checkWipeResult = .failure(AppError.serverUnreachable("offline"))
+
+        let store = await makeStore(credentials: nil) // retained: the resolving task is [weak self]
+        await waitFor { self.mockChecker.checkWipeCalls.count == 1 }
+        await waitFor { self.pendingWipeStore.load() != nil }
+
+        let loaded = try XCTUnwrap(pendingWipeStore.load())
+        XCTAssertEqual(loaded.server, Fixtures.server)
+        XCTAssertEqual(loaded.token, Fixtures.credentials.appPassword)
+        let json = String(data: try JSONEncoder().encode(loaded), encoding: .utf8)!
+        XCTAssertFalse(json.contains(Fixtures.credentials.loginName), "login name must not be persisted")
+        _ = store
+    }
+
+    func testResolvePendingWipeCountsFailedAttempt() async throws {
+        try pendingWipeStore.save(pending)
+        mockChecker.checkWipeResult = .failure(AppError.serverUnreachable("offline"))
+
+        let store = await makeStore(credentials: nil) // retained: the resolving task is [weak self]
+        await waitFor { self.mockChecker.checkWipeCalls.count == 1 }
+        await waitFor { (self.pendingWipeStore.load()?.attempts ?? 0) == 1 }
+
+        XCTAssertEqual(pendingWipeStore.load()?.attempts, 1, "a failed check must be counted")
+        _ = store
+    }
+
+    func testResolvePendingWipeDropsEntryAfterMaxAttempts() async throws {
+        var almostThere = pending
+        almostThere.attempts = PendingWipeStore.maxAttempts - 1
+        try pendingWipeStore.save(almostThere)
+        mockChecker.checkWipeResult = .failure(AppError.serverUnreachable("offline"))
+
+        let store = await makeStore(credentials: nil) // retained: the resolving task is [weak self]
+        await waitFor { self.mockChecker.checkWipeCalls.count == 1 }
+        await waitFor { self.pendingWipeStore.load() == nil }
+
+        XCTAssertNil(pendingWipeStore.load(), "pending must be dropped once maxAttempts is reached")
+        _ = store
+    }
+
+    func testFailedConfirmationDroppedAtMaxAttempts() async throws {
+        // Wipe still requested, but the confirmation keeps failing: after maxAttempts
+        // the dead token must not linger in the Keychain.
+        var almostThere = pending
+        almostThere.attempts = PendingWipeStore.maxAttempts - 1
+        try pendingWipeStore.save(almostThere)
+        mockChecker.checkWipeResult = .success(true)
+        mockChecker.confirmWipeResult = false
+
+        let store = await makeStore(credentials: nil) // retained: the resolving task is [weak self]
+        await waitFor { self.mockChecker.confirmWipeCalls.count == 1 }
+        await waitFor { self.pendingWipeStore.load() == nil }
+
+        XCTAssertNil(pendingWipeStore.load(), "pending must be dropped after maxAttempts failed confirmations")
+        _ = store
     }
 }

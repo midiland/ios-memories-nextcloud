@@ -30,6 +30,25 @@ final class MemoryCacheTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: cache.imageURL(for: entry(2))), Data([2]))
     }
 
+    func testStoredFilesUseCompleteFileProtection() throws {
+        // Issue #15 review: the widget thumbnails are personal photos, they must be
+        // pinned to the strongest file protection class when written.
+        try cache.store(days: [5: [entry(1)]], images: ["1.jpg": Data([1])])
+        cache.hide(fileid: 1)
+        cache.advanceCursor(forDay: 5)
+
+        #if targetEnvironment(simulator)
+        // Data Protection is a no-op on the simulator: nothing to assert there.
+        throw XCTSkip("file protection is not enforced on the simulator")
+        #else
+        let fm = FileManager.default
+        let imagePath = cache.imageURL(for: entry(1)).path
+        let imageAttrs = try fm.attributesOfItem(atPath: imagePath)
+        XCTAssertEqual(imageAttrs[.protectionKey] as? FileProtectionType, .complete,
+                       "thumbnail must be protected with .complete")
+        #endif
+    }
+
     func testEmptyDayCountsAsPrepared() throws {
         try cache.store(days: [5: []], images: [:])
         XCTAssertTrue(cache.hasDay(5))

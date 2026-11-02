@@ -169,20 +169,21 @@ final class SessionStore: ObservableObject {
     /// On a 401: ask the server whether this is a remote wipe before tearing down.
     private func handleRevokedSession(_ credentials: Credentials) async {
         do {
-            let wipeRequested = try await wipeChecker.checkWipe(credentials)
+            let wipeRequested = try await wipeChecker.checkWipe(
+                server: credentials.server, token: credentials.appPassword)
             guard !Task.isCancelled else { return }
             if wipeRequested {
-                await performRemoteWipe(credentials)
+                await performRemoteWipe(server: credentials.server, token: credentials.appPassword)
             } else {
                 endSession(error: .notAuthenticated)
             }
         } catch {
             // Network error: we cannot know whether a wipe was requested.
-            // Save the credentials as a pending wipe and end the session: the user
+            // Save a pending wipe (server + token only) and end the session: the user
             // gets the login screen, and the next launch resolves the pending entry
             // (wipe + confirm, or just delete the pending if no wipe was requested).
             guard !Task.isCancelled else { return }
-            try? pendingWipeStore.save(credentials)
+            try? pendingWipeStore.save(PendingWipe(server: credentials.server, token: credentials.appPassword))
             endSession(error: .notAuthenticated)
         }
     }
@@ -190,9 +191,10 @@ final class SessionStore: ObservableObject {
     /// One proactive wipe check; does nothing when no wipe is pending.
     private func checkWipe(_ credentials: Credentials) async {
         do {
-            let wipeRequested = try await wipeChecker.checkWipe(credentials)
+            let wipeRequested = try await wipeChecker.checkWipe(
+                server: credentials.server, token: credentials.appPassword)
             guard !Task.isCancelled, wipeRequested else { return }
-            await performRemoteWipe(credentials)
+            await performRemoteWipe(server: credentials.server, token: credentials.appPassword)
         } catch {
             // Network error or rate limit: try again on the next launch / foreground.
         }
@@ -207,45 +209,70 @@ final class SessionStore: ObservableObject {
     ///    background tasks (snapshot sync, device-photo cache) stop writing to the disk.
     /// 3. The purge runs again after the confirmation (idempotent) to sweep anything a
     ///    task still in flight wrote in the meantime.
-    private func performRemoteWipe(_ credentials: Credentials) async {
+    private func performRemoteWipe(server: ServerURL, token: String) async {
         guard !isWiping else { return }
         isWiping = true
         defer { isWiping = false }
 
-        try? pendingWipeStore.save(credentials)
+        // Keep the accumulated attempts when this wipe was already pending.
+        var pending = PendingWipe(server: server, token: token)
+        if let existing = pendingWipeStore.load(), existing.server == server, existing.token == token {
+            pending.attempts = existing.attempts
+        }
+        try? pendingWipeStore.save(pending)
         store.delete()
         loginError = .remoteWipe
         phase = .loggedOut
         await dataWiper.run()
-        let confirmed = await wipeChecker.confirmWipe(credentials)
+        let confirmed = await wipeChecker.confirmWipe(server: server, token: token)
         if confirmed {
             pendingWipeStore.delete()
+        } else {
+            // Confirmation failed: the pending entry stays (counted), the next launch
+            // retries it — up to `PendingWipeStore.maxAttempts`.
+            noteFailedAttempt(server: server, token: token)
         }
-        // On failure the pending entry stays: the next launch retries the confirmation.
         await dataWiper.run()
         onSessionEnd()
+    }
+
+    /// Counts a failed check/confirmation attempt; drops the pending entry once the
+    /// attempts are exhausted (the token is already invalidated and the local purge
+    /// has run, so the entry is only useful for the server confirmation).
+    private func noteFailedAttempt(server: ServerURL, token: String) {
+        var pending = pendingWipeStore.load() ?? PendingWipe(server: server, token: token)
+        pending.attempts += 1
+        if pending.attempts >= PendingWipeStore.maxAttempts {
+            pendingWipeStore.delete()
+        } else {
+            try? pendingWipeStore.save(pending)
+        }
     }
 
     /// Resolves a pending wipe left by a previous launch:
     /// - if a wipe is still requested, the local purge runs and the wipe is confirmed;
     /// - if no wipe is requested (e.g. the password was simply revoked), the pending
-    ///   entry is deleted and the credentials are dropped.
+    ///   entry is deleted and the token is dropped;
+    /// - on network error the attempt is counted and the entry kept until
+    ///   `PendingWipeStore.maxAttempts` is reached.
     private func resolvePendingWipe() {
-        guard let credentials = pendingWipeStore.load() else { return }
+        guard let pending = pendingWipeStore.load() else { return }
         Task { [weak self] in
             guard let self else { return }
             do {
-                let wipeRequested = try await self.wipeChecker.checkWipe(credentials)
+                let wipeRequested = try await self.wipeChecker.checkWipe(
+                    server: pending.server, token: pending.token)
                 if wipeRequested {
                     // The local data may already be erased (previous launch) or not
                     // (401 path): run the purge again (idempotent) and confirm.
-                    await self.performRemoteWipe(credentials)
+                    await self.performRemoteWipe(server: pending.server, token: pending.token)
                 } else {
                     // No wipe: the pending entry was for a plain revocation.
                     self.pendingWipeStore.delete()
                 }
             } catch {
-                // Network error: keep the pending entry, retry on the next launch.
+                // Network error: count the attempt, retry on the next launch.
+                self.noteFailedAttempt(server: pending.server, token: pending.token)
             }
         }
     }

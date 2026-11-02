@@ -24,20 +24,20 @@ final class RemoteWipeClientTests: XCTestCase {
 
     func testCheckWipeReturnsTrueOn200WipeTrue() async throws {
         MockURLProtocol.response = (Data(#"{"wipe": true}"#.utf8), 200, ["Content-Type": "application/json"])
-        let result = try await client.checkWipe(Fixtures.credentials)
+        let result = try await client.checkWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
         XCTAssertTrue(result)
     }
 
     func testCheckWipeReturnsFalseOn404() async throws {
         MockURLProtocol.response = (Data(), 404, [:])
-        let result = try await client.checkWipe(Fixtures.credentials)
+        let result = try await client.checkWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
         XCTAssertFalse(result)
     }
 
     func testCheckWipeThrowsOn500() async {
         MockURLProtocol.response = (Data(), 500, [:])
         do {
-            _ = try await client.checkWipe(Fixtures.credentials)
+            _ = try await client.checkWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
             XCTFail("500 must throw")
         } catch AppError.unexpectedStatus(500) {
             // expected
@@ -49,7 +49,7 @@ final class RemoteWipeClientTests: XCTestCase {
     func testCheckWipeThrowsOnInvalidJSON() async {
         MockURLProtocol.response = (Data("not json".utf8), 200, [:])
         do {
-            _ = try await client.checkWipe(Fixtures.credentials)
+            _ = try await client.checkWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
             XCTFail("Invalid JSON must throw")
         } catch AppError.invalidResponse {
             // expected
@@ -61,7 +61,7 @@ final class RemoteWipeClientTests: XCTestCase {
     func testCheckWipeThrowsOnMissingWipeKey() async {
         MockURLProtocol.response = (Data(#"{"other": true}"#.utf8), 200, [:])
         do {
-            _ = try await client.checkWipe(Fixtures.credentials)
+            _ = try await client.checkWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
             XCTFail("Missing wipe key must throw")
         } catch AppError.invalidResponse {
             // expected
@@ -73,7 +73,7 @@ final class RemoteWipeClientTests: XCTestCase {
     func testCheckWipeThrowsOnNetworkError() async {
         MockURLProtocol.error = URLError(.notConnectedToInternet)
         do {
-            _ = try await client.checkWipe(Fixtures.credentials)
+            _ = try await client.checkWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
             XCTFail("Network error must throw")
         } catch AppError.serverUnreachable {
             // expected
@@ -86,7 +86,7 @@ final class RemoteWipeClientTests: XCTestCase {
 
     func testCheckWipeRequestShape() async throws {
         MockURLProtocol.response = (Data(), 404, [:])
-        _ = try await client.checkWipe(Fixtures.credentials)
+        _ = try await client.checkWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
 
         let request = try XCTUnwrap(MockURLProtocol.lastRequest)
         XCTAssertEqual(request.httpMethod, "POST")
@@ -108,7 +108,7 @@ final class RemoteWipeClientTests: XCTestCase {
 
     func testCheckWipeUsesNextcloudRootNotMemoriesApp() async throws {
         MockURLProtocol.response = (Data(), 404, [:])
-        _ = try await client.checkWipe(Fixtures.credentials)
+        _ = try await client.checkWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
         let url = try XCTUnwrap(MockURLProtocol.lastRequest?.url?.absoluteString)
         XCTAssertTrue(url.hasPrefix("https://cloud.example.com/nextcloud/index.php/core/wipe/"))
         XCTAssertFalse(url.contains("/apps/memories/"))
@@ -118,7 +118,7 @@ final class RemoteWipeClientTests: XCTestCase {
         // A token with +, & or = must be percent-encoded in the form body.
         let special = Credentials(server: Fixtures.server, loginName: "alice", appPassword: "abc+def&ghi=jkl")
         MockURLProtocol.response = (Data(), 404, [:])
-        _ = try await client.checkWipe(special)
+        _ = try await client.checkWipe(server: special.server, token: special.appPassword)
 
         let body = String(data: try XCTUnwrap(MockURLProtocol.lastBody), encoding: .utf8)
         XCTAssertTrue(body?.hasPrefix("token=") == true)
@@ -134,7 +134,7 @@ final class RemoteWipeClientTests: XCTestCase {
 
     func testConfirmWipeReturnsTrueOn200() async {
         MockURLProtocol.response = (Data(), 200, [:])
-        let result = await client.confirmWipe(Fixtures.credentials)
+        let result = await client.confirmWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
         XCTAssertTrue(result)
     }
 
@@ -142,26 +142,26 @@ final class RemoteWipeClientTests: XCTestCase {
         // After a wipe is confirmed, the token no longer exists: 404 means
         // "already confirmed" — nothing left to do, so it is a success.
         MockURLProtocol.response = (Data(), 404, [:])
-        let result = await client.confirmWipe(Fixtures.credentials)
+        let result = await client.confirmWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
         XCTAssertTrue(result)
     }
 
     func testConfirmWipeReturnsFalseOn500() async {
         MockURLProtocol.response = (Data(), 500, [:])
-        let result = await client.confirmWipe(Fixtures.credentials)
+        let result = await client.confirmWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
         XCTAssertFalse(result)
     }
 
     func testConfirmWipeReturnsFalseOn429() async {
         // Rate limited: retry later.
         MockURLProtocol.response = (Data(), 429, [:])
-        let result = await client.confirmWipe(Fixtures.credentials)
+        let result = await client.confirmWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
         XCTAssertFalse(result)
     }
 
     func testConfirmWipeReturnsFalseOnNetworkError() async {
         MockURLProtocol.error = URLError(.notConnectedToInternet)
-        let result = await client.confirmWipe(Fixtures.credentials)
+        let result = await client.confirmWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
         XCTAssertFalse(result)
     }
 
@@ -169,7 +169,7 @@ final class RemoteWipeClientTests: XCTestCase {
 
     func testConfirmWipeRequestShape() async throws {
         MockURLProtocol.response = (Data(), 200, [:])
-        _ = await client.confirmWipe(Fixtures.credentials)
+        _ = await client.confirmWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword)
 
         let request = try XCTUnwrap(MockURLProtocol.lastRequest)
         XCTAssertEqual(request.httpMethod, "POST")
@@ -191,7 +191,7 @@ final class RemoteWipeClientTests: XCTestCase {
     func testConfirmWipeSendsTokenForDifferentAccount() async throws {
         let other = Credentials(server: Fixtures.server, loginName: "bob", appPassword: "hunter2")
         MockURLProtocol.response = (Data(), 200, [:])
-        _ = await client.confirmWipe(other)
+        _ = await client.confirmWipe(server: other.server, token: other.appPassword)
         let body = String(data: try XCTUnwrap(MockURLProtocol.lastBody), encoding: .utf8)
         XCTAssertEqual(body, "token=hunter2")
     }

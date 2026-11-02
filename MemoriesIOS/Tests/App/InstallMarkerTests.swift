@@ -42,7 +42,7 @@ final class InstallMarkerTests: XCTestCase {
         let credentials = CredentialStore(service: "fr.midiland.memories.tests.\(UUID().uuidString)")
         let pending = PendingWipeStore(service: "fr.midiland.memories.tests.\(UUID().uuidString)")
         try credentials.save(Fixtures.credentials)
-        try pending.save(Fixtures.credentials)
+        try pending.save(PendingWipe(server: Fixtures.server, token: Fixtures.credentials.appPassword))
         InstallMarker(defaults: defaults).purgeKeychainIfReinstalled(
             hasExistingAppData: { false }, purge: { credentials.delete(); pending.delete() }
         )

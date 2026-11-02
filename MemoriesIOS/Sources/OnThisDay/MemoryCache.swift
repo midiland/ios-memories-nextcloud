@@ -81,11 +81,12 @@ struct MemoryCache {
     func store(days: [Int: [MemoryEntry]], images: [String: Data]) throws {
         try fileManager.createDirectory(at: imagesURL, withIntermediateDirectories: true)
         for (name, data) in images {
-            try data.write(to: imagesURL.appendingPathComponent(name), options: .atomic)
+            try writeProtected(data, to: imagesURL.appendingPathComponent(name))
         }
         var index = readIndex()
         for (dayId, entries) in days { index.days[String(dayId)] = entries }
-        try JSONEncoder().encode(index).write(to: indexURL, options: .atomic)
+        try writeProtected(JSONEncoder().encode(index), to: indexURL)
+        protectDirectory()
         excludeFromBackup()
     }
 
@@ -93,7 +94,7 @@ struct MemoryCache {
     func prune(before dayId: Int) {
         var index = readIndex()
         index.days = index.days.filter { (Int($0.key) ?? 0) >= dayId }
-        try? JSONEncoder().encode(index).write(to: indexURL, options: .atomic)
+        try? writeProtected(JSONEncoder().encode(index), to: indexURL)
 
         let used = Set(index.days.values.flatMap { $0 }.map(\.imageName))
         let files = (try? fileManager.contentsOfDirectory(atPath: imagesURL.path)) ?? []
@@ -123,7 +124,7 @@ struct MemoryCache {
     /// The cross was tapped: the widget asks for confirmation before hiding `fileid`.
     func askToHide(fileid: Int64, now: Date = Date()) {
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-        try? JSONEncoder().encode(PendingHide(fileid: fileid, askedAt: now)).write(to: pendingHideURL, options: .atomic)
+        try? writeProtected(JSONEncoder().encode(PendingHide(fileid: fileid, askedAt: now)), to: pendingHideURL)
     }
 
     /// The photo the widget is asking about, unless the question is stale (the user walked away).
@@ -146,7 +147,7 @@ struct MemoryCache {
         var ids = hiddenFileIDs()
         ids.insert(fileid)
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-        try? JSONEncoder().encode(ids.sorted()).write(to: hiddenURL, options: .atomic)
+        try? writeProtected(JSONEncoder().encode(ids.sorted()), to: hiddenURL)
     }
 
     // MARK: - Cursor
@@ -165,7 +166,7 @@ struct MemoryCache {
     func advanceCursor(forDay dayId: Int) {
         let cursor = Cursor(day: dayId, offset: self.cursor(forDay: dayId) + 1)
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-        try? JSONEncoder().encode(cursor).write(to: cursorURL, options: .atomic)
+        try? writeProtected(JSONEncoder().encode(cursor), to: cursorURL)
     }
 
     /// Removes everything (logout, remote wipe).
@@ -181,6 +182,20 @@ struct MemoryCache {
               index.version == 1
         else { return Index() }
         return index
+    }
+
+    /// Writes `data` to `url` atomically, then pins the file to the strongest file
+    /// protection class: the cache holds personal photos (widget thumbnails) and must
+    /// not be readable before the first unlock (issue #15 review feedback).
+    private func writeProtected(_ data: Data, to url: URL) throws {
+        try data.write(to: url, options: .atomic)
+        try? fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
+    }
+
+    /// Pins the cache folder itself to the strongest file protection class.
+    private func protectDirectory() {
+        try? fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: directory.path)
+        try? fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: imagesURL.path)
     }
 
     /// The thumbnails are personal data that can be downloaded again: keep them out of backups.
