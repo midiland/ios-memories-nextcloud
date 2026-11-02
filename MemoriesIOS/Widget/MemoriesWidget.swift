@@ -260,22 +260,32 @@ private struct HideQuestion: View {
                 let layout = family == .systemSmall
                     ? AnyLayout(VStackLayout(spacing: 6)) : AnyLayout(HStackLayout(spacing: 8))
                 layout {
+                    // Plain buttons with an explicit capsule + label color: `.borderedProminent`
+                    // + `.tint` renders invisible labels in tinted (accented) mode.
                     Button(intent: ConfirmHideMemoryIntent(fileid: Int(fileid))) {
                         label("Remove")
                     }
-                    .tint(.red)
+                    .buttonStyle(.plain)
+                    .background(buttonCapsule(remove: true), in: Capsule())
                     Button(intent: CancelHideMemoryIntent()) {
                         label("Cancel")
                     }
-                    .tint(.gray)
+                    .buttonStyle(.plain)
+                    .background(buttonCapsule(remove: false), in: Capsule())
                 }
-                .buttonStyle(.borderedProminent)
                 .controlSize(.small)
             }
             .padding(.horizontal, 4)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(tinted ? Color(.systemBackground).opacity(0.85) : Color.black.opacity(0.65))
+            // In tinted mode solid colors become shades of the accent: no veil, the tinted
+            // photo behind already gives contrast to the primary-colored text.
+            .background(tinted ? Color.clear : Color.black.opacity(0.65))
         }
+    }
+
+    private func buttonCapsule(remove: Bool) -> some ShapeStyle {
+        if tinted { return Color.primary.opacity(0.25) }
+        return remove ? Color.red : Color.gray
     }
 
     private func label(_ text: LocalizedStringKey) -> some View {
@@ -284,6 +294,7 @@ private struct HideQuestion: View {
             .lineLimit(1)
             .minimumScaleFactor(0.8)
             .frame(maxWidth: .infinity)
+            .foregroundColor(tinted ? .primary : .white)
     }
 }
 

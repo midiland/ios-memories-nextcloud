@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## 1.0.0-rc.16
+
+### Fixed
+- **"On this day" widget**: photos now appear on a tinted home screen (iOS 18+ "Tinted" appearance). iOS strips the widget's background layer in tinted mode, so the caption was shown but the photo was missing; the photos are now rendered in the widget's main content and tinted by the system. The "Remove this photo?" question is readable in tinted mode too. (Issue #20)
+- **Remote wipe**: a pending wipe confirmation now keeps only the server URL and app password in the Keychain (never the login name) and is dropped after 5 failed attempts, instead of leaving a dead credential forever. The widget cache files (thumbnails and JSON) are also pinned to the strongest file-protection class so they are not readable before the first unlock. (Issue #15)
+
+---
+
 ## 1.0.0-rc.15
 
 ### Fixed
