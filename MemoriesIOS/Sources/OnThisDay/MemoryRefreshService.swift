@@ -44,10 +44,12 @@ final class MemoryRefreshService {
     nonisolated static func hasInstalledWidget() async -> Bool {
         await withCheckedContinuation { continuation in
             WidgetCenter.shared.getCurrentConfigurations { result in
-                if case .success(let configurations) = result {
+                switch result {
+                case .success(let configurations):
                     continuation.resume(returning: !configurations.isEmpty)
-                } else {
-                    continuation.resume(returning: false)
+                case .failure:
+                    // Unknown is not "removed": a failed lookup must not erase the cache.
+                    continuation.resume(returning: true)
                 }
             }
         }
