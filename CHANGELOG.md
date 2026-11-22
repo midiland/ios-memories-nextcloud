@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## Unreleased
+## 1.0.0-rc.17
 
 ### Fixed
 - **"On this day" widget**: the widget no longer falls back to "Open Memories to load your memories" after a while. Since 1.0.0-rc.16 its cache was unreadable whenever the device was locked, and iOS refreshes the widget in the background mostly while it is locked (every few hours and at midnight), so the widget found nothing and waited up to 3 hours before looking again. The cache is now readable once the device has been unlocked after a restart, and stays unreadable before that first unlock. Open the app once after updating: the photos already stored are converted and the widget reloads.
