@@ -14,6 +14,8 @@ enum MemoryTimeline {
     static let maxSlots = 12
     /// Retry delay when nothing is cached yet (the app has to run to fill the cache).
     static let emptyRetryInterval: TimeInterval = 3 * 3600
+    /// Retry delay when the cache exists but is locked (restart, device not unlocked yet).
+    static let lockedRetryInterval: TimeInterval = 15 * 60
 
     struct Item: Equatable {
         let date: Date

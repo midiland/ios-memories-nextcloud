@@ -65,6 +65,12 @@ struct MemoryCache {
         return (readIndex().days[String(dayId)] ?? []).filter { !hidden.contains($0.fileid) }
     }
 
+    /// Whether a cache exists but cannot be read right now: the device was restarted and not
+    /// unlocked yet (file protection). The widget must not take this for "never loaded".
+    var isUnreadable: Bool {
+        fileManager.fileExists(atPath: indexURL.path) && (try? Data(contentsOf: indexURL)) == nil
+    }
+
     /// Whether memories are already prepared for `dayId` (an empty list counts: "nothing that day").
     func hasDay(_ dayId: Int) -> Bool {
         readIndex().days[String(dayId)] != nil
@@ -101,6 +107,33 @@ struct MemoryCache {
         for name in files where !used.contains(name) {
             try? fileManager.removeItem(at: imagesURL.appendingPathComponent(name))
         }
+    }
+
+    // MARK: - File protection
+
+    /// Unreadable until the first unlock after a restart, readable afterwards even when the
+    /// device is locked. The stricter `.complete` class cannot be used: WidgetKit rebuilds the
+    /// timeline in the background (every few hours and at midnight), usually while the device
+    /// is locked, and the widget then found no readable cache and asked to open the app.
+    static let protection: FileProtectionType = .completeUntilFirstUserAuthentication
+
+    /// Moves the files written with another protection class (builds that used `.complete`) to
+    /// `protection`. Only works while the device is unlocked. Returns whether a file changed.
+    @discardableResult
+    func repairProtection() -> Bool {
+        var changed = false
+        for folder in [directory, imagesURL] {
+            let names = (try? fileManager.contentsOfDirectory(atPath: folder.path)) ?? []
+            for path in [folder.path] + names.map({ folder.appendingPathComponent($0).path }) {
+                // No protection attribute: Data Protection is not enforced (simulator).
+                guard let current = (try? fileManager.attributesOfItem(atPath: path))?[.protectionKey] as? FileProtectionType,
+                      current != Self.protection,
+                      (try? fileManager.setAttributes([.protectionKey: Self.protection], ofItemAtPath: path)) != nil
+                else { continue }
+                changed = true
+            }
+        }
+        return changed
     }
 
     // MARK: - Hidden photos
@@ -184,18 +217,18 @@ struct MemoryCache {
         return index
     }
 
-    /// Writes `data` to `url` atomically, then pins the file to the strongest file
-    /// protection class: the cache holds personal photos (widget thumbnails) and must
-    /// not be readable before the first unlock (issue #15 review feedback).
+    /// Writes `data` to `url` atomically, then pins the file to `protection`: the cache holds
+    /// personal photos (widget thumbnails) and must not be readable before the first unlock
+    /// (issue #15 review feedback).
     private func writeProtected(_ data: Data, to url: URL) throws {
         try data.write(to: url, options: .atomic)
-        try? fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: url.path)
+        try? fileManager.setAttributes([.protectionKey: Self.protection], ofItemAtPath: url.path)
     }
 
-    /// Pins the cache folder itself to the strongest file protection class.
+    /// Pins the cache folders themselves, so the files created in them inherit the class.
     private func protectDirectory() {
-        try? fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: directory.path)
-        try? fileManager.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: imagesURL.path)
+        try? fileManager.setAttributes([.protectionKey: Self.protection], ofItemAtPath: directory.path)
+        try? fileManager.setAttributes([.protectionKey: Self.protection], ofItemAtPath: imagesURL.path)
     }
 
     /// The thumbnails are personal data that can be downloaded again: keep them out of backups.

@@ -30,9 +30,23 @@ final class MemoryCacheTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: cache.imageURL(for: entry(2))), Data([2]))
     }
 
-    func testStoredFilesUseCompleteFileProtection() throws {
-        // Issue #15 review: the widget thumbnails are personal photos, they must be
-        // pinned to the strongest file protection class when written.
+    func testAnEmptyOrReadableCacheIsNotUnreadable() throws {
+        XCTAssertFalse(cache.isUnreadable)
+        try cache.store(days: [5: [entry(1)]], images: ["1.jpg": Data([1])])
+        XCTAssertFalse(cache.isUnreadable)
+    }
+
+    func testAnIndexThatCannotBeReadIsUnreadable() throws {
+        // A folder in place of the index: it exists but reading it fails, like a locked file.
+        let index = root.appendingPathComponent("onthisday/index.json", isDirectory: true)
+        try FileManager.default.createDirectory(at: index, withIntermediateDirectories: true)
+        XCTAssertTrue(cache.isUnreadable)
+        XCTAssertFalse(cache.hasDay(5))
+    }
+
+    func testStoredFilesStayReadableWhileLocked() throws {
+        // Issue #15 review: the widget thumbnails are personal photos, they must be protected
+        // until the first unlock. Not `.complete`: the widget reloads while the device is locked.
         try cache.store(days: [5: [entry(1)]], images: ["1.jpg": Data([1])])
         cache.hide(fileid: 1)
         cache.advanceCursor(forDay: 5)
@@ -44,8 +58,9 @@ final class MemoryCacheTests: XCTestCase {
         let fm = FileManager.default
         let imagePath = cache.imageURL(for: entry(1)).path
         let imageAttrs = try fm.attributesOfItem(atPath: imagePath)
-        XCTAssertEqual(imageAttrs[.protectionKey] as? FileProtectionType, .complete,
-                       "thumbnail must be protected with .complete")
+        XCTAssertEqual(imageAttrs[.protectionKey] as? FileProtectionType, MemoryCache.protection)
+        XCTAssertEqual(MemoryCache.protection, .completeUntilFirstUserAuthentication)
+        XCTAssertFalse(cache.repairProtection(), "nothing to repair on freshly written files")
         #endif
     }
 

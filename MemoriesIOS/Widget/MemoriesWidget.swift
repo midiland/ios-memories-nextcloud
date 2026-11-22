@@ -61,6 +61,13 @@ struct OnThisDayProvider: TimelineProvider {
 
     private func timeline(now: Date) -> Timeline<OnThisDayEntry> {
         let cache = MemoryCache()
+        // Restarted and not unlocked yet: the cache is there but locked, look again soon
+        // instead of asking to open the app for hours.
+        if cache.isUnreadable {
+            return Timeline(
+                entries: [OnThisDayEntry(date: now, content: .notLoaded)],
+                policy: .after(now.addingTimeInterval(MemoryTimeline.lockedRetryInterval)))
+        }
         let today = MemoryDay.id(of: now)
         let schedule = MemoryTimeline.schedule(
             entries: cache.entries(forDay: today), now: now, offset: cache.cursor(forDay: today))

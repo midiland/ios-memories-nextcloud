@@ -62,6 +62,9 @@ final class MemoryRefreshService {
     /// Foreground trigger: refreshes only when the cache is incomplete and the last attempt (made
     /// with a widget on screen) is not recent.
     func refreshIfNeeded(credentials: Credentials) async {
+        // The app is in the foreground, so the device is unlocked: files left with a stricter
+        // protection class by an older build become readable by the widget again.
+        if cache.repairProtection() { widgetsDidChange() }
         if let lastAttempt, now().timeIntervalSince(lastAttempt) < Self.minimumAttemptInterval { return }
         guard !isUpToDate() else { return }
         await refresh(credentials: credentials)

@@ -227,7 +227,9 @@ photos taken on this date in past years, in the style of Apple Photos.
   actual time chosen by iOS). Nothing is downloaded unless one of our widgets is on a screen.
 - **Rotation**: the widget timeline changes photo every 30 min (`MemoryTimeline`).
 - **Privacy**: the cache is excluded from backups, every file written is pinned to the
-  `.complete` file protection class (readable only after the first unlock), and the cache is
+  `.completeUntilFirstUserAuthentication` file protection class (readable only after the first
+  unlock; `.complete` would hide the cache from the timeline reloads WidgetKit runs while the
+  device is locked, and the widget would ask to open the app), and the cache is
   erased on logout, revoked credentials and remote wipe (`DataWiper` included). Without the
   App Group entitlement (ad hoc simulator builds) the widget stays empty.
 
