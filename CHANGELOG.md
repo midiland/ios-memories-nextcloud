@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **"On this day" widget**: the widget no longer falls back to "Open Memories to load your memories" after a while. Since 1.0.0-rc.16 its cache was unreadable whenever the device was locked, and iOS refreshes the widget in the background mostly while it is locked (every few hours and at midnight), so the widget found nothing and waited up to 3 hours before looking again. The cache is now readable once the device has been unlocked after a restart, and stays unreadable before that first unlock. Open the app once after updating: the photos already stored are converted and the widget reloads.
 - **"On this day" widget**: after a restart, a widget whose cache is still locked looks again after 15 minutes instead of 3 hours.
 - **"On this day" widget**: the stored memories are no longer erased when iOS fails to report which widgets are installed. Only a widget that was really removed frees them.
+- **"On this day" widget**: tapping a photo no longer ends on a "403" error screen from time to time. After a long stay in the background iOS could drop the app's access cookie for its local server, and the tap then reloaded the page without it. The cookie is now installed again whenever the app comes back to the foreground, the photo is opened only once the local server listens again (it could fall back to the timeline before), and a refused page is retried once before the error is shown.
 
 ---
 
