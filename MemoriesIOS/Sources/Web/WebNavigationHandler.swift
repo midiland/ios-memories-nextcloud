@@ -51,6 +51,8 @@ final class WebNavigationHandler: NSObject, WKNavigationDelegate, WKUIDelegate {
             return decisionHandler(.allow)
         }
         switch http.statusCode {
+        case 403 where model?.retryForbiddenPage(http.url) == true:
+            decisionHandler(.cancel)
         case 400...:
             decisionHandler(.cancel)
             model?.pageDidFail(.unexpectedStatus(http.statusCode))

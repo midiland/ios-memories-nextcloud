@@ -88,6 +88,8 @@ final class WebViewModel: ObservableObject {
     private var contentProcessTerminated = false
     /// A failed local load was already retried (reset by the next committed page).
     private var retriedLocalLoad = false
+    /// A page refused by the local server was already retried (reset by the next committed page).
+    private var retriedForbiddenLoad = false
     /// Current load and background update check; cancelled by the next `start()`.
     private var loadTask: Task<Void, Never>?
     private var refreshTask: Task<Void, Never>?
@@ -169,13 +171,13 @@ final class WebViewModel: ObservableObject {
     private var entryPage: URL?
 
     /// Opens a photo (widget tap): loads the app's entry page with the viewer fragment, which
-    /// the Memories timeline opens at startup. Waits for the first load when it is not done.
+    /// the Memories timeline opens at startup. The link waits for the first load when it is not
+    /// done, and otherwise for the local server: a tap brings the app back from the background,
+    /// where the server does not listen and the access cookie may have been lost.
     func open(_ link: MemoryDeepLink) {
-        guard let entryPage else {
-            pendingLink = link
-            return
-        }
-        webView.load(URLRequest(url: link.opening(entryPage)))
+        pendingLink = link
+        guard entryPage != nil, isActive else { return } // followed by load() or appDidBecomeActive()
+        Task { await recoverLocalPage() }
     }
 
     /// First load (idempotent: `onAppear` may be called several times).
@@ -280,6 +282,10 @@ final class WebViewModel: ObservableObject {
     /// Restarts the local server if needed, then reloads the page if it was lost.
     private func recoverLocalPage() async {
         guard let port = await offline.ensureServerRunning(), isActive else { return }
+        // The access cookie does not survive WebKit's networking process, which iOS may end in
+        // the background: without it the next page load, and the page's own requests, get a 403.
+        await offline.installAccessCookie(into: cookieStore)
+        guard isActive else { return }
         let page = webView.url.flatMap { offline.isLocal($0) ? $0 : nil }
         var showsUnreachableError = false
         if case .failed(.serverUnreachable) = state { showsUnreachableError = true }
@@ -288,6 +294,12 @@ final class WebViewModel: ObservableObject {
             contentProcessTerminated: contentProcessTerminated, showsUnreachableError: showsUnreachableError
         )
         contentProcessTerminated = false
+        // A photo asked for by the widget replaces the page to reload (a restart follows it itself).
+        if action != .restart, entryPage != nil, let link = pendingLink {
+            pendingLink = nil
+            webView.load(URLRequest(url: link.opening(offline.entryURL)))
+            return
+        }
         switch action {
         case .none: break
         case .reload: webView.reload()
@@ -311,6 +323,7 @@ final class WebViewModel: ObservableObject {
     func pageDidFinish() {
         state = .ready
         retriedLocalLoad = false
+        retriedForbiddenLoad = false
         #if DEBUG
         DebugAutomation.run(on: self)
         #endif
@@ -318,6 +331,19 @@ final class WebViewModel: ObservableObject {
 
     func pageDidFail(_ error: AppError) {
         state = .failed(error)
+    }
+
+    /// The local server refused the page (403): the access cookie is missing or stale. Installs
+    /// it again and loads the page once more. Returns `false` when this was already tried.
+    func retryForbiddenPage(_ url: URL?) -> Bool {
+        guard !retriedForbiddenLoad, let url, offline.isLocal(url) else { return false }
+        retriedForbiddenLoad = true
+        Log.web.notice("Local page refused, retrying with a fresh access cookie")
+        Task {
+            await offline.installAccessCookie(into: cookieStore)
+            webView.load(URLRequest(url: url))
+        }
+        return true
     }
 
     /// Main-frame load error. A connection error usually means the local server was not

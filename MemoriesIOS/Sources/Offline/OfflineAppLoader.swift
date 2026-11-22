@@ -164,7 +164,9 @@ final class OfflineAppLoader {
     }
 
     /// HttpOnly `local-auth` cookie: without it the local server responds 403 (other apps on the device).
-    private func installAccessCookie(into cookieStore: WKHTTPCookieStore) async {
+    /// It is a session cookie: WebKit forgets it when iOS ends its networking process while the
+    /// app is in the background, so it is installed again before the page is loaded anew.
+    func installAccessCookie(into cookieStore: WKHTTPCookieStore) async {
         let properties: [HTTPCookiePropertyKey: Any] = [
             .name: "local-auth",
             .value: server.secret,
