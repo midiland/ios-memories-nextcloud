@@ -4,7 +4,8 @@ import Foundation
 /// only local-server pages stay in the web view; a proxied path (e.g. a link to another
 /// Nextcloud app) opens the real server page in Safari, and other hosts open in Safari too.
 /// Pages are never loaded from the server itself: its code is untrusted (see `OfflineAppLoader`).
-/// Store links the frontend hardcodes for Android are swapped for their App Store equivalent.
+/// Store links that servers without `getPlatform` support still hardcode for Android are swapped
+/// for their App Store equivalent (newer frontends pick the App Store link themselves).
 struct NavigationPolicy {
     enum Decision: Equatable {
         case allow
